@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mortgage Calculator PRO v2 - Thiên Hạo House</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons@latest/tabler-icons.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #FF9500;
+            --primary-dark: #E68A00;
+            --primary-light: #FFB84D;
+            --primary-50: #FFF5EB;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e8eef5 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 32px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .header i {
+            font-size: 36px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .header p {
+            font-size: 13px;
+            opacity: 0.9;
+            margin: 4px 0 0 0;
+        }
+
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #f0f0f0;
+            background: #fafafa;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 16px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            color: #666;
+            transition: all 0.3s;
+            border-bottom: 3px solid transparent;
+        }
+
+        .tab-btn.active {
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
+            background: white;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 32px;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        label {
+            font-size: 14px;
+            font-weight: 500;
+            color: #1a1a1a;
+        }
+
+        input[type="number"],
+        input[type="range"],
+        select {
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        input[type="number"]:focus,
+        input[type="range"]:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(255, 149, 0, 0.1);
+        }
+
+        input[type="range"] {
+            padding: 0;
+            height: 6px;
+            cursor: pointer;
+        }
+
+        .slider-group {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .slider-group input[type="range"] {
+            flex: 1;
+        }
+
+        .slider-group input[type="number"] {
+            width: 70px;
+        }
+
+        .helper-text {
+            font-size: 12px;
+            color: #666;
+            margin-top: 4px;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .divider {
+            height: 1px;
+            background: #f0f0f0;
+            margin: 24px 0;
+        }
+
+        .results-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 16px;
+        }
+
+        .result-card {
+            background: var(--primary-50);
+            border: 1px solid #FFD699;
+            border-radius: 10px;
+            padding: 16px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .result-card:hover {
+            background: #FFEAD0;
+            border-color: var(--primary-color);
+        }
+
+        .result-label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+
+        .result-value {
+            font-size: 22px;
+            font-weight: 600;
+            color: var(--primary-color);
+            margin: 0;
+        }
+
+        .result-unit {
+            font-size: 11px;
+            color: #999;
+            margin-top: 4px;
+        }
+
+        .total-card {
+            background: white;
+            border: 2px solid var(--primary-color);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .total-label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .total-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .total-unit {
+            font-size: 12px;
+            color: #999;
+            margin-top: 4px;
+        }
+
+        .info-box {
+            background: #fffbea;
+            border-left: 4px solid var(--primary-color);
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 20px;
+            font-size: 12px;
+            color: #666;
+            line-height: 1.6;
+        }
+
+        .info-box strong {
+            color: #1a1a1a;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .comparison-item {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+
+        .comparison-item.active {
+            border-color: var(--primary-color);
+            background: var(--primary-50);
+        }
+
+        .comparison-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .bank-name {
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+
+        .interest-rate {
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            background: #e3f2fd;
+            color: #1976d2;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 500;
+            margin-top: 8px;
+        }
+
+        .status-badge.loading {
+            background: #fff3e0;
+            color: #f57c00;
+        }
+
+        .status-badge.error {
+            background: #ffebee;
+            color: #d32f2f;
+        }
+
+        .btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-block;
+        }
+
+        .btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(255, 149, 0, 0.2);
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #1a1a1a;
+            margin-left: 8px;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #f0f0f0;
+            border-top: 2px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+
+            .tabs {
+                overflow-x: auto;
+            }
+
+            .tab-btn {
+                white-space: nowrap;
+            }
+
+            .tab-content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <!-- Header -->
+            <div class="header">
+                <i class="ti ti-calculator"></i>
+                <div>
+                    <h1>Tính Khoản Vay BĐS</h1>
+                    <p>Thiên Hạo House - Dữ liệu lãi suất realtime từ Google Sheets</p>
+                </div>
+            </div>
+
+            <!-- Tabs -->
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchTab('basic')">Tính Toán Cơ Bản</button>
+                <button class="tab-btn" onclick="switchTab('comparison')">So Sánh Ngân Hàng</button>
+                <button class="tab-btn" onclick="switchTab('settings')">Cấu Hình</button>
+            </div>
+
+            <!-- TAB 1: Basic Calculation -->
+            <div id="basic" class="tab-content active">
+                <form id="basicForm">
+                    <div class="form-group">
+                        <label for="loanAmount">Số tiền vay (tỷ VND)</label>
+                        <input type="number" id="loanAmount" min="0" step="1" value="30" required/>
+                        <p class="helper-text">Nhập số tiền theo tỷ đồng (VD: 30 = 30 tỷ đồng)</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="interestRate">Lãi suất (%/năm)</label>
+                        <div class="slider-group">
+                            <input type="range" id="interestRate" min="2" max="15" step="0.1" value="6.5"/>
+                            <input type="number" id="interestRateInput" min="0" max="20" step="0.1" value="6.5"/>
+                        </div>
+                        <p class="helper-text">Lãi suất có thể điều chỉnh theo ngân hàng và thời điểm</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="loanTerm">Thời gian vay (năm)</label>
+                        <div class="slider-group">
+                            <input type="range" id="loanTerm" min="1" max="30" step="1" value="15"/>
+                            <input type="number" id="loanTermInput" min="1" max="50" step="1" value="15"/>
+                        </div>
+                        <p class="helper-text">Thời gian trả nợ từ 1-30 năm</p>
+                    </div>
+                </form>
+
+                <div class="divider"></div>
+
+                <div class="results-title">Kết quả tính toán</div>
+
+                <div class="grid-2">
+                    <div class="result-card">
+                        <div class="result-label">Thanh toán hàng tháng</div>
+                        <p class="result-value" id="monthlyPayment">0</p>
+                        <div class="result-unit">triệu VND</div>
+                    </div>
+
+                    <div class="result-card">
+                        <div class="result-label">Tổng tiền lãi</div>
+                        <p class="result-value" id="totalInterest">0</p>
+                        <div class="result-unit">tỷ VND</div>
+                    </div>
+                </div>
+
+                <div class="total-card" style="margin-top: 16px;">
+                    <div class="total-label">Tổng tiền trả</div>
+                    <p class="total-value" id="totalPayment">0</p>
+                    <div class="total-unit">tỷ VND</div>
+                </div>
+
+                <div class="info-box">
+                    <strong>ℹ️ Lưu ý quan trọng</strong>
+                    Kết quả này chỉ mang tính tham khảo. Số tiền thực tế có thể khác tùy thuộc vào chính sách của từng ngân hàng, phí và chi phí khác.
+                </div>
+            </div>
+
+            <!-- TAB 2: Comparison -->
+            <div id="comparison" class="tab-content">
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
+                    <p style="font-size: 13px; color: #666; margin: 0;">So sánh lãi suất từ Google Sheets</p>
+                    <span id="updateStatus" class="status-badge">
+                        <span class="loading-spinner"></span> Đang tải...
+                    </span>
+                </div>
+
+                <div class="form-group">
+                    <label for="compLoanAmount">Số tiền vay (tỷ VND)</label>
+                    <input type="number" id="compLoanAmount" min="0" step="1" value="30"/>
+                </div>
+
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label for="compLoanTerm">Thời gian vay (năm)</label>
+                        <input type="number" id="compLoanTerm" min="1" max="50" step="1" value="15"/>
+                    </div>
+                    <div class="form-group">
+                        <label for="compPropertyType">Loại BĐS</label>
+                        <select id="compPropertyType" onchange="generateComparison()">
+                            <option value="">-- Tất cả --</option>
+                            <option value="Nhà phố">Nhà phố</option>
+                            <option value="Căn hộ">Căn hộ</option>
+                            <option value="Đất nền">Đất nền</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button class="btn" onclick="generateComparison()">Cập Nhật So Sánh</button>
+
+                <div id="comparisonResult" style="margin-top: 20px;"></div>
+
+                <div class="info-box" style="margin-top: 20px;">
+                    <strong>📊 Nguồn dữ liệu</strong>
+                    Dữ liệu lãi suất được lấy từ Google Sheet công khai và cập nhật <span id="lastUpdateTime">...</span>
+                </div>
+            </div>
+
+            <!-- TAB 3: Settings -->
+            <div id="settings" class="tab-content">
+                <div class="form-group">
+                    <label for="sheetUrl">Google Sheet ID (Dùng để fetch dữ liệu)</label>
+                    <input type="text" id="sheetUrl" placeholder="Ví dụ: 1BxiMVs0XRA5nFMXU-8J6mH3PIy6Yk48q..." style="font-family: monospace; font-size: 12px;"/>
+                    <p class="helper-text">Hướng dẫn: Mở Google Sheet → Copy ID từ URL (phần giữa /d/ và /edit)</p>
+                </div>
+
+                <div class="form-group">
+                    <label for="sheetName">Sheet Name (Tab trong Google Sheet)</label>
+                    <input type="text" id="sheetName" placeholder="VD: Sheet1" value="Sheet1"/>
+                    <p class="helper-text">Tên tab chứa dữ liệu lãi suất (mặc định: Sheet1)</p>
+                </div>
+
+                <button class="btn" onclick="saveSettings()">Lưu Cấu Hình</button>
+                <button class="btn btn-secondary" onclick="testConnection()">Test Kết Nối</button>
+
+                <div id="settingsResult" style="margin-top: 20px;"></div>
+
+                <div class="info-box" style="margin-top: 20px;">
+                    <strong>🔧 Hướng dẫn cấu hình</strong>
+                    <div style="margin-top: 8px;">
+                        1. Tạo Google Sheet công khai<br>
+                        2. Header: Ngân hàng | Lãi suất | Loại BĐS | Ngày cập nhật<br>
+                        3. Share: "Anyone with the link can view"<br>
+                        4. Copy Sheet ID từ URL<br>
+                        5. Paste vào ô trên → Test Kết Nối
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        let CONFIG = {
+            sheetId: localStorage.getItem('sheetId') || '',
+            sheetName: localStorage.getItem('sheetName') || 'Sheet1'
+        };
+
+        // Bank data from Google Sheet
+        let bankData = [];
+
+        // Basic Tab
+        const loanAmountInput = document.getElementById('loanAmount');
+        const interestRateSlider = document.getElementById('interestRate');
+        const interestRateInput = document.getElementById('interestRateInput');
+        const loanTermSlider = document.getElementById('loanTerm');
+        const loanTermInput = document.getElementById('loanTermInput');
+
+        const monthlyPaymentEl = document.getElementById('monthlyPayment');
+        const totalInterestEl = document.getElementById('totalInterest');
+        const totalPaymentEl = document.getElementById('totalPayment');
+
+        function formatNumber(num) {
+            return Math.round(num).toLocaleString('vi-VN', { maximumFractionDigits: 1 });
+        }
+
+        function calculate() {
+            const principal = parseFloat(loanAmountInput.value) || 0;
+            const annualRate = parseFloat(interestRateSlider.value) || 0;
+            const years = parseInt(loanTermSlider.value) || 1;
+
+            const monthlyRate = annualRate / 100 / 12;
+            const months = years * 12;
+            const principalInVND = principal * 1000000000;
+
+            let monthlyPayment = 0;
+            if (monthlyRate > 0) {
+                monthlyPayment = (principalInVND * monthlyRate * Math.pow(1 + monthlyRate, months)) / 
+                                (Math.pow(1 + monthlyRate, months) - 1);
+            } else {
+                monthlyPayment = principalInVND / months;
+            }
+
+            const totalPaid = monthlyPayment * months;
+            const totalInterest = totalPaid - principalInVND;
+
+            monthlyPaymentEl.textContent = formatNumber(monthlyPayment / 1000000);
+            totalInterestEl.textContent = formatNumber(totalInterest / 1000000000);
+            totalPaymentEl.textContent = formatNumber(totalPaid / 1000000000);
+        }
+
+        // Event listeners
+        loanAmountInput.addEventListener('input', calculate);
+        interestRateSlider.addEventListener('input', (e) => {
+            interestRateInput.value = e.target.value;
+            calculate();
+        });
+        interestRateInput.addEventListener('input', (e) => {
+            interestRateSlider.value = e.target.value;
+            calculate();
+        });
+        loanTermSlider.addEventListener('input', (e) => {
+            loanTermInput.value = e.target.value;
+            calculate();
+        });
+        loanTermInput.addEventListener('input', (e) => {
+            loanTermSlider.value = e.target.value;
+            calculate();
+        });
+
+        // Tab switching
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+
+            if (tabName === 'comparison') {
+                generateComparison();
+            }
+        }
+
+        // Fetch data from Google Sheet
+        async function fetchBankData() {
+            if (!CONFIG.sheetId) {
+                document.getElementById('updateStatus').innerHTML = '<span class="status-badge error">❌ Chưa cấu hình Sheet ID</span>';
+                return [];
+            }
+
+            try {
+                const url = `https://docs.google.com/spreadsheets/d/${CONFIG.sheetId}/export?format=csv`;
+                const response = await fetch(url);
+                const csvText = await response.text();
+                
+                const lines = csvText.trim().split('\n');
+                const data = [];
+
+                for (let i = 1; i < lines.length; i++) {
+                    const cells = lines[i].split(',').map(c => c.trim());
+                    if (cells.length >= 3) {
+                        data.push({
+                            bank: cells[0],
+                            rate: parseFloat(cells[1]) || 0,
+                            type: cells[2] || 'Nhà phố',
+                            updated: cells[3] || new Date().toLocaleDateString('vi-VN')
+                        });
+                    }
+                }
+
+                bankData = data;
+                const now = new Date().toLocaleString('vi-VN');
+                document.getElementById('updateStatus').innerHTML = `<span class="status-badge">✅ Cập nhật: ${now}</span>`;
+                document.getElementById('lastUpdateTime').textContent = now;
+                
+                return data;
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                document.getElementById('updateStatus').innerHTML = '<span class="status-badge error">❌ Lỗi: Không thể tải dữ liệu</span>';
+                return [];
+            }
+        }
+
+        // Comparison
+        async function generateComparison() {
+            await fetchBankData();
+            
+            const principal = parseFloat(document.getElementById('compLoanAmount').value) * 1000000000;
+            const years = parseInt(document.getElementById('compLoanTerm').value);
+            const propertyType = document.getElementById('compPropertyType').value;
+
+            let filteredData = bankData;
+            if (propertyType) {
+                filteredData = bankData.filter(b => b.type === propertyType);
+            }
+
+            if (filteredData.length === 0) {
+                document.getElementById('comparisonResult').innerHTML = '<p style="color: #999; text-align: center;">Không có dữ liệu. Vui lòng cấu hình Google Sheet.</p>';
+                return;
+            }
+
+            let html = '';
+            filteredData.forEach(bank => {
+                const monthlyRate = bank.rate / 100 / 12;
+                const months = years * 12;
+                const monthlyPayment = (principal * monthlyRate * Math.pow(1 + monthlyRate, months)) / 
+                                      (Math.pow(1 + monthlyRate, months) - 1);
+                const totalInterest = (monthlyPayment * months) - principal;
+
+                html += `
+                    <div class="comparison-item">
+                        <div class="comparison-header">
+                            <span class="bank-name">${bank.bank}</span>
+                            <span class="interest-rate">${bank.rate}%/năm</span>
+                        </div>
+                        <div style="font-size: 11px; color: #999;">Loại: ${bank.type} | Cập nhật: ${bank.updated}</div>
+                        <div class="grid-2" style="margin-top: 12px; font-size: 12px;">
+                            <div>
+                                <div style="color: #999;">Thanh toán/tháng</div>
+                                <div style="font-weight: 600; color: var(--primary-color);">${formatNumber(monthlyPayment / 1000000)} triệu</div>
+                            </div>
+                            <div>
+                                <div style="color: #999;">Tổng lãi</div>
+                                <div style="font-weight: 600; color: var(--primary-color);">${formatNumber(totalInterest / 1000000000)} tỷ</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            document.getElementById('comparisonResult').innerHTML = html;
+        }
+
+        // Settings
+        function saveSettings() {
+            const sheetId = document.getElementById('sheetUrl').value.trim();
+            const sheetName = document.getElementById('sheetName').value.trim();
+
+            if (!sheetId) {
+                document.getElementById('settingsResult').innerHTML = '<p style="color: #d32f2f;">❌ Vui lòng nhập Sheet ID</p>';
+                return;
+            }
+
+            CONFIG.sheetId = sheetId;
+            CONFIG.sheetName = sheetName;
+
+            localStorage.setItem('sheetId', sheetId);
+            localStorage.setItem('sheetName', sheetName);
+
+            document.getElementById('settingsResult').innerHTML = '<p style="color: #4caf50;">✅ Cấu hình đã lưu!</p>';
+        }
+
+        async function testConnection() {
+            const sheetId = document.getElementById('sheetUrl').value.trim();
+            
+            if (!sheetId) {
+                document.getElementById('settingsResult').innerHTML = '<p style="color: #d32f2f;">❌ Vui lòng nhập Sheet ID</p>';
+                return;
+            }
+
+            document.getElementById('settingsResult').innerHTML = '<p style="color: #f57c00;">⏳ Đang kiểm tra...</p>';
+
+            try {
+                const url = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv`;
+                const response = await fetch(url);
+                
+                if (response.ok) {
+                    const csvText = await response.text();
+                    const lines = csvText.trim().split('\n');
+                    document.getElementById('settingsResult').innerHTML = `<p style="color: #4caf50;">✅ Kết nối thành công! Tìm thấy ${lines.length - 1} dòng dữ liệu</p>`;
+                } else {
+                    document.getElementById('settingsResult').innerHTML = '<p style="color: #d32f2f;">❌ Không thể truy cập Sheet. Kiểm tra Sheet ID hoặc quyền truy cập công khai</p>';
+                }
+            } catch (error) {
+                document.getElementById('settingsResult').innerHTML = '<p style="color: #d32f2f;">❌ Lỗi kết nối: ' + error.message + '</p>';
+            }
+        }
+
+        // Load config on startup
+        window.addEventListener('load', () => {
+            if (CONFIG.sheetId) {
+                document.getElementById('sheetUrl').value = CONFIG.sheetId;
+                document.getElementById('sheetName').value = CONFIG.sheetName;
+            }
+            fetchBankData();
+            calculate();
+        });
+    </script>
+</body>
+</html>
