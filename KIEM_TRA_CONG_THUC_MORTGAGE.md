@@ -167,7 +167,5 @@ ROI = (Tương lợi) / (Vốn) = 76.45 / 20 = 3.82 = 382%
 
 ---
 
-**Version:** v4  
-**Ngày:** 27/6/2026  
-**Kiểm tra bởi:** Claude AI  
+**Ngày:** 27/6/2026   
 **Tiêu chuẩn:** ISO 4217 (Money and funds code), ISO 20022 (Financial data)
