@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Công Cụ Tính Khoản Vay - Nhà Phố</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons@latest/tabler-icons.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #FF9500;
+            --primary-dark: #E68A00;
+            --primary-50: #FFF5EB;
+            --border-color: #e0e0e0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #fafbfc 0%, #f0f3f7 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            overflow-y: scroll;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 880px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.06);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: auto;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 28px 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .header i {
+            font-size: 40px;
+            opacity: 0.9;
+        }
+
+        .header-text h1 {
+            font-size: 26px;
+            font-weight: 600;
+            margin: 0;
+            line-height: 1.2;
+        }
+
+        .header-text p {
+            font-size: 13px;
+            opacity: 0.85;
+            margin: 4px 0 0 0;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .settings-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .settings-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border-color);
+            background: #fafbfc;
+            overflow-x: auto;
+            padding: 0 32px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 14px 12px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            color: #666;
+            border-bottom: 2px solid transparent;
+            white-space: normal;
+            word-wrap: break-word;
+            word-break: break-word;
+            overflow-wrap: break-word;
+            min-width: auto;
+            transition: all 0.3s;
+            line-height: 1.3;
+        }
+
+        .tab-btn.active {
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
+        }
+
+        .tab-content {
+            display: none;
+            padding: 28px 32px;
+            min-height: 600px;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 16px;
+        }
+
+        label {
+            font-size: 15px;
+            font-weight: 500;
+            color: #1a1a1a;
+        }
+
+        input[type="number"],
+        input[type="range"],
+        select {
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 15px;
+            font-family: inherit;
+            color: #1a1a1a;
+        }
+
+        input[type="number"]:focus,
+        input[type="range"]:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(255, 149, 0, 0.08);
+        }
+
+        input[type="range"] {
+            padding: 0;
+            height: 5px;
+            cursor: pointer;
+        }
+
+        .slider-group {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .slider-group input[type="range"] {
+            flex: 1;
+        }
+
+        .slider-group input[type="number"] {
+            width: 65px;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            margin: 20px 0;
+        }
+
+        .divider {
+            height: 1px;
+            background: var(--border-color);
+            margin: 20px 0;
+        }
+
+        .results-title {
+            font-size: 11px;
+            font-weight: 600;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            margin-bottom: 14px;
+        }
+
+        .result-card {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 14px;
+            text-align: center;
+            transition: all 0.2s;
+        }
+
+        .result-card:hover {
+            border-color: #d0d0d0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        }
+
+        .result-label {
+            font-size: 13px;
+            color: #1a1a1a;
+            margin-bottom: 4px;
+            font-weight: 500;
+        }
+
+        .result-value {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .result-unit {
+            font-size: 12px;
+            color: #666;
+            margin-top: 2px;
+        }
+
+        .total-card {
+            background: white;
+            border: 2px solid var(--primary-color);
+            border-radius: 10px;
+            padding: 18px;
+            text-align: center;
+            margin-top: 14px;
+        }
+
+        .total-label {
+            font-size: 13px;
+            color: #1a1a1a;
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+
+        .total-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .total-unit {
+            font-size: 12px;
+            color: #666;
+            margin-top: 4px;
+        }
+
+        .info-box {
+            background: #fffbea;
+            border-left: 3px solid var(--primary-color);
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 16px;
+            font-size: 12px;
+            color: #666;
+            line-height: 1.5;
+        }
+
+        .info-box strong {
+            color: #1a1a1a;
+            display: block;
+            margin-bottom: 4px;
+            font-size: 13px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+            margin-top: 14px;
+        }
+
+        table th {
+            background: var(--primary-50);
+            color: var(--primary-color);
+            padding: 10px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 1px solid #FFD699;
+        }
+
+        table td {
+            padding: 8px 10px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        table tr:hover {
+            background: #fafbfc;
+        }
+
+        .comparison-item {
+            background: #fafbfc;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 14px;
+            margin-bottom: 10px;
+        }
+
+        .comparison-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .bank-name {
+            font-weight: 600;
+            color: #1a1a1a;
+            font-size: 14px;
+        }
+
+        .interest-rate {
+            color: var(--primary-color);
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(255, 149, 0, 0.2);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 28px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+        }
+
+        .modal-header {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #1a1a1a;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #999;
+        }
+
+        .modal-close:hover {
+            color: #1a1a1a;
+        }
+
+        .status-text {
+            font-size: 13px;
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 12px;
+            text-align: center;
+        }
+
+        .status-success {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .status-error {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        @media (max-width: 768px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+
+            .header {
+                padding: 20px;
+            }
+
+            .tab-content {
+                padding: 20px;
+            }
+
+            .header-text h1 {
+                font-size: 22px;
+            }
+
+            .tabs {
+                padding: 0 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <!-- Header -->
+            <div class="header">
+                <div class="header-content">
+                    <i class="ti ti-calculator"></i>
+                    <div class="header-text">
+                        <h1>Công Cụ Tính Khoản Vay</h1>
+                        <p>Nhà Phố - Dữ liệu lãi suất thực tế</p>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <button class="settings-btn" onclick="openSettings()" title="Cấu hình">⚙️</button>
+                </div>
+            </div>
+
+            <!-- Tabs -->
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchTab('basic')">Tính Toán Cơ Bản</button>
+                <button class="tab-btn" onclick="switchTab('amortization')">Lịch Thanh Toán</button>
+                <button class="tab-btn" onclick="switchTab('comparison')">So Sánh Ngân Hàng</button>
+                <button class="tab-btn" onclick="switchTab('roi')">Tính Lợi Nhuận</button>
+            </div>
+
+            <!-- TAB 1: Tính Toán Cơ Bản -->
+            <div id="basic" class="tab-content active">
+                <form id="basicForm">
+                    <div class="form-group">
+                        <label for="loanAmount">Số tiền vay (tỷ VND)</label>
+                        <input type="number" id="loanAmount" min="0" step="1" value="30" required/>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="interestRate">Lãi suất (%/năm)</label>
+                        <div class="slider-group">
+                            <input type="range" id="interestRate" min="2" max="15" step="0.1" value="6.5"/>
+                            <input type="number" id="interestRateInput" min="0" max="20" step="0.1" value="6.5"/>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="loanTerm">Thời gian vay (năm)</label>
+                        <div class="slider-group">
+                            <input type="range" id="loanTerm" min="1" max="30" step="1" value="15"/>
+                            <input type="number" id="loanTermInput" min="1" max="50" step="1" value="15"/>
+                        </div>
+                    </div>
+                </form>
+
+                <div class="divider"></div>
+                <div class="results-title">Kết Quả</div>
+
+                <div class="grid-2">
+                    <div class="result-card">
+                        <div class="result-label">Thanh toán hàng tháng</div>
+                        <p class="result-value" id="monthlyPayment">0</p>
+                        <div class="result-unit">triệu VND</div>
+                    </div>
+                    <div class="result-card">
+                        <div class="result-label">Tổng tiền lãi</div>
+                        <p class="result-value" id="totalInterest">0</p>
+                        <div class="result-unit">tỷ VND</div>
+                    </div>
+                </div>
+
+                <div class="total-card">
+                    <div class="total-label">Tổng tiền phải trả</div>
+                    <p class="total-value" id="totalPayment">0</p>
+                    <div class="total-unit">tỷ VND</div>
+                </div>
+
+                <div class="info-box">
+                    <strong>Lưu ý</strong>
+                    Kết quả là tính toán tham khảo. Số tiền thực tế có thể khác do chính sách của từng ngân hàng.
+                </div>
+            </div>
+
+            <!-- TAB 2: Lịch Thanh Toán -->
+            <div id="amortization" class="tab-content">
+                <div class="form-group">
+                    <label for="amortLoanAmount">Số tiền vay (tỷ VND)</label>
+                    <input type="number" id="amortLoanAmount" min="0" step="1" value="30"/>
+                </div>
+
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label for="amortInterestRate">Lãi suất (%/năm)</label>
+                        <input type="number" id="amortInterestRate" min="0" max="20" step="0.1" value="6.5"/>
+                    </div>
+                    <div class="form-group">
+                        <label for="amortLoanTerm">Thời gian vay (năm)</label>
+                        <input type="number" id="amortLoanTerm" min="1" max="50" step="1" value="15"/>
+                    </div>
+                </div>
+
+                <button class="btn" onclick="generateAmortization()">Tạo Lịch</button>
+                <div id="amortizationTable" style="margin-top: 16px;"></div>
+            </div>
+
+            <!-- TAB 3: So Sánh Ngân Hàng -->
+            <div id="comparison" class="tab-content">
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label for="compLoanAmount">Số tiền vay (tỷ VND)</label>
+                        <input type="number" id="compLoanAmount" min="0" step="1" value="30"/>
+                    </div>
+                    <div class="form-group">
+                        <label for="compLoanTerm">Thời gian vay (năm)</label>
+                        <input type="number" id="compLoanTerm" min="1" max="50" step="1" value="15"/>
+                    </div>
+                </div>
+
+                <button class="btn" onclick="generateComparison()">Cập Nhật So Sánh</button>
+                <div id="comparisonResult" style="margin-top: 16px;"></div>
+            </div>
+
+            <!-- TAB 4: Tính Lợi Nhuận -->
+            <div id="roi" class="tab-content">
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label for="roiLoanAmount">Số tiền vay (tỷ VND)</label>
+                        <input type="number" id="roiLoanAmount" min="0" step="1" value="30"/>
+                    </div>
+                    <div class="form-group">
+                        <label for="roiInterestRate">Lãi suất vay (%)</label>
+                        <input type="number" id="roiInterestRate" min="0" max="20" step="0.1" value="6.5"/>
+                    </div>
+                </div>
+
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label for="roiPropertyValue">Giá trị nhà phố (tỷ VND)</label>
+                        <input type="number" id="roiPropertyValue" min="0" step="1" value="50"/>
+                    </div>
+                    <div class="form-group">
+                        <label for="roiAppreciation">Tăng giá (%/năm)</label>
+                        <input type="number" id="roiAppreciation" min="0" max="20" step="0.1" value="5"/>
+                    </div>
+                </div>
+
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label for="roiRentalYield">Cho thuê (%/năm)</label>
+                        <input type="number" id="roiRentalYield" min="0" max="20" step="0.1" value="3"/>
+                    </div>
+                    <div class="form-group">
+                        <label for="roiLoanTerm">Thời gian vay (năm)</label>
+                        <input type="number" id="roiLoanTerm" min="1" max="50" step="1" value="15"/>
+                    </div>
+                </div>
+
+                <button class="btn" onclick="calculateROI()">Tính Lợi Nhuận</button>
+                <div id="roiResult" style="margin-top: 16px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span>Cấu Hình Dữ Liệu</span>
+                <button class="modal-close" onclick="closeSettings()">✕</button>
+            </div>
+
+            <div class="form-group">
+                <label for="sheetUrl">Mã Sheet</label>
+                <input type="text" id="sheetUrl" style="font-family: monospace; font-size: 12px;"/>
+            </div>
+
+            <div class="form-group">
+                <label for="sheetName">Tên Tab</label>
+                <input type="text" id="sheetName" placeholder="Sheet1" value="Sheet1"/>
+            </div>
+
+            <button class="btn" onclick="saveSettings()">Lưu</button>
+            <button class="btn" style="background: #f0f0f0; color: #1a1a1a; margin-left: 8px;" onclick="testConnection()">Test</button>
+
+            <div id="settingsResult"></div>
+        </div>
+    </div>
+
+    <script>
+        let CONFIG = {
+            sheetId: localStorage.getItem('sheetId') || '',
+            sheetName: localStorage.getItem('sheetName') || 'Sheet1'
+        };
+
+        let bankData = [];
+
+        function formatNumber(num) {
+            return Math.round(num).toLocaleString('vi-VN', { maximumFractionDigits: 1 });
+        }
+
+        function calculate() {
+            const principal = parseFloat(document.getElementById('loanAmount').value) || 0;
+            const annualRate = parseFloat(document.getElementById('interestRate').value) || 0;
+            const years = parseInt(document.getElementById('loanTerm').value) || 1;
+
+            const monthlyRate = annualRate / 100 / 12;
+            const months = years * 12;
+            const principalInVND = principal * 1000000000;
+
+            let monthlyPayment = 0;
+            if (monthlyRate > 0) {
+                monthlyPayment = (principalInVND * monthlyRate * Math.pow(1 + monthlyRate, months)) / 
+                                (Math.pow(1 + monthlyRate, months) - 1);
+            } else {
+                monthlyPayment = principalInVND / months;
+            }
+
+            const totalPaid = monthlyPayment * months;
+            const totalInterest = totalPaid - principalInVND;
+
+            document.getElementById('monthlyPayment').textContent = formatNumber(monthlyPayment / 1000000);
+            document.getElementById('totalInterest').textContent = formatNumber(totalInterest / 1000000000);
+            document.getElementById('totalPayment').textContent = formatNumber(totalPaid / 1000000000);
+        }
+
+        document.getElementById('loanAmount').addEventListener('input', calculate);
+        document.getElementById('interestRate').addEventListener('input', (e) => {
+            document.getElementById('interestRateInput').value = e.target.value;
+            calculate();
+        });
+        document.getElementById('interestRateInput').addEventListener('input', (e) => {
+            document.getElementById('interestRate').value = e.target.value;
+            calculate();
+        });
+        document.getElementById('loanTerm').addEventListener('input', (e) => {
+            document.getElementById('loanTermInput').value = e.target.value;
+            calculate();
+        });
+        document.getElementById('loanTermInput').addEventListener('input', (e) => {
+            document.getElementById('loanTerm').value = e.target.value;
+            calculate();
+        });
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+
+            if (tabName === 'comparison') {
+                generateComparison();
+            }
+        }
+
+        async function fetchBankData() {
+            if (!CONFIG.sheetId) return [];
+
+            try {
+                const url = `https://docs.google.com/spreadsheets/d/${CONFIG.sheetId}/export?format=csv`;
+                const response = await fetch(url);
+                const csvText = await response.text();
+                
+                const lines = csvText.trim().split('\n');
+                const data = [];
+
+                for (let i = 1; i < lines.length; i++) {
+                    const cells = lines[i].split(',').map(c => c.trim());
+                    if (cells.length >= 2) {
+                        data.push({
+                            bank: cells[0],
+                            rate: parseFloat(cells[1]) || 0,
+                            updated: cells[2] || new Date().toLocaleDateString('vi-VN')
+                        });
+                    }
+                }
+
+                return data;
+            } catch (error) {
+                return [];
+            }
+        }
+
+        function generateAmortization() {
+            const principal = parseFloat(document.getElementById('amortLoanAmount').value) * 1000000000;
+            const annualRate = parseFloat(document.getElementById('amortInterestRate').value);
+            const years = parseInt(document.getElementById('amortLoanTerm').value);
+
+            const monthlyRate = annualRate / 100 / 12;
+            const months = years * 12;
+
+            const monthlyPayment = (principal * monthlyRate * Math.pow(1 + monthlyRate, months)) / 
+                                  (Math.pow(1 + monthlyRate, months) - 1);
+
+            let balance = principal;
+            const schedule = [];
+
+            for (let i = 1; i <= months; i++) {
+                const interest = balance * monthlyRate;
+                const principal_paid = monthlyPayment - interest;
+                balance -= principal_paid;
+
+                if (i <= 6 || i > months - 6) {
+                    schedule.push({
+                        month: i,
+                        payment: monthlyPayment,
+                        principal: principal_paid,
+                        interest: interest,
+                        balance: Math.max(0, balance)
+                    });
+                }
+            }
+
+            let html = `<table>
+                <tr>
+                    <th>Tháng</th>
+                    <th>Thanh Toán</th>
+                    <th>Gốc</th>
+                    <th>Lãi</th>
+                    <th>Dư Nợ</th>
+                </tr>`;
+
+            schedule.forEach((row, idx) => {
+                if (idx === 6) {
+                    html += `<tr><td colspan="5" style="text-align: center; color: #999; font-size: 11px;">... ${months - 12} tháng ...</td></tr>`;
+                }
+                html += `<tr>
+                    <td>${row.month}</td>
+                    <td>${formatNumber(row.payment / 1000000)}</td>
+                    <td>${formatNumber(row.principal / 1000000)}</td>
+                    <td>${formatNumber(row.interest / 1000000)}</td>
+                    <td>${formatNumber(row.balance / 1000000000)}</td>
+                </tr>`;
+            });
+
+            html += `</table>`;
+            document.getElementById('amortizationTable').innerHTML = html;
+        }
+
+        async function generateComparison() {
+            bankData = await fetchBankData();
+            
+            const principal = parseFloat(document.getElementById('compLoanAmount').value) * 1000000000;
+            const years = parseInt(document.getElementById('compLoanTerm').value);
+
+            if (bankData.length === 0) {
+                document.getElementById('comparisonResult').innerHTML = '<p style="color: #999; text-align: center;">Cập nhật dữ liệu...</p>';
+                return;
+            }
+
+            let html = '';
+            bankData.forEach(bank => {
+                const monthlyRate = bank.rate / 100 / 12;
+                const months = years * 12;
+                const monthlyPayment = (principal * monthlyRate * Math.pow(1 + monthlyRate, months)) / 
+                                      (Math.pow(1 + monthlyRate, months) - 1);
+                const totalInterest = (monthlyPayment * months) - principal;
+
+                html += `
+                    <div class="comparison-item">
+                        <div class="comparison-header">
+                            <span class="bank-name">${bank.bank}</span>
+                            <span class="interest-rate">${bank.rate}%</span>
+                        </div>
+                        <div class="grid-2" style="font-size: 12px; gap: 12px;">
+                            <div>
+                                <div style="color: #999; font-size: 11px;">Thanh Toán/Tháng</div>
+                                <div style="font-weight: 600; color: var(--primary-color); font-size: 15px;">${formatNumber(monthlyPayment / 1000000)}</div>
+                            </div>
+                            <div>
+                                <div style="color: #999; font-size: 11px;">Tổng Lãi</div>
+                                <div style="font-weight: 600; color: var(--primary-color); font-size: 15px;">${formatNumber(totalInterest / 1000000000)}</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            document.getElementById('comparisonResult').innerHTML = html;
+        }
+
+        function calculateROI() {
+            const loanAmount = parseFloat(document.getElementById('roiLoanAmount').value) * 1000000000;
+            const loanRate = parseFloat(document.getElementById('roiInterestRate').value);
+            const propertyValue = parseFloat(document.getElementById('roiPropertyValue').value) * 1000000000;
+            const appreciation = parseFloat(document.getElementById('roiAppreciation').value);
+            const rentalYield = parseFloat(document.getElementById('roiRentalYield').value);
+            const years = parseInt(document.getElementById('roiLoanTerm').value);
+
+            const monthlyRate = loanRate / 100 / 12;
+            const months = years * 12;
+            const monthlyPayment = (loanAmount * monthlyRate * Math.pow(1 + monthlyRate, months)) / 
+                                  (Math.pow(1 + monthlyRate, months) - 1);
+            const totalPayment = monthlyPayment * months;
+            const totalInterest = totalPayment - loanAmount;
+
+            const futurePropertyValue = propertyValue * Math.pow(1 + appreciation / 100, years);
+            const appreciationGain = futurePropertyValue - propertyValue;
+            const yearlyRentalIncome = propertyValue * (rentalYield / 100);
+            const totalRentalIncome = yearlyRentalIncome * years;
+
+            const initialEquity = propertyValue - loanAmount;
+            const totalGain = appreciationGain + totalRentalIncome;
+            const roi = (totalGain / initialEquity) * 100;
+
+            let html = `
+                <div class="grid-2">
+                    <div class="result-card">
+                        <div class="result-label">Giá Nhà Sau ${years} Năm</div>
+                        <p class="result-value">${formatNumber(futurePropertyValue / 1000000000)}</p>
+                        <div class="result-unit">tỷ VND</div>
+                    </div>
+                    <div class="result-card">
+                        <div class="result-label">Lợi Từ Tăng Giá</div>
+                        <p class="result-value">${formatNumber(appreciationGain / 1000000000)}</p>
+                        <div class="result-unit">tỷ VND</div>
+                    </div>
+                </div>
+
+                <div class="grid-2">
+                    <div class="result-card">
+                        <div class="result-label">Tổng Cho Thuê</div>
+                        <p class="result-value">${formatNumber(totalRentalIncome / 1000000000)}</p>
+                        <div class="result-unit">tỷ VND</div>
+                    </div>
+                    <div class="result-card">
+                        <div class="result-label">Tổng Lãi Vay</div>
+                        <p class="result-value">${formatNumber(totalInterest / 1000000000)}</p>
+                        <div class="result-unit">tỷ VND</div>
+                    </div>
+                </div>
+
+                <div class="total-card">
+                    <div class="total-label">Lợi Nhuận (ROI) Sau ${years} Năm</div>
+                    <p class="total-value">${roi.toFixed(1)}%</p>
+                    <div class="total-unit">Tỷ Suất Lợi Nhuận</div>
+                </div>
+            `;
+
+            document.getElementById('roiResult').innerHTML = html;
+        }
+
+        function openSettings() {
+            document.getElementById('settingsModal').classList.add('active');
+            if (CONFIG.sheetId) {
+                document.getElementById('sheetUrl').value = CONFIG.sheetId;
+            }
+        }
+
+        function closeSettings() {
+            document.getElementById('settingsModal').classList.remove('active');
+        }
+
+        function saveSettings() {
+            const sheetId = document.getElementById('sheetUrl').value.trim();
+            if (!sheetId) {
+                showStatus('❌ Nhập Mã Sheet', false);
+                return;
+            }
+            CONFIG.sheetId = sheetId;
+            localStorage.setItem('sheetId', sheetId);
+            showStatus('✅ Lưu thành công', true);
+        }
+
+        async function testConnection() {
+            const sheetId = document.getElementById('sheetUrl').value.trim();
+            if (!sheetId) {
+                showStatus('❌ Nhập Mã Sheet', false);
+                return;
+            }
+
+            try {
+                const url = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv`;
+                const response = await fetch(url);
+                if (response.ok) {
+                    const csvText = await response.text();
+                    const lines = csvText.trim().split('\n');
+                    showStatus(`✅ Thành công! ${lines.length - 1} dòng`, true);
+                } else {
+                    showStatus('❌ Lỗi truy cập', false);
+                }
+            } catch (error) {
+                showStatus('❌ Lỗi kết nối', false);
+            }
+        }
+
+        function showStatus(msg, success) {
+            const el = document.getElementById('settingsResult');
+            el.innerHTML = `<div class="status-text ${success ? 'status-success' : 'status-error'}">${msg}</div>`;
+        }
+
+        window.addEventListener('load', () => {
+            if (CONFIG.sheetId) {
+                fetchBankData();
+            }
+            calculate();
+        });
+
+        document.getElementById('settingsModal').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('settingsModal')) {
+                closeSettings();
+            }
+        });
+    </script>
+</body>
+</html>
