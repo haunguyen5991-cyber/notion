@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thiên Hạo House - Bộ Lọc BĐS</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f8f9fa; padding: 40px 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        h1 { color: #2c3e50; margin-bottom: 30px; text-align: center; }
+        .preview-container { position: relative; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .preview-container img { width: 100%; height: auto; display: block; }
+        .regions-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; }
+        .region { flex: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s; }
+        .region:hover { background: rgba(0,0,0,0.2); }
+        .region-label { text-align: center; color: white; text-shadow: 0 2px 8px rgba(0,0,0,0.5); opacity: 0; transition: opacity 0.2s; pointer-events: none; }
+        .region:hover .region-label { opacity: 1; }
+        .region-title { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+        .region-subtitle { font-size: 12px; opacity: 0.9; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏠 Khám Phá Bất Động Sản Phù Hợp</h1>
+        <div class="preview-container">
+            <img src="https://images.unsplash.com/photo-1460574283330-3fd74e9815b2?w=1200&h=400&fit=crop" alt="Bất động sản" />
+            <div class="regions-overlay">
+                <div class="region" onclick="window.open('https://dulieunhapho.notion.site/L-C-B-S-THEO-QU-N-37e6bd685348807baefbd88256d8527c', '_blank')">
+                    <div class="region-label">
+                        <div class="region-title">Lọc Theo Quận</div>
+                        <div class="region-subtitle">Khám phá theo vị trí</div>
+                    </div>
+                </div>
+                <div class="region" onclick="window.open('https://dulieunhapho.notion.site/L-C-THEO-T-I-CH-NH-3886bd6853488090b2aed4dbd6df5970', '_blank')">
+                    <div class="region-label">
+                        <div class="region-title">Lọc Theo Tài Chính</div>
+                        <div class="region-subtitle">Chọn mức giá</div>
+                    </div>
+                </div>
+                <div class="region" onclick="window.open('https://dulieunhapho.notion.site/L-C-THEO-U-TI-N-3886bd68534880b9b042f5bc3a90a15c', '_blank')">
+                    <div class="region-label">
+                        <div class="region-title">Danh Sách Chọn Lọc</div>
+                        <div class="region-subtitle">Xem hot deals</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
