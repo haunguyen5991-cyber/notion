@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thiên Hạo House</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { width: 100%; height: auto; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: white; }
+        .map-container { position: relative; width: 100%; height: auto; margin: 0; padding: 0; }
+        .map-container img { width: 100%; height: auto; display: block; margin: 0; padding: 0; }
+        .regions-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; z-index: 10; margin: 0; padding: 0; }
+        .region { flex: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.3s; margin: 0; padding: 0; }
+        .region:hover { background: rgba(0,0,0,0.15); }
+        .region-label { color: white; text-shadow: 0 2px 10px rgba(0,0,0,0.6); opacity: 0; transition: opacity 0.3s; pointer-events: none; text-align: center; padding: 10px; margin: 0; }
+        .region:hover .region-label { opacity: 1; }
+        .region-title { font-weight: 700; font-size: clamp(11px, 3vw, 16px); margin-bottom: 2px; }
+        .region-subtitle { font-size: clamp(9px, 2vw, 12px); opacity: 0.95; }
+    </style>
+</head>
+<body>
+    <div class="map-container">
+        <img src="https://res.cloudinary.com/dcspxywol/image/upload/v1782562110/L%E1%BB%8Dc_gnolpu.png" alt="3 Ảnh" />
+        <div class="regions-overlay">
+            <div class="region" onclick="window.open('', '_blank')">
+                <div class="region-label">
+                    <div class="region-title">Lọc Theo Quận</div>
+                    <div class="region-subtitle">Khám phá vị trí</div>
+                </div>
+            </div>
+            <div class="region" onclick="window.open('', '_blank')">
+                <div class="region-label">
+                    <div class="region-title">Lọc Theo Tài Chính</div>
+                    <div class="region-subtitle">Chọn giá</div>
+                </div>
+            </div>
+            <div class="region" onclick="window.open('', '_blank')">
+                <div class="region-label">
+                    <div class="region-title">Danh Sách Chọn Lọc</div>
+                    <div class="region-subtitle">Hot deals</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
