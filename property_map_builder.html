@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thiên Hạo House</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { margin: 0; padding: 0; width: 100%; }
+        body { overflow-x: hidden; }
+        
+        .container {
+            position: relative;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .container img {
+            width: 100%;
+            height: auto;
+            display: block;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .overlay {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            display: flex;
+            z-index: 10;
+            margin: 0; padding: 0;
+        }
+        
+        .region {
+            flex: 1;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.3s;
+            margin: 0; padding: 0;
+        }
+        
+        .region:hover {
+            background: rgba(0,0,0,0.15);
+        }
+        
+        .region-text {
+            color: white;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.6);
+            opacity: 0;
+            transition: opacity 0.3s;
+            text-align: center;
+            pointer-events: none;
+        }
+        
+        .region:hover .region-text {
+            opacity: 1;
+        }
+        
+        .region-title {
+            font-weight: 700;
+            font-size: clamp(10px, 3vw, 16px);
+            margin-bottom: 3px;
+        }
+        
+        .region-subtitle {
+            font-size: clamp(8px, 2vw, 11px);
+            opacity: 0.9;
+        }
+        
+        @media (min-width: 1025px) {
+            html, body { height: 100vh; overflow: hidden; }
+            .container { height: 100vh; }
+            .container img { height: 100%; object-fit: cover; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <img src="https://res.cloudinary.com/your-cloud/image/upload/v123/bds-map.png" alt="3 Property Listings" />
+        <div class="overlay">
+            <div class="region" onclick="window.open('https://dulieunhapho.notion.site/L-C-B-S-THEO-QU-N', '_blank')">
+                <div class="region-text">
+                    <div class="region-title">Lọc Theo Quận</div>
+                    <div class="region-subtitle">Khám phá vị trí</div>
+                </div>
+            </div>
+            <div class="region" onclick="window.open('https://dulieunhapho.notion.site/L-C-THEO-T-I-CH-NH', '_blank')">
+                <div class="region-text">
+                    <div class="region-title">Lọc Theo Tài Chính</div>
+                    <div class="region-subtitle">Chọn giá</div>
+                </div>
+            </div>
+            <div class="region" onclick="window.open('https://dulieunhapho.notion.site/L-C-THEO-U-T-N', '_blank')">
+                <div class="region-text">
+                    <div class="region-title">Danh Sách Chọn Lọc</div>
+                    <div class="region-subtitle">Hot deals</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
