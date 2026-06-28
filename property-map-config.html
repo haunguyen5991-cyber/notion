@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thiên Hạo House</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        html, body { 
+            width: 100%;
+            height: auto;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: white;
+            overflow: hidden;
+        }
+        
+        .map-container {
+            position: relative;
+            width: 100%;
+            height: auto;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .map-container img {
+            width: 100%;
+            height: auto;
+            display: block;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .regions-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            z-index: 10;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .region {
+            flex: 1;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.3s;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .region:hover {
+            background: rgba(0,0,0,0.15);
+        }
+        
+        .region-label {
+            color: white;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.6);
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            text-align: center;
+            padding: 10px;
+            margin: 0;
+        }
+        
+        .region:hover .region-label {
+            opacity: 1;
+        }
+        
+        .region-title {
+            font-weight: 700;
+            font-size: clamp(11px, 3vw, 16px);
+            margin-bottom: 2px;
+        }
+        
+        .region-subtitle {
+            font-size: clamp(9px, 2vw, 12px);
+            opacity: 0.95;
+        }
+        
+        /* DESKTOP: Full screen + không cắt ảnh */
+        @media (min-width: 1025px) {
+            html, body {
+                height: 100vh;
+                overflow: hidden;
+            }
+            
+            .map-container {
+                width: 100%;
+                height: 100vh;
+            }
+            
+            .map-container img {
+                width: 100%;
+                height: 100%;
+                object-fit: contain;
+                object-position: center;
+            }
+        }
+        
+        .config-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: #667eea;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 20px;
+            z-index: 100;
+            box-shadow: 0 4px 12px rgba(102,126,234,0.4);
+        }
+        
+        .config-btn:hover {
+            background: #5568d3;
+            transform: scale(1.1);
+        }
+        
+        .config-panel {
+            position: fixed;
+            bottom: 0;
+            right: 0;
+            width: 100%;
+            max-width: 400px;
+            background: white;
+            border-radius: 16px 16px 0 0;
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
+            padding: 20px;
+            max-height: 60vh;
+            overflow-y: auto;
+            transform: translateY(100%);
+            transition: transform 0.3s;
+            z-index: 99;
+        }
+        
+        .config-panel.active {
+            transform: translateY(0);
+        }
+        
+        .config-panel h2 {
+            font-size: 16px;
+            margin-bottom: 16px;
+            color: #2c3e50;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: #7f8c8d;
+        }
+        
+        .config-item {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .config-item label {
+            display: block;
+            font-size: 10px;
+            color: #7f8c8d;
+            margin-bottom: 6px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .config-item textarea,
+        .config-item input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 11px;
+            font-family: monospace;
+            margin-bottom: 8px;
+        }
+        
+        .config-item textarea:focus,
+        .config-item input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
+        }
+        
+        .btn-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 16px;
+        }
+        
+        .btn {
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        
+        .btn-primary {
+            background: #667eea;
+            color: white;
+            grid-column: 1 / -1;
+        }
+        
+        .btn-primary:hover {
+            background: #5568d3;
+        }
+        
+        .btn-secondary {
+            background: #ecf0f1;
+            color: #2c3e50;
+        }
+        
+        .status {
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 12px;
+            font-size: 12px;
+            display: none;
+        }
+        
+        .status.show {
+            display: block;
+        }
+        
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <div class="map-container" id="preview">
+        <div style="width: 100%; padding: 60px 20px; text-align: center; background: #f0f0f0; color: #999;">
+            <div style="font-size: 48px; margin-bottom: 12px;">📷</div>
+            <div>Paste URL Cloudinary</div>
+        </div>
+    </div>
+    
+    <button class="config-btn" onclick="toggleConfig()">⚙️</button>
+    
+    <div class="config-panel" id="panel">
+        <h2>
+            Cấu hình
+            <button class="close-btn" onclick="toggleConfig()">✕</button>
+        </h2>
+        
+        <div id="status" class="status"></div>
+        
+        <div class="config-item">
+            <label>📸 URL Cloudinary</label>
+            <textarea id="imageUrl" placeholder="https://res.cloudinary.com/..."></textarea>
+            <button class="btn btn-secondary" onclick="loadImage()" style="width: 100%;">Load Ảnh</button>
+        </div>
+        
+        <div class="config-item">
+            <label>Vùng 1</label>
+            <input type="text" id="link1" placeholder="https://..." />
+        </div>
+        
+        <div class="config-item">
+            <label>Vùng 2</label>
+            <input type="text" id="link2" placeholder="https://..." />
+        </div>
+        
+        <div class="config-item">
+            <label>Vùng 3</label>
+            <input type="text" id="link3" placeholder="https://..." />
+        </div>
+        
+        <div class="btn-group">
+            <button class="btn btn-primary" onclick="copyCode()">Copy HTML</button>
+            <button class="btn btn-secondary" onclick="download()">Download</button>
+        </div>
+    </div>
+
+    <script>
+        let imageUrl = null;
+
+        function toggleConfig() {
+            document.getElementById('panel').classList.toggle('active');
+        }
+
+        function loadImage() {
+            const url = document.getElementById('imageUrl').value.trim();
+            if (!url) {
+                showStatus('Paste URL Cloudinary', 'error');
+                return;
+            }
+            imageUrl = url;
+            setPreview(url);
+            showStatus('✅ Load thành công!', 'success');
+            saveData();
+        }
+
+        function setPreview(src) {
+            const preview = document.getElementById('preview');
+            preview.innerHTML = `
+                <img src="${src}" alt="3 Ảnh" />
+                <div class="regions-overlay">
+                    <div class="region" onclick="click1()">
+                        <div class="region-label">
+                            <div class="region-title">Lọc Theo Quận</div>
+                            <div class="region-subtitle">Khám phá vị trí</div>
+                        </div>
+                    </div>
+                    <div class="region" onclick="click2()">
+                        <div class="region-label">
+                            <div class="region-title">Lọc Theo Tài Chính</div>
+                            <div class="region-subtitle">Chọn giá</div>
+                        </div>
+                    </div>
+                    <div class="region" onclick="click3()">
+                        <div class="region-label">
+                            <div class="region-title">Danh Sách Chọn Lọc</div>
+                            <div class="region-subtitle">Hot deals</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function click1() { const link = document.getElementById('link1').value; if (link) window.open(link, '_blank'); }
+        function click2() { const link = document.getElementById('link2').value; if (link) window.open(link, '_blank'); }
+        function click3() { const link = document.getElementById('link3').value; if (link) window.open(link, '_blank'); }
+
+        function showStatus(msg, type) {
+            const s = document.getElementById('status');
+            s.textContent = msg;
+            s.className = `status show ${type}`;
+            setTimeout(() => s.classList.remove('show'), 2000);
+        }
+
+        function getHTML() {
+            if (!imageUrl) {
+                showStatus('Load ảnh trước', 'error');
+                return null;
+            }
+            return `<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thiên Hạo House</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { width: 100%; height: auto; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: white; overflow: hidden; }
+        .map-container { position: relative; width: 100%; height: auto; margin: 0; padding: 0; }
+        .map-container img { width: 100%; height: auto; display: block; margin: 0; padding: 0; }
+        @media (min-width: 1025px) {
+            html, body { height: 100vh; overflow: hidden; }
+            .map-container { height: 100vh; }
+            .map-container img { height: 100%; object-fit: contain; object-position: center; }
+        }
+        .regions-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; z-index: 10; margin: 0; padding: 0; }
+        .region { flex: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.3s; margin: 0; padding: 0; }
+        .region:hover { background: rgba(0,0,0,0.15); }
+        .region-label { color: white; text-shadow: 0 2px 10px rgba(0,0,0,0.6); opacity: 0; transition: opacity 0.3s; pointer-events: none; text-align: center; padding: 10px; margin: 0; }
+        .region:hover .region-label { opacity: 1; }
+        .region-title { font-weight: 700; font-size: clamp(11px, 3vw, 16px); margin-bottom: 2px; }
+        .region-subtitle { font-size: clamp(9px, 2vw, 12px); opacity: 0.95; }
+    </style>
+</head>
+<body>
+    <div class="map-container">
+        <img src="${imageUrl}" alt="3 Ảnh" />
+        <div class="regions-overlay">
+            <div class="region" onclick="window.open('${document.getElementById('link1').value}', '_blank')">
+                <div class="region-label">
+                    <div class="region-title">Lọc Theo Quận</div>
+                    <div class="region-subtitle">Khám phá vị trí</div>
+                </div>
+            </div>
+            <div class="region" onclick="window.open('${document.getElementById('link2').value}', '_blank')">
+                <div class="region-label">
+                    <div class="region-title">Lọc Theo Tài Chính</div>
+                    <div class="region-subtitle">Chọn giá</div>
+                </div>
+            </div>
+            <div class="region" onclick="window.open('${document.getElementById('link3').value}', '_blank')">
+                <div class="region-label">
+                    <div class="region-title">Danh Sách Chọn Lọc</div>
+                    <div class="region-subtitle">Hot deals</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>`;
+        }
+
+        function copyCode() {
+            const html = getHTML();
+            if (html) {
+                navigator.clipboard.writeText(html);
+                showStatus('✅ Copy xong!', 'success');
+            }
+        }
+
+        function download() {
+            const html = getHTML();
+            if (html) {
+                const blob = new Blob([html], { type: 'text/html' });
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = 'property-map.html';
+                a.click();
+                showStatus('✅ Download xong!', 'success');
+            }
+        }
+
+        function saveData() {
+            localStorage.setItem('mapData', JSON.stringify({
+                imageUrl: document.getElementById('imageUrl').value,
+                link1: document.getElementById('link1').value,
+                link2: document.getElementById('link2').value,
+                link3: document.getElementById('link3').value
+            }));
+        }
+
+        window.addEventListener('load', () => {
+            const saved = localStorage.getItem('mapData');
+            if (saved) {
+                const data = JSON.parse(saved);
+                document.getElementById('imageUrl').value = data.imageUrl || '';
+                document.getElementById('link1').value = data.link1 || '';
+                document.getElementById('link2').value = data.link2 || '';
+                document.getElementById('link3').value = data.link3 || '';
+                if (data.imageUrl) {
+                    imageUrl = data.imageUrl;
+                    setPreview(data.imageUrl);
+                }
+            }
+        });
+
+        document.addEventListener('change', saveData);
+    </script>
+</body>
+</html>
