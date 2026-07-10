@@ -10,25 +10,33 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jQuery-rwdImageMaps/1.6/jquery.rwdImageMaps.min.js"></script>
 
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f9;
+        /* ẨN THANH CUỘT VÀ ĐỔI NỀN TRẮNG TOÀN BỘ TRANG */
+        html, body {
             margin: 0;
-            padding: 20px;
+            padding: 0;
+            overflow: hidden; /* Ẩn thanh cuộn hoàn toàn */
+            background-color: #ffffff; /* Đổi nền trang thành màu trắng */
+            font-family: Arial, sans-serif;
+        }
+
+        body {
             display: flex;
             flex-direction: column;
             align-items: center;
+            padding: 20px 0; /* Khoảng cách trên dưới cho thoáng */
         }
+
         h2 { color: #333; margin-bottom: 5px; }
-        p { color: #666; margin-bottom: 20px; }
+        p { color: #666; margin-bottom: 20px; text-align: center; padding: 0 15px; }
         
+        /* XÓA BỎ VIỀN, KHUNG VÀ BÓNG MỜ CỦA CONTAINER */
         .map-container {
             position: relative;
             max-width: 100%;
-            background: #fff;
-            padding: 10px;
-            border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            background: #ffffff; /* Đồng bộ nền trắng */
+            padding: 0; /* Xóa khoảng đệm viền ảnh */
+            border-radius: 0; /* Xóa bo góc */
+            box-shadow: none; /* Xóa bỏ hoàn toàn bóng viền ngoài */
         }
         .map-container img {
             display: block;
@@ -69,8 +77,8 @@
         .img-viewport {
             position: relative;
             width: 100%;
-            height: 65vh; /* Giới hạn chiều cao hiển thị */
-            overflow: hidden; /* Ẩn phần ảnh tràn ra ngoài khi zoom */
+            height: 65vh; 
+            overflow: hidden; 
             border: 1px solid #ddd;
             border-radius: 4px;
             background: #fdfdfd;
@@ -86,7 +94,7 @@
             cursor: grab;
             user-select: none;
             -webkit-user-drag: none;
-            transition: transform 0.1s ease-out; /* Tạo hiệu ứng zoom mượt */
+            transition: transform 0.1s ease-out; 
         }
         .img-viewport img:active {
             cursor: grabbing;
@@ -188,7 +196,6 @@
     </div>
 
     <script>
-        // Khởi tạo các biến kiểm soát Zoom & Pan (Kéo thả)
         let scale = 1;
         let isDragging = false;
         let startX, startY;
@@ -197,12 +204,10 @@
         const $zoomImg = $('#popup-img');
         const $viewport = $('#viewport');
 
-        // Hàm cập nhật sự thay đổi vị trí & kích thước ảnh
         function updateTransform() {
             $zoomImg.css('transform', `translate(${translateX}px, ${translateY}px) scale(${scale})`);
         }
 
-        // Hàm Reset ảnh về trạng thái ban đầu
         function resetZoom() {
             scale = 1;
             translateX = 0;
@@ -211,10 +216,8 @@
         }
 
         $(document).ready(function() {
-            // Tự động co giãn bản đồ theo kích thước màn hình
             $('img[usemap]').rwdImageMaps();
 
-            // Hiệu ứng đổi màu cam nhạt khi rê chuột vào phân khu
             $('.maphilight-target').maphilight({
                 fillColor: 'ff9900',   
                 fillOpacity: 0.4,      
@@ -223,7 +226,6 @@
                 alwaysOn: false        
             });
 
-            // Mở Pop-up khi Click phân khu
             $('area').on('click', function(e) {
                 e.preventDefault(); 
                 var imageLink = $(this).attr('href'); 
@@ -232,25 +234,23 @@
                 $('#popup-title').text(layoutTitle);
                 $zoomImg.attr('src', imageLink);
                 
-                resetZoom(); // Reset kích thước khi đổi sang xem ảnh khác
+                resetZoom(); 
                 $('#layoutModal').css('display', 'flex');
             });
 
-            // --- XỬ LÝ SỰ KIỆN ZOOM BẰNG LĂN CHUỘT (MOUSE WHEEL) ---
             $viewport.on('wheel', function(e) {
                 e.preventDefault();
                 const delta = e.originalEvent.deltaY;
                 const zoomFactor = 1.1;
 
                 if (delta < 0) {
-                    if (scale < 5) scale *= zoomFactor; // Phóng to tối đa 5 lần
+                    if (scale < 5) scale *= zoomFactor; 
                 } else {
-                    if (scale > 0.8) scale /= zoomFactor; // Thu nhỏ tối thiểu 0.8 lần
+                    if (scale > 0.8) scale /= zoomFactor; 
                 }
                 updateTransform();
             });
 
-            // --- XỬ LÝ SỰ KIỆN ZOOM BẰNG NÚT BẤM (KÍNH LÚP) ---
             $('#btn-zoom-in').on('click', function() {
                 if (scale < 5) {
                     scale *= 1.25;
@@ -269,7 +269,6 @@
                 resetZoom();
             });
 
-            // --- XỬ LÝ SỰ KIỆN DI CHUYỂN ẢNH (DRAG / PANNING) ---
             $zoomImg.on('mousedown', function(e) {
                 e.preventDefault();
                 isDragging = true;
@@ -289,13 +288,11 @@
             });
         });
 
-        // Đóng Pop-up khi click nút X
         function closePopup() {
             $('#layoutModal').css('display', 'none');
             $zoomImg.attr('src', ''); 
         }
 
-        // Đóng Pop-up khi click vùng trống bên ngoài
         function closePopupOutside(event) {
             if (event.target.id === 'layoutModal') {
                 closePopup();
