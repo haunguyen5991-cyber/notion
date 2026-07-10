@@ -23,7 +23,7 @@
     background: #fff;
   }
 
-  /* CHUYỂN NỀN MAIN VIEW SANG MÀU TRẮNG SANG TRỌNG */
+  /* MAIN VIEW VỚI KHOẢNG CÁCH TRẮNG PHÍA DƯỚI */
   .main-view {
     flex: 1;
     position: relative;
@@ -32,6 +32,7 @@
     align-items: center;
     justify-content: center;
     overflow: hidden;
+    margin-bottom: 12px; /* Tạo khoảng trống màu trắng ngăn cách với thanh thumbnail */
   }
 
   .counter {
@@ -72,25 +73,36 @@
     bottom: 4px;
     right: 6px;
     font-size: 10px;
-    color: rgba(0,0,0,0.3); /* Đổi chữ sang màu tối để nổi bật trên nền trắng */
+    color: rgba(0,0,0,0.3);
     font-weight: 500;
     pointer-events: none;
   }
 
-  /* THANH THUMBNAIL MÀU XÁM SÁNG CHUẨN ẢNH 2 */
+  /* KHUNG NỀN THUMBNAILS MỎNG VÀ LUÔN TỰ ĐỘNG CĂN GIỮA LINH HOẠT */
   .thumb-rail {
-    height: 105px;
+    height: 85px; /* Giữ khung nền mỏng gọn gàng */
     background: #e4e4e4;
     border-top: 1px solid #ccc;
+    border-bottom: 1px solid #ccc;
     display: flex;
-    justify-content: center;
+    justify-content: center; /* Luôn tự động căn giữa các thumbnail */
     align-items: center;
-    overflow-x: auto;
+    overflow-x: auto; /* Cho phép linh hoạt lướt qua lại khi danh sách dài */
     gap: 8px;
-    padding: 0 10px;
+    padding: 0 15px;
   }
 
-  /* Ẩn hoàn toàn thanh cuộn vật lý */
+  /* Khắc phục lỗi căn giữa trên một số trình duyệt khi nội dung tràn viền */
+  .thumb-rail::after {
+    content: '';
+    display: block;
+    flex-shrink: 0;
+    width: 1px;
+    height: 1px;
+    visibility: hidden;
+  }
+
+  /* Ẩn thanh cuộn vật lý */
   .thumb-rail::-webkit-scrollbar {
     display: none;
   }
@@ -99,10 +111,10 @@
     scrollbar-width: none;
   }
 
-  /* THUMBNAIL HÌNH CHỮ NHẬT NGANG ĐẸP NHƯ ẢNH 2 */
+  /* ĐỊNH DẠNG Ô THUMBNAIL */
   .thumb {
-    width: 130px;
-    height: 75px;
+    width: 120px;
+    height: 68px;
     flex-shrink: 0;
     background: #222;
     border: 1px solid #aaa;
@@ -131,7 +143,7 @@
     pointer-events: none;
   }
 
-  /* THUMBNAIL KHI ĐƯỢC CHỌN (ACTIVE) CHUẨN ẢNH 2 */
+  /* HIỆU ỨNG THUMBNAIL ĐƯỢC CHỌN */
   .thumb.active {
     border: 2px solid #000;
     opacity: 1;
@@ -198,6 +210,7 @@
 
     let currentIndex = 0;
 
+    // Chuyển link video gốc thành link ảnh thumbnail tĩnh của giây đầu tiên từ Cloudinary
     function getVideoThumbUrl(videoUrl) {
       return videoUrl
         .replace('/video/upload/', '/video/upload/so_0/')
