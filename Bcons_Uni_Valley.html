@@ -75,22 +75,20 @@
     pointer-events: none;
   }
 
-  /* NỀN TRONG SUỐT SANG TRỌNG (GLASSMORPHISM) */
+  /* THANH THUMBNAIL MÀU XÁM SÁNG CHUẨN ẢNH 2 */
   .thumb-rail {
-    height: 110px;
-    background: rgba(20, 20, 20, 0.4); /* Nền trong suốt nhìn xuyên qua được */
-    backdrop-filter: blur(20px); /* Hiệu ứng mờ kính cao cấp giống iOS/Mac */
-    -webkit-backdrop-filter: blur(20px);
-    border-top: 1px solid rgba(255, 255, 255, 0.08); /* Viền mảnh siêu mờ */
+    height: 105px;
+    background: #e4e4e4; /* Màu nền sáng theo ảnh 2 */
+    border-top: 1px solid #ccc;
     display: flex;
-    justify-content: flex-start;
+    justify-content: center; /* Căn giữa các thumbnail */
     align-items: center;
     overflow-x: auto;
-    gap: 12px;
-    padding: 0 15px;
+    gap: 8px;
+    padding: 0 10px;
   }
 
-  /* ẨN HOÀN TOÀN NÚT/THANH CUỘT VẬT LÝ */
+  /* Ẩn hoàn toàn thanh cuộn vật lý */
   .thumb-rail::-webkit-scrollbar {
     display: none;
   }
@@ -99,21 +97,21 @@
     scrollbar-width: none;
   }
 
-  /* GIỮ NGUYÊN KHUNG CHỮ NHẬT 88x88 SANG TRỌNG */
+  /* CHỈNH THUMBNAIL HÌNH CHỮ NHẬT NGANG ĐẸP NHƯ ẢNH 2 */
   .thumb {
-    width: 88px;
-    height: 88px;
+    width: 130px;  /* Tăng chiều rộng */
+    height: 75px;  /* Giảm chiều cao để ra tỷ lệ chữ nhật ngang trải dài */
     flex-shrink: 0;
-    background: rgba(255, 255, 255, 0.05);
-    border: 2px solid transparent;
+    background: #222;
+    border: 1px solid #aaa;
     cursor: pointer;
     overflow: hidden;
     display: flex;
     align-items: center;
     justify-content: center;
     position: relative;
-    border-radius: 8px; /* Bo góc ảnh mượt mà hơn */
-    transition: border-color 0.2s, transform 0.2s;
+    opacity: 0.4; /* Hiệu ứng mờ mượt cho các ảnh xung quanh */
+    transition: all 0.2s ease;
   }
 
   .thumb img, .thumb video {
@@ -130,16 +128,18 @@
     pointer-events: none;
   }
 
+  /* THUMBNAIL KHI ĐƯỢC CHỌN (ACTIVE) CHUẨN ẢNH 2 */
   .thumb.active {
-    border-color: #FF9500; /* Màu cam điểm nhấn */
-    transform: scale(1.02);
+    border: 2px solid #000; /* Viền đen đậm nổi bật */
+    opacity: 1; /* Sáng rõ hoàn toàn */
+    box-shadow: 0 0 4px rgba(0,0,0,0.3);
   }
 
   .thumb:hover {
-    border-color: rgba(255,255,255,0.4);
+    opacity: 0.8;
   }
 
-  /* ===== ZOOM ẢNH CHÍNH ===== */
+  /* ===== ZOOM TRỰC TIẾP TRÊN ẢNH CHÍNH ===== */
   #mainMediaWrap img.zoomable {
     cursor: zoom-in;
   }
@@ -249,7 +249,9 @@
       });
     }
 
-    // ===== ZOOM TRỰC TIẾP =====
+    /* 🔴 ĐÃ ẨN/XÓA BỎ HOÀN TOÀN TÍNH NĂNG ĐIỀU HƯỚNG KEYDOWN THEO YÊU CẦU */
+
+    // ===== ZOOM TRỰC TIẾP TRÊN ẢNH CHÍNH =====
     let zScale = 1, zPanX = 0, zPanY = 0;
     let zDragging = false, zStartX = 0, zStartY = 0, zStartPanX = 0, zStartPanY = 0;
     const Z_MIN = 1, Z_MAX = 6;
