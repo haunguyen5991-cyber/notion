@@ -5,9 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bản Đồ Tương Tác Bcons Uni Valley</title>
     
-    <!-- Nhúng thư viện jQuery và Maphilight để xử lý đổi màu vùng chọn -->
+    <!-- Nhúng jQuery và thư viện tạo hiệu ứng đổi màu -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/maphilight/1.4.2/jquery.maphilight.min.js"></script>
+    
+    <!-- KHẮC PHỤC LỆCH KHUNG: Nhúng thêm thư viện tự động sửa tọa độ khi ảnh co giãn -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jQuery-rwdImageMaps/1.6/jquery.rwdImageMaps.min.js"></script>
 
     <style>
         body {
@@ -30,7 +33,7 @@
             border-radius: 8px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }
-        /* Giữ ảnh hiển thị đúng kích thước */
+        /* Giữ ảnh tự động co giãn theo mọi màn hình */
         .map-container img {
             display: block;
             max-width: 100%;
@@ -82,7 +85,6 @@
         }
         .popup-link:hover { text-decoration: underline; }
         
-        /* Nút đóng (X) */
         .close-btn {
             position: absolute;
             top: -12px;
@@ -106,8 +108,8 @@
     <h2>SƠ ĐỒ TƯƠNG TÁC BCONS UNI VALLEY</h2>
     <p>Rê chuột để xem vị trí phân khu (màu cam) và click để xem ảnh thiết kế chi tiết.</p>
 
-    <!-- KHUNG CHỨA ẢNH MASTERPLAN M0 -->
     <div class="map-container">
+        <!-- Đã sửa link ảnh gốc masterplan từ cloudinary của bạn -->
         <img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783686087/masterplan_w7xmhr.jpg" usemap="#image-map" class="maphilight-target">
         
         <map name="image-map">
@@ -132,7 +134,6 @@
         </map>
     </div>
 
-    <!-- KHUNG POP-UP MODAL (MẶC ĐỊNH ẨN) -->
     <div id="layoutModal" class="popup-overlay" onclick="closePopupOutside(event)">
         <div class="popup-content">
             <button class="close-btn" onclick="closePopup()">&times;</button>
@@ -144,39 +145,37 @@
 
     <script>
         $(document).ready(function() {
-            // 1. Cấu hình hiệu ứng đổi màu Cam nhạt mờ khi rê chuột vào vùng chọn
+            // Bước 1: Kích hoạt rwdImageMaps trước để tính toán lại tọa độ co giãn
+            $('img[usemap]').rwdImageMaps();
+
+            // Bước 2: Khởi tạo maphilight để vẽ màu cam sau khi tọa độ được tính lại chuẩn xác
             $('.maphilight-target').maphilight({
-                fillColor: 'ff9900',   // Mã màu Cam (HEX)
-                fillOpacity: 0.4,      // Độ mờ (0.4 = trong suốt 40%)
-                strokeColor: 'ff6600', // Đường viền màu cam đậm hơn một chút
+                fillColor: 'ff9900',   
+                fillOpacity: 0.4,      
+                strokeColor: 'ff6600', 
                 strokeWidth: 1,
-                alwaysOn: false        // Chỉ sáng lên khi di chuột vào vùng vẽ
+                alwaysOn: false        
             });
 
-            // 2. Bắt sự kiện Click vào các vùng diện tích (area)
+            // Bước 3: Xử lý sự kiện Click mở pop-up
             $('area').on('click', function(e) {
-                e.preventDefault(); // Ngăn trình duyệt nhảy trang theo link href mặc định
+                e.preventDefault(); 
+                var imageLink = $(this).attr('href'); 
+                var layoutTitle = $(this).attr('title'); 
                 
-                var imageLink = $(this).attr('href'); // Lấy link ảnh từ thuộc tính href
-                var layoutTitle = $(this).attr('title'); // Lấy tiêu đề từ thuộc tính title
-                
-                // Đổ dữ liệu vào Pop-up
                 $('#popup-title').text(layoutTitle);
                 $('#popup-img').attr('src', imageLink);
                 $('#popup-link-href').attr('href', imageLink).text("Link ảnh gốc: " + imageLink);
                 
-                // Hiển thị Pop-up
                 $('#layoutModal').css('display', 'flex');
             });
         });
 
-        // Hàm đóng Pop-up khi nhấn nút X
         function closePopup() {
             $('#layoutModal').css('display', 'none');
-            $('#popup-img').attr('src', ''); // Reset ảnh để tiết kiệm tài nguyên bộ nhớ
+            $('#popup-img').attr('src', ''); 
         }
 
-        // Hàm đóng Pop-up khi nhấn ra ngoài vùng màu đen
         function closePopupOutside(event) {
             if (event.target.id === 'layoutModal') {
                 closePopup();
