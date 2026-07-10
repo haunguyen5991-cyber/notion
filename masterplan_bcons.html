@@ -5,24 +5,35 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bản Đồ Tương Tác Bcons Uni Valley</title>
     
-    <!-- Nhúng jQuery và các thư viện hỗ trợ -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/maphilight/1.4.2/jquery.maphilight.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jQuery-rwdImageMaps/1.6/jquery.rwdImageMaps.min.js"></script>
 
     <style>
-        /* CHỈ ẨN THANH CUỘT - GIỮ NGUYÊN GIAO DIỆN GỐC */
-        html, body {
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
             margin: 0;
-            padding: 0;
-            overflow: hidden; /* Dòng này giúp ẩn hoàn toàn thanh cuộn dọc và ngang */
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
-
-        img[usemap] {
-            border: none;
-            height: auto;
+        h2 { color: #333; margin-bottom: 5px; }
+        p { color: #666; margin-bottom: 20px; }
+        
+        .map-container {
+            position: relative;
             max-width: 100%;
-            width: auto;
+            background: #fff;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .map-container img {
+            display: block;
+            max-width: 100%;
+            height: auto;
         }
 
         /* --- KHUNG POP-UP MODAL --- */
@@ -44,7 +55,7 @@
             padding: 20px;
             border-radius: 8px;
             width: 85%;
-            max-width: 900px;
+            max-width: 1000px;
             box-shadow: 0 5px 25px rgba(0,0,0,0.5);
             text-align: center;
         }
@@ -54,12 +65,12 @@
             color: #222;
         }
 
-        /* Viewport chứa ảnh bên trong Pop-up */
+        /* Khung chứa ảnh hỗ trợ Zoom và Kéo thả */
         .img-viewport {
             position: relative;
             width: 100%;
-            height: 60vh; 
-            overflow: hidden; 
+            height: 65vh; /* Giới hạn chiều cao hiển thị */
+            overflow: hidden; /* Ẩn phần ảnh tràn ra ngoài khi zoom */
             border: 1px solid #ddd;
             border-radius: 4px;
             background: #fdfdfd;
@@ -75,13 +86,13 @@
             cursor: grab;
             user-select: none;
             -webkit-user-drag: none;
-            transition: transform 0.1s ease-out;
+            transition: transform 0.1s ease-out; /* Tạo hiệu ứng zoom mượt */
         }
         .img-viewport img:active {
             cursor: grabbing;
         }
 
-        /* Thanh điều khiển kính lúp */
+        /* --- THANH CÔNG CỤ KÍNH LÚP --- */
         .zoom-controls {
             position: absolute;
             bottom: 15px;
@@ -93,6 +104,7 @@
             display: flex;
             gap: 15px;
             z-index: 10000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
         }
         .zoom-controls button {
             background: none;
@@ -101,9 +113,11 @@
             font-size: 18px;
             cursor: pointer;
             padding: 2px 6px;
+            transition: color 0.2s, transform 0.1s;
         }
         .zoom-controls button:hover {
             color: #ff9900;
+            transform: scale(1.1);
         }
         
         /* Nút đóng (X) */
@@ -128,30 +142,34 @@
 </head>
 <body>
 
-    <img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783686087/masterplan_w7xmhr.jpg" usemap="#image-map" class="maphilight-target">
-    
-    <map name="image-map">
-        <area target="" alt="Layout 1" title="Layout 1" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783683857/be680720-1432-463e-b7ea-85e082c5a861.png" coords="767,1682,794,1594,1077,1704,1050,1782,918,1736" shape="poly">
-        <area target="" alt="Layout 1" title="Layout 1" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783683857/be680720-1432-463e-b7ea-85e082c5a861.png" coords="953,1466,984,1386,1172,1457,1141,1536" shape="poly">
-        <area target="" alt="Layout 2" title="Layout 2" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M2_us8qsf.jpg" coords="1311,1584,1430,1626,1340,1881,1220,1838" shape="poly">
-        <area target="" alt="Layout 2" title="Layout 2" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M2_us8qsf.jpg" coords="1472,1944,1351,1900,1443,1635,1563,1681" shape="poly">
-        <area target="" alt="Layout 2" title="Layout 2" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M2_us8qsf.jpg" coords="1059,1923,997,2044,1293,2201,1360,2084" shape="poly">
-        <area target="" alt="Layout 2" title="Layout 2" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M2_us8qsf.jpg" coords="726,1782,854,1829,803,1973,675,1926" shape="poly">
-        <area target="" alt="Layout 2" title="Layout 2" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M2_us8qsf.jpg" coords="1538,2179,1474,2296,1534,2329,1600,2209" shape="poly">
-        <area target="" alt="Layout 3" title="Layout 3" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M3_jt8v6r.jpg" coords="1083,926,1264,978,1201,1206,1033,1159" shape="poly">
-        <area target="" alt="Layout 3" title="Layout 3" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M3_jt8v6r.jpg" coords="1379,972,1560,1021,1481,1316,1300,1266" shape="poly">
-        <area target="" alt="Layout 3" title="Layout 3" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M3_jt8v6r.jpg" coords="1572,979,1746,1025,1649,1395,1475,1350" shape="poly">
-        <area target="" alt="Layout 3" title="Layout 3" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M3_jt8v6r.jpg" coords="674,1928,853,1990,829,2058,652,1990" shape="poly">
-        <area target="" alt="Layout 4" title="Layout 4" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678533/M4_fcxmci.jpg" coords="1344,1277,1311,1402,1446,1464,1483,1317" shape="poly">
-        <area target="" alt="Layout 4" title="Layout 4" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678533/M4_fcxmci.jpg" coords="1475,1348,1613,1386,1578,1522,1446,1463" shape="poly">
-        <area target="" alt="Layout 4" title="Layout 4" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678533/M4_fcxmci.jpg" coords="958,2022,1092,2095,1059,2192,922,2117" shape="poly">
-        <area target="" alt="Layout 5" title="Layout 5" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678533/M5_vtfhxl.jpg" coords="436,943,396,1042,800,1197,840,1091" shape="poly">
-        <area target="" alt="Layout 6" title="Layout 6" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678534/M6_yonyqn.jpg" coords="840,1089,800,1195,1117,1321,1165,1195,1032,1159" shape="poly">
-        <area target="" alt="Layout 6" title="Layout 6" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678534/M6_yonyqn.jpg" coords="1675,1705,1810,1751,1976,1078,1855,1045,1768,1374,1720,1557,1711,1599" shape="poly">
-        <area target="" alt="Layout 2" title="Layout 2" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M2_us8qsf.jpg" coords="1675,1704,1808,1750,1684,2068,1561,2022" shape="poly">
-    </map>
+    <h2>SƠ ĐỒ TƯƠNG TÁC BCONS UNI VALLEY</h2>
+    <p>Rê chuột để xem phân khu (cam nhạt) và click để xem ảnh chi tiết. Bạn có thể lăn chuột hoặc dùng kính lúp để phóng to bản vẽ.</p>
 
-    <!-- KHUNG POP-UP MODAL -->
+    <div class="map-container">
+        <img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783686087/masterplan_w7xmhr.jpg" usemap="#image-map" class="maphilight-target">
+        
+        <map name="image-map">
+            <area target="" alt="Layout 1" title="Layout 1" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783683857/be680720-1432-463e-b7ea-85e082c5a861.png" coords="767,1682,794,1594,1077,1704,1050,1782,918,1736" shape="poly">
+            <area target="" alt="Layout 1" title="Layout 1" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783683857/be680720-1432-463e-b7ea-85e082c5a861.png" coords="953,1466,984,1386,1172,1457,1141,1536" shape="poly">
+            <area target="" alt="Layout 2" title="Layout 2" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M2_us8qsf.jpg" coords="1311,1584,1430,1626,1340,1881,1220,1838" shape="poly">
+            <area target="" alt="Layout 2" title="Layout 2" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M2_us8qsf.jpg" coords="1472,1944,1351,1900,1443,1635,1563,1681" shape="poly">
+            <area target="" alt="Layout 2" title="Layout 2" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M2_us8qsf.jpg" coords="1059,1923,997,2044,1293,2201,1360,2084" shape="poly">
+            <area target="" alt="Layout 2" title="Layout 2" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M2_us8qsf.jpg" coords="726,1782,854,1829,803,1973,675,1926" shape="poly">
+            <area target="" alt="Layout 2" title="Layout 2" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M2_us8qsf.jpg" coords="1538,2179,1474,2296,1534,2329,1600,2209" shape="poly">
+            <area target="" alt="Layout 3" title="Layout 3" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M3_jt8v6r.jpg" coords="1083,926,1264,978,1201,1206,1033,1159" shape="poly">
+            <area target="" alt="Layout 3" title="Layout 3" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M3_jt8v6r.jpg" coords="1379,972,1560,1021,1481,1316,1300,1266" shape="poly">
+            <area target="" alt="Layout 3" title="Layout 3" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M3_jt8v6r.jpg" coords="1572,979,1746,1025,1649,1395,1475,1350" shape="poly">
+            <area target="" alt="Layout 3" title="Layout 3" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M3_jt8v6r.jpg" coords="674,1928,853,1990,829,2058,652,1990" shape="poly">
+            <area target="" alt="Layout 4" title="Layout 4" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678533/M4_fcxmci.jpg" coords="1344,1277,1311,1402,1446,1464,1483,1317" shape="poly">
+            <area target="" alt="Layout 4" title="Layout 4" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678533/M4_fcxmci.jpg" coords="1475,1348,1613,1386,1578,1522,1446,1463" shape="poly">
+            <area target="" alt="Layout 4" title="Layout 4" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678533/M4_fcxmci.jpg" coords="958,2022,1092,2095,1059,2192,922,2117" shape="poly">
+            <area target="" alt="Layout 5" title="Layout 5" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678533/M5_vtfhxl.jpg" coords="436,943,396,1042,800,1197,840,1091" shape="poly">
+            <area target="" alt="Layout 6" title="Layout 6" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678534/M6_yonyqn.jpg" coords="840,1089,800,1195,1117,1321,1165,1195,1032,1159" shape="poly">
+            <area target="" alt="Layout 6" title="Layout 6" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678534/M6_yonyqn.jpg" coords="1675,1705,1810,1751,1976,1078,1855,1045,1768,1374,1720,1557,1711,1599" shape="poly">
+            <area target="" alt="Layout 2" title="Layout 2" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M2_us8qsf.jpg" coords="1675,1704,1808,1750,1684,2068,1561,2022" shape="poly">
+        </map>
+    </div>
+
     <div id="layoutModal" class="popup-overlay" onclick="closePopupOutside(event)">
         <div class="popup-content">
             <button class="close-btn" onclick="closePopup()">&times;</button>
@@ -170,6 +188,7 @@
     </div>
 
     <script>
+        // Khởi tạo các biến kiểm soát Zoom & Pan (Kéo thả)
         let scale = 1;
         let isDragging = false;
         let startX, startY;
@@ -178,10 +197,12 @@
         const $zoomImg = $('#popup-img');
         const $viewport = $('#viewport');
 
+        // Hàm cập nhật sự thay đổi vị trí & kích thước ảnh
         function updateTransform() {
             $zoomImg.css('transform', `translate(${translateX}px, ${translateY}px) scale(${scale})`);
         }
 
+        // Hàm Reset ảnh về trạng thái ban đầu
         function resetZoom() {
             scale = 1;
             translateX = 0;
@@ -190,8 +211,10 @@
         }
 
         $(document).ready(function() {
+            // Tự động co giãn bản đồ theo kích thước màn hình
             $('img[usemap]').rwdImageMaps();
 
+            // Hiệu ứng đổi màu cam nhạt khi rê chuột vào phân khu
             $('.maphilight-target').maphilight({
                 fillColor: 'ff9900',   
                 fillOpacity: 0.4,      
@@ -200,6 +223,7 @@
                 alwaysOn: false        
             });
 
+            // Mở Pop-up khi Click phân khu
             $('area').on('click', function(e) {
                 e.preventDefault(); 
                 var imageLink = $(this).attr('href'); 
@@ -208,23 +232,25 @@
                 $('#popup-title').text(layoutTitle);
                 $zoomImg.attr('src', imageLink);
                 
-                resetZoom(); 
+                resetZoom(); // Reset kích thước khi đổi sang xem ảnh khác
                 $('#layoutModal').css('display', 'flex');
             });
 
+            // --- XỬ LÝ SỰ KIỆN ZOOM BẰNG LĂN CHUỘT (MOUSE WHEEL) ---
             $viewport.on('wheel', function(e) {
                 e.preventDefault();
                 const delta = e.originalEvent.deltaY;
                 const zoomFactor = 1.1;
 
                 if (delta < 0) {
-                    if (scale < 5) scale *= zoomFactor;
+                    if (scale < 5) scale *= zoomFactor; // Phóng to tối đa 5 lần
                 } else {
-                    if (scale > 0.8) scale /= zoomFactor;
+                    if (scale > 0.8) scale /= zoomFactor; // Thu nhỏ tối thiểu 0.8 lần
                 }
                 updateTransform();
             });
 
+            // --- XỬ LÝ SỰ KIỆN ZOOM BẰNG NÚT BẤM (KÍNH LÚP) ---
             $('#btn-zoom-in').on('click', function() {
                 if (scale < 5) {
                     scale *= 1.25;
@@ -243,6 +269,7 @@
                 resetZoom();
             });
 
+            // --- XỬ LÝ SỰ KIỆN DI CHUYỂN ẢNH (DRAG / PANNING) ---
             $zoomImg.on('mousedown', function(e) {
                 e.preventDefault();
                 isDragging = true;
@@ -262,11 +289,13 @@
             });
         });
 
+        // Đóng Pop-up khi click nút X
         function closePopup() {
             $('#layoutModal').css('display', 'none');
             $zoomImg.attr('src', ''); 
         }
 
+        // Đóng Pop-up khi click vùng trống bên ngoài
         function closePopupOutside(event) {
             if (event.target.id === 'layoutModal') {
                 closePopup();
