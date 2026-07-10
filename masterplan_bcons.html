@@ -5,32 +5,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bản Đồ Tương Tác Bcons Uni Valley</title>
     
+    <!-- Nhúng jQuery và các thư viện hỗ trợ -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/maphilight/1.4.2/jquery.maphilight.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jQuery-rwdImageMaps/1.6/jquery.rwdImageMaps.min.js"></script>
 
     <style>
-        /* SỬA LỖI LỆCH TOẠ ĐỘ: Đưa cơ chế ẩn cuộn về body và đảm bảo background đồng bộ Notion */
+        /* CHỈ ẨN THANH CUỘT - GIỮ NGUYÊN GIAO DIỆN GỐC */
         html, body {
             margin: 0;
             padding: 0;
-            width: 100%;
-            overflow: hidden; /* Triệt tiêu thanh cuộn trong khung nhúng */
-            background-color: transparent; 
-            font-family: Arial, sans-serif;
+            overflow: hidden; /* Dòng này giúp ẩn hoàn toàn thanh cuộn dọc và ngang */
         }
-        
-        /* Đảm bảo container ôm sát sạt theo kích thước của ảnh, không tạo khoảng trống ảo */
-        .map-container {
-            position: relative;
-            width: 100%;
-            display: block;
-        }
-        
-        .map-container img {
-            display: block;
-            width: 100%;
+
+        img[usemap] {
+            border: none;
             height: auto;
+            max-width: 100%;
+            width: auto;
         }
 
         /* --- KHUNG POP-UP MODAL --- */
@@ -136,31 +128,30 @@
 </head>
 <body>
 
-    <div class="map-container">
-        <img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783686087/masterplan_w7xmhr.jpg" usemap="#image-map" class="maphilight-target">
-        
-        <map name="image-map">
-            <area target="" alt="Layout 1" title="Layout 1" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783683857/be680720-1432-463e-b7ea-85e082c5a861.png" coords="767,1682,794,1594,1077,1704,1050,1782,918,1736" shape="poly">
-            <area target="" alt="Layout 1" title="Layout 1" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783683857/be680720-1432-463e-b7ea-85e082c5a861.png" coords="953,1466,984,1386,1172,1457,1141,1536" shape="poly">
-            <area target="" alt="Layout 2" title="Layout 2" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M2_us8qsf.jpg" coords="1311,1584,1430,1626,1340,1881,1220,1838" shape="poly">
-            <area target="" alt="Layout 2" title="Layout 2" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M2_us8qsf.jpg" coords="1472,1944,1351,1900,1443,1635,1563,1681" shape="poly">
-            <area target="" alt="Layout 2" title="Layout 2" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M2_us8qsf.jpg" coords="1059,1923,997,2044,1293,2201,1360,2084" shape="poly">
-            <area target="" alt="Layout 2" title="Layout 2" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M2_us8qsf.jpg" coords="726,1782,854,1829,803,1973,675,1926" shape="poly">
-            <area target="" alt="Layout 2" title="Layout 2" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M2_us8qsf.jpg" coords="1538,2179,1474,2296,1534,2329,1600,2209" shape="poly">
-            <area target="" alt="Layout 3" title="Layout 3" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M3_jt8v6r.jpg" coords="1083,926,1264,978,1201,1206,1033,1159" shape="poly">
-            <area target="" alt="Layout 3" title="Layout 3" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M3_jt8v6r.jpg" coords="1379,972,1560,1021,1481,1316,1300,1266" shape="poly">
-            <area target="" alt="Layout 3" title="Layout 3" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M3_jt8v6r.jpg" coords="1572,979,1746,1025,1649,1395,1475,1350" shape="poly">
-            <area target="" alt="Layout 3" title="Layout 3" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M3_jt8v6r.jpg" coords="674,1928,853,1990,829,2058,652,1990" shape="poly">
-            <area target="" alt="Layout 4" title="Layout 4" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678533/M4_fcxmci.jpg" coords="1344,1277,1311,1402,1446,1464,1483,1317" shape="poly">
-            <area target="" alt="Layout 4" title="Layout 4" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678533/M4_fcxmci.jpg" coords="1475,1348,1613,1386,1578,1522,1446,1463" shape="poly">
-            <area target="" alt="Layout 4" title="Layout 4" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678533/M4_fcxmci.jpg" coords="958,2022,1092,2095,1059,2192,922,2117" shape="poly">
-            <area target="" alt="Layout 5" title="Layout 5" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678533/M5_vtfhxl.jpg" coords="436,943,396,1042,800,1197,840,1091" shape="poly">
-            <area target="" alt="Layout 6" title="Layout 6" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678534/M6_yonyqn.jpg" coords="840,1089,800,1195,1117,1321,1165,1195,1032,1159" shape="poly">
-            <area target="" alt="Layout 6" title="Layout 6" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678534/M6_yonyqn.jpg" coords="1675,1705,1810,1751,1976,1078,1855,1045,1768,1374,1720,1557,1711,1599" shape="poly">
-            <area target="" alt="Layout 2" title="Layout 2" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M2_us8qsf.jpg" coords="1675,1704,1808,1750,1684,2068,1561,2022" shape="poly">
-        </map>
-    </div>
+    <img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783686087/masterplan_w7xmhr.jpg" usemap="#image-map" class="maphilight-target">
+    
+    <map name="image-map">
+        <area target="" alt="Layout 1" title="Layout 1" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783683857/be680720-1432-463e-b7ea-85e082c5a861.png" coords="767,1682,794,1594,1077,1704,1050,1782,918,1736" shape="poly">
+        <area target="" alt="Layout 1" title="Layout 1" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783683857/be680720-1432-463e-b7ea-85e082c5a861.png" coords="953,1466,984,1386,1172,1457,1141,1536" shape="poly">
+        <area target="" alt="Layout 2" title="Layout 2" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M2_us8qsf.jpg" coords="1311,1584,1430,1626,1340,1881,1220,1838" shape="poly">
+        <area target="" alt="Layout 2" title="Layout 2" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M2_us8qsf.jpg" coords="1472,1944,1351,1900,1443,1635,1563,1681" shape="poly">
+        <area target="" alt="Layout 2" title="Layout 2" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M2_us8qsf.jpg" coords="1059,1923,997,2044,1293,2201,1360,2084" shape="poly">
+        <area target="" alt="Layout 2" title="Layout 2" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M2_us8qsf.jpg" coords="726,1782,854,1829,803,1973,675,1926" shape="poly">
+        <area target="" alt="Layout 2" title="Layout 2" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M2_us8qsf.jpg" coords="1538,2179,1474,2296,1534,2329,1600,2209" shape="poly">
+        <area target="" alt="Layout 3" title="Layout 3" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M3_jt8v6r.jpg" coords="1083,926,1264,978,1201,1206,1033,1159" shape="poly">
+        <area target="" alt="Layout 3" title="Layout 3" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M3_jt8v6r.jpg" coords="1379,972,1560,1021,1481,1316,1300,1266" shape="poly">
+        <area target="" alt="Layout 3" title="Layout 3" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M3_jt8v6r.jpg" coords="1572,979,1746,1025,1649,1395,1475,1350" shape="poly">
+        <area target="" alt="Layout 3" title="Layout 3" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M3_jt8v6r.jpg" coords="674,1928,853,1990,829,2058,652,1990" shape="poly">
+        <area target="" alt="Layout 4" title="Layout 4" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678533/M4_fcxmci.jpg" coords="1344,1277,1311,1402,1446,1464,1483,1317" shape="poly">
+        <area target="" alt="Layout 4" title="Layout 4" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678533/M4_fcxmci.jpg" coords="1475,1348,1613,1386,1578,1522,1446,1463" shape="poly">
+        <area target="" alt="Layout 4" title="Layout 4" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678533/M4_fcxmci.jpg" coords="958,2022,1092,2095,1059,2192,922,2117" shape="poly">
+        <area target="" alt="Layout 5" title="Layout 5" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678533/M5_vtfhxl.jpg" coords="436,943,396,1042,800,1197,840,1091" shape="poly">
+        <area target="" alt="Layout 6" title="Layout 6" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678534/M6_yonyqn.jpg" coords="840,1089,800,1195,1117,1321,1165,1195,1032,1159" shape="poly">
+        <area target="" alt="Layout 6" title="Layout 6" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678534/M6_yonyqn.jpg" coords="1675,1705,1810,1751,1976,1078,1855,1045,1768,1374,1720,1557,1711,1599" shape="poly">
+        <area target="" alt="Layout 2" title="Layout 2" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M2_us8qsf.jpg" coords="1675,1704,1808,1750,1684,2068,1561,2022" shape="poly">
+    </map>
 
+    <!-- KHUNG POP-UP MODAL -->
     <div id="layoutModal" class="popup-overlay" onclick="closePopupOutside(event)">
         <div class="popup-content">
             <button class="close-btn" onclick="closePopup()">&times;</button>
@@ -199,21 +190,14 @@
         }
 
         $(document).ready(function() {
-            // Khởi chạy rwdImageMaps trước
             $('img[usemap]').rwdImageMaps();
 
-            // Khởi tạo maphilight sau khi ảnh đã load xong
             $('.maphilight-target').maphilight({
                 fillColor: 'ff9900',   
                 fillOpacity: 0.4,      
                 strokeColor: 'ff6600', 
                 strokeWidth: 1,
                 alwaysOn: false        
-            });
-
-            // SỬA LỖI RESPONSIVE TRÊN NOTION: Khi thay đổi kích thước khung nhúng Notion, kích hoạt vẽ lại tọa độ ngay lập tức
-            $(window).on('resize', function() {
-                $('img[usemap]').rwdImageMaps();
             });
 
             $('area').on('click', function(e) {
