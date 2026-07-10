@@ -66,63 +66,132 @@
     z-index: 999;
     align-items: center;
     justify-content: center;
-    padding: 20px;
+    padding: 60px 20px 20px;
   }
   .modal-overlay.active {
     display: flex;
   }
   .modal-box {
     position: relative;
-    max-width: 1100px;
-    width: 100%;
-    max-height: 92vh;
+    max-width: 95vw;
+    max-height: calc(92vh - 40px);
     overflow: auto;
     background: #111;
     border-radius: 8px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
   }
   .modal-box img {
-    width: 100%;
+    max-width: 95vw;
+    max-height: calc(92vh - 40px);
+    width: auto;
     height: auto;
     display: block;
+    object-fit: contain;
   }
+  /* Nút đóng + tiêu đề đặt CỐ ĐỊNH theo màn hình (fixed), không bị cuộn trôi mất dù ảnh dài */
   .modal-close {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    width: 36px;
-    height: 36px;
-    background: rgba(0,0,0,0.6);
+    position: fixed;
+    top: 14px;
+    right: 20px;
+    width: 40px;
+    height: 40px;
+    background: rgba(0,0,0,0.75);
     color: #fff;
-    border: none;
+    border: 2px solid #fff;
     border-radius: 50%;
-    font-size: 20px;
+    font-size: 22px;
     cursor: pointer;
-    z-index: 10;
+    z-index: 1001;
   }
   .modal-close:hover {
-    background: rgba(255,149,0,0.9);
+    background: rgba(255,149,0,0.95);
   }
   .modal-title {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    background: rgba(0,0,0,0.6);
+    position: fixed;
+    top: 18px;
+    left: 20px;
+    background: rgba(0,0,0,0.75);
     color: #fff;
     font-size: 13px;
     font-weight: 600;
-    padding: 6px 12px;
+    padding: 8px 14px;
     border-radius: 6px;
-    z-index: 10;
+    z-index: 1001;
+  }
+
+  /* ===== CHẾ ĐỘ CHỈNH VÙNG (calibration) ===== */
+  .calib-toggle-btn {
+    position: fixed;
+    top: 14px;
+    right: 20px;
+    z-index: 1000;
+    background: #FF9500;
+    color: #fff;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .calib-toggle-btn.on {
+    background: #d32f2f;
+  }
+  .calib-draw-box {
+    position: absolute;
+    border: 2px dashed #00e5ff;
+    background: rgba(0,229,255,0.15);
+    pointer-events: none;
+    display: none;
+  }
+  .calib-panel {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    right: 20px;
+    max-width: 700px;
+    background: #111;
+    color: #0f0;
+    font-family: monospace;
+    font-size: 13px;
+    padding: 14px;
+    border-radius: 8px;
+    z-index: 1000;
+    display: none;
+    white-space: pre-wrap;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+  }
+  .calib-panel.show { display: block; }
+  .calib-panel button {
+    margin-top: 8px;
+    background: #FF9500;
+    border: none;
+    color: #fff;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: Arial, sans-serif;
+    font-size: 12px;
   }
 </style>
 </head>
 <body>
+
+  <button class="calib-toggle-btn" id="calibToggle">🎯 Chế độ chỉnh vùng: TẮT</button>
 
   <div class="map-wrap" id="mapWrap">
     <img class="masterplan"
          src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783683857/be680720-1432-463e-b7ea-85e082c5a861.png"
          alt="Masterplan">
     <!-- hotspot sẽ được JS chèn tự động từ config bên dưới -->
+    <div class="calib-draw-box" id="calibDrawBox"></div>
+  </div>
+
+  <div class="calib-panel" id="calibPanel">
+    <div id="calibResult">Kéo chuột trên ảnh để vẽ 1 khung → toạ độ % sẽ hiện ở đây.</div>
+    <button id="calibCopyBtn">📋 Copy dòng code</button>
   </div>
 
   <div class="modal-overlay" id="modalOverlay">
@@ -188,6 +257,77 @@
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') closeModal();
     });
+
+    // ===== CHẾ ĐỘ CHỈNH VÙNG: kéo chuột vẽ khung -> tự tính % để copy vào config =====
+    let calibOn = false;
+    const calibToggle = document.getElementById('calibToggle');
+    const calibDrawBox = document.getElementById('calibDrawBox');
+    const calibPanel = document.getElementById('calibPanel');
+    const calibResult = document.getElementById('calibResult');
+    const calibCopyBtn = document.getElementById('calibCopyBtn');
+    const masterplanImg = document.querySelector('.masterplan');
+    let lastCodeLine = '';
+    let drawing = false, startX = 0, startY = 0;
+
+    calibToggle.onclick = () => {
+      calibOn = !calibOn;
+      calibToggle.textContent = calibOn ? '🎯 Chế độ chỉnh vùng: BẬT (kéo chuột trên ảnh)' : '🎯 Chế độ chỉnh vùng: TẮT';
+      calibToggle.classList.toggle('on', calibOn);
+      calibPanel.classList.toggle('show', calibOn);
+      // Khi bật calib, ẩn hotspot để không bị chặn thao tác kéo chuột
+      document.querySelectorAll('.hotspot').forEach(h => {
+        h.style.pointerEvents = calibOn ? 'none' : 'auto';
+      });
+    };
+
+    mapWrap.addEventListener('mousedown', (e) => {
+      if (!calibOn) return;
+      const rect = masterplanImg.getBoundingClientRect();
+      startX = e.clientX - rect.left;
+      startY = e.clientY - rect.top;
+      drawing = true;
+      calibDrawBox.style.display = 'block';
+      calibDrawBox.style.left = startX + 'px';
+      calibDrawBox.style.top = startY + 'px';
+      calibDrawBox.style.width = '0px';
+      calibDrawBox.style.height = '0px';
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      if (!calibOn || !drawing) return;
+      const rect = masterplanImg.getBoundingClientRect();
+      const curX = e.clientX - rect.left;
+      const curY = e.clientY - rect.top;
+      const left = Math.min(startX, curX);
+      const top = Math.min(startY, curY);
+      const w = Math.abs(curX - startX);
+      const h = Math.abs(curY - startY);
+      calibDrawBox.style.left = left + 'px';
+      calibDrawBox.style.top = top + 'px';
+      calibDrawBox.style.width = w + 'px';
+      calibDrawBox.style.height = h + 'px';
+    });
+
+    window.addEventListener('mouseup', () => {
+      if (!calibOn || !drawing) return;
+      drawing = false;
+      const rect = masterplanImg.getBoundingClientRect();
+      const boxRect = calibDrawBox.getBoundingClientRect();
+      const topPct = ((boxRect.top - rect.top) / rect.height * 100).toFixed(2);
+      const leftPct = ((boxRect.left - rect.left) / rect.width * 100).toFixed(2);
+      const widthPct = (boxRect.width / rect.width * 100).toFixed(2);
+      const heightPct = (boxRect.height / rect.height * 100).toFixed(2);
+      lastCodeLine = "{ id: 'X', top: " + topPct + ", left: " + leftPct + ", width: " + widthPct + ", height: " + heightPct + ", image: 'URL_MAU_NHA', title: 'MẪU NHÀ ... | Khu X' },";
+      calibResult.textContent = lastCodeLine;
+    });
+
+    calibCopyBtn.onclick = () => {
+      if (!lastCodeLine) return;
+      navigator.clipboard.writeText(lastCodeLine).then(() => {
+        calibCopyBtn.textContent = '✅ Đã copy!';
+        setTimeout(() => { calibCopyBtn.textContent = '📋 Copy dòng code'; }, 1500);
+      });
+    };
   </script>
 
 </body>
