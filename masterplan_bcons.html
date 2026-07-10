@@ -10,32 +10,43 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jQuery-rwdImageMaps/1.6/jquery.rwdImageMaps.min.js"></script>
 
     <style>
-        /* NỀN TRẮNG VÀ ẨN HOÀN TOÀN THANH CUỘT */
+        /* GIỮ NỀN TRẮNG VÀ ẨN THANH CUỘT TRÌNH DUYỆT */
         html, body {
             margin: 0;
             padding: 0;
             width: 100%;
-            height: 100%;
-            overflow: hidden; /* Giấu toàn bộ thanh cuộn dọc và ngang */
-            background-color: #ffffff; /* Màu nền trắng tinh */
+            /* Thay đổi height cố định thành chiều cao tự động tăng theo nội dung ảnh */
+            height: auto; 
+            min-height: 100%;
+            background-color: #ffffff;
             font-family: Arial, sans-serif;
+        }
+
+        /* Vô hiệu hóa việc hiển thị thanh cuộn vật lý */
+        html::-webkit-scrollbar, body::-webkit-scrollbar {
+            display: none;
+        }
+        html, body {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
         }
 
         body {
             display: flex;
             justify-content: center;
-            align-items: flex-start; /* Đẩy sát bản đồ lên trên cùng */
+            align-items: flex-start;
         }
         
-        /* PHẲNG HOÀN TOÀN - KHÔNG VIỀN - KHÔNG BÓNG MỜ */
+        /* PHẲNG HOÀN TOÀN - KHÔNG VIỀN - TỰ ĐỘNG THEO CHIỀU CAO THỰC */
         .map-container {
             position: relative;
             width: 100%;
             max-width: 100%;
+            height: auto; /* Đảm bảo container bao bọc hết chiều cao ảnh, không bị cắt */
             background: #ffffff;
             padding: 0;
             border-radius: 0;
-            box-shadow: none; /* Xóa bỏ mọi dấu vết viền hay khung ngoài */
+            box-shadow: none;
         }
         .map-container img {
             display: block;
