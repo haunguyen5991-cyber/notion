@@ -75,23 +75,36 @@
     pointer-events: none;
   }
 
+  /* NỀN TRONG SUỐT SANG TRỌNG (GLASSMORPHISM) */
   .thumb-rail {
     height: 110px;
-    background: #111;
-    border-top: 1px solid #222;
+    background: rgba(20, 20, 20, 0.4); /* Nền trong suốt nhìn xuyên qua được */
+    backdrop-filter: blur(20px); /* Hiệu ứng mờ kính cao cấp giống iOS/Mac */
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid rgba(255, 255, 255, 0.08); /* Viền mảnh siêu mờ */
     display: flex;
-    justify-content: center;
+    justify-content: flex-start;
     align-items: center;
     overflow-x: auto;
-    gap: 10px;
-    padding: 5px;
+    gap: 12px;
+    padding: 0 15px;
   }
 
+  /* ẨN HOÀN TOÀN NÚT/THANH CUỘT VẬT LÝ */
+  .thumb-rail::-webkit-scrollbar {
+    display: none;
+  }
+  .thumb-rail {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  /* GIỮ NGUYÊN KHUNG CHỮ NHẬT 88x88 SANG TRỌNG */
   .thumb {
     width: 88px;
     height: 88px;
     flex-shrink: 0;
-    background: #222;
+    background: rgba(255, 255, 255, 0.05);
     border: 2px solid transparent;
     cursor: pointer;
     overflow: hidden;
@@ -99,6 +112,8 @@
     align-items: center;
     justify-content: center;
     position: relative;
+    border-radius: 8px; /* Bo góc ảnh mượt mà hơn */
+    transition: border-color 0.2s, transform 0.2s;
   }
 
   .thumb img, .thumb video {
@@ -110,20 +125,21 @@
 
   .thumb .play-icon {
     position: absolute;
-    width: 22px;
-    height: 22px;
+    width: 24px;
+    height: 24px;
     pointer-events: none;
   }
 
   .thumb.active {
-    border-color: #FF9500;
+    border-color: #FF9500; /* Màu cam điểm nhấn */
+    transform: scale(1.02);
   }
 
   .thumb:hover {
-    border-color: #999;
+    border-color: rgba(255,255,255,0.4);
   }
 
-  /* ===== ZOOM TRỰC TIẾP TRÊN ẢNH CHÍNH (chỉ áp dụng cho hình ảnh) ===== */
+  /* ===== ZOOM ẢNH CHÍNH ===== */
   #mainMediaWrap img.zoomable {
     cursor: zoom-in;
   }
@@ -165,7 +181,6 @@
   </div>
 
   <script>
-    // ⚠️ URL GỐC - KHÔNG qua transform Cloudinary (không f_auto/q_auto) -> full chất lượng gốc
     const items = [
       { url: 'https://res.cloudinary.com/oy7u6ywg/video/upload/v1783672544/T%E1%BB%95ng_quan_zw6hw8.mov', type: 'video' },
       { url: 'https://res.cloudinary.com/oy7u6ywg/video/upload/v1783672549/Ti%E1%BB%87n_%C3%ADch_qqhv0v.mp4', type: 'video' },
@@ -175,22 +190,17 @@
       { url: 'https://datxanh.homes/wp-content/uploads/2025/01/mat-bang-tong-nha-pho-bcons-uni.jpg', type: 'image' },
       { url: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783675502/d47af77e-10a3-4b5b-b67c-5f2d735dce34.png', type: 'image' },
       { url: 'https://nhadatxanhmienbac.com/wp-content/uploads/2025/02/Bcons-Uni-Valley-Flycam-0602-01.jpg', type: 'image' },
-      { url: 'https://res.cloudinary.com/oy7u6ywg/video/upload/v1783677365/%C4%90%C3%B4_th%E1%BB%8B_l%E1%BB%9Bn_rx2dzm.mp4', type: 'video' },
-     
+      { url: 'https://res.cloudinary.com/oy7u6ywg/video/upload/v1783677365/%C4%90%C3%B4_th%E1%BB%8B_l%E1%BB%9Bn_rx2dzm.mp4', type: 'video' }
     ];
 
     let currentIndex = 0;
 
-    // ⚠️ Chuyển URL video Cloudinary -> URL ảnh JPG (frame giây thứ 0)
-    // Dùng cho thumbnail để hiển thị đúng trên mọi thiết bị, kể cả mobile/iframe Notion
     function getVideoThumbUrl(videoUrl) {
       return videoUrl
         .replace('/video/upload/', '/video/upload/so_0/')
         .replace(/\.(mov|mp4)(\?.*)?$/i, '.jpg$2');
     }
 
-    // ⚠️ Ép định dạng phát về .mp4 (Cloudinary tự transcode on-the-fly, không nén thêm)
-    // .mov (QuickTime) không phát được trong in-app browser của Notion trên mobile (WKWebView)
     function getPlayableVideoUrl(videoUrl) {
       return videoUrl.replace(/\.mov(\?.*)?$/i, '.mp4$1');
     }
@@ -215,6 +225,9 @@
     function updateThumbs() {
       document.querySelectorAll('.thumb').forEach((t, i) => {
         t.classList.toggle('active', i === currentIndex);
+        if (i === currentIndex) {
+          t.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+        }
       });
     }
 
@@ -236,14 +249,7 @@
       });
     }
 
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'ArrowLeft') currentIndex = (currentIndex - 1 + items.length) % items.length;
-      if (e.key === 'ArrowRight') currentIndex = (currentIndex + 1) % items.length;
-      else return;
-      updateMain();
-    });
-
-    // ===== ZOOM TRỰC TIẾP TRÊN ẢNH CHÍNH (chỉ ảnh, video dùng controls gốc) =====
+    // ===== ZOOM TRỰC TIẾP =====
     let zScale = 1, zPanX = 0, zPanY = 0;
     let zDragging = false, zStartX = 0, zStartY = 0, zStartPanX = 0, zStartPanY = 0;
     const Z_MIN = 1, Z_MAX = 6;
