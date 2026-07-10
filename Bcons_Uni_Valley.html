@@ -10,7 +10,7 @@
   html, body {
     width: 100%;
     height: 100%;
-    background: #000; /* Đổi về nền đen sang trọng theo thiết kế chuẩn */
+    background: #fff; /* Đổi nền tổng sang màu trắng */
     font-family: Arial, sans-serif;
     overflow: hidden;
   }
@@ -20,18 +20,19 @@
     height: 100vh;
     display: flex;
     flex-direction: column;
-    background: #000;
+    background: #fff; /* Đổi sang màu trắng */
   }
 
-  /* MAIN VIEW */
+  /* MAIN VIEW VỚI KHOẢNG TRẮNG NGĂN CÁCH PHÍA DƯỚI */
   .main-view {
     flex: 1;
     position: relative;
-    background: #000;
+    background: #fff; /* Đổi nền vùng chứa ảnh/video sang trắng */
     display: flex;
     align-items: center;
     justify-content: center;
     overflow: hidden;
+    margin-bottom: 12px; /* Khoảng trống màu trắng giữa main view và thumbnail */
   }
 
   .counter {
@@ -52,6 +53,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    background: #fff;
   }
 
   #mainMediaWrap img, #mainMediaWrap video {
@@ -71,18 +73,19 @@
     bottom: 4px;
     right: 6px;
     font-size: 10px;
-    color: rgba(255,255,255,0.25);
+    color: rgba(0,0,0,0.3); /* Chỉnh màu chữ mờ trên nền trắng */
     font-weight: 500;
     pointer-events: none;
   }
 
-  /* THANH CHỨA THUMBNAIL PHẢI SỬ DỤNG FLEX-START ĐỂ KHÔNG BỊ KHÓA TRÁI */
+  /* THANH CHỨA THUMBNAIL CHUYỂN SANG MÀU XÁM VÀ CO GIÃN THÔNG MINH */
   .thumb-rail {
     height: 110px;
-    background: #111;
-    border-top: 1px solid #222;
+    background: #e4e4e4; /* Chuyển nền thanh thumbnail sang màu xám */
+    border-top: 1px solid #ccc;
+    border-bottom: 1px solid #ccc;
     display: flex;
-    justify-content: flex-start; /* Giữ trục cuộn xuất phát từ cạnh trái */
+    justify-content: flex-start;
     align-items: center;
     overflow-x: auto;
     gap: 10px;
@@ -91,11 +94,11 @@
     -webkit-overflow-scrolling: touch;
   }
 
-  /* Ẩn thanh cuộn để giữ giao diện sạch sẽ */
+  /* Ẩn thanh cuộn */
   .thumb-rail::-webkit-scrollbar { display: none; }
   .thumb-rail { -ms-overflow-style: none; scrollbar-width: none; }
 
-  /* ĐỊNH DẠNG Ô THUMBNAIL VÀ CƠ CHẾ CĂN GIỮA THÔNG MINH */
+  /* ĐỊNH DẠNG Ô THUMBNAIL & CĂN GIỮA TRÁNH LỖI PHÂN RÃ KHUNG */
   .thumb {
     width: 88px;
     height: 88px;
@@ -108,9 +111,10 @@
     align-items: center;
     justify-content: center;
     position: relative;
+    border-radius: 2px;
   }
 
-  /* Kỹ thuật căn giữa linh hoạt: Phần tử đầu và cuối tự đẩy lề nếu thừa không gian */
+  /* Căn giữa thông minh bằng margin auto ở hai đầu */
   .thumb:first-child {
     margin-left: auto;
   }
@@ -132,8 +136,8 @@
     pointer-events: none;
   }
 
-  .thumb.active { border-color: #FF9500; }
-  .thumb:hover { border-color: #999; }
+  .thumb.active { border-color: #000; } /* Khung viền đen nổi bật cho ảnh đang active trên nền xám */
+  .thumb:hover { border-color: #666; }
 
   /* ===== ZOOM TRỰC TIẾP ===== */
   #mainMediaWrap img.zoomable { cursor: zoom-in; }
@@ -201,7 +205,17 @@
       wrap.innerHTML = '';
 
       if (item.type === 'video') {
-        wrap.innerHTML = '<video src="' + getPlayableVideoUrl(item.url) + '" controls playsinline></video>';
+        const videoEl = document.createElement('video');
+        videoEl.src = getPlayableVideoUrl(item.url);
+        videoEl.controls = true;
+        videoEl.playsInline = true;
+        wrap.appendChild(videoEl);
+        
+        if (!isInitialLoad) {
+          videoEl.play().catch(err => {
+            console.log("Tự động phát có âm thanh bị chặn:", err);
+          });
+        }
       } else {
         wrap.innerHTML = '<img src="' + item.url + '" loading="lazy" class="zoomable">';
       }
@@ -221,13 +235,11 @@
         t.classList.toggle('active', i === currentIndex);
       });
 
-      // Bỏ qua cuộn tự động ở lần đầu tải trang để tránh nhảy màn hình ngoài ý muốn
       if (isInitialLoad) {
         isInitialLoad = false;
         return;
       }
 
-      // Cuộn mượt đưa ô được chọn vào giữa khung hiển thị thực tế
       const activeThumb = thumbs[currentIndex];
       if (activeThumb) {
         const railWidth = rail.clientWidth;
