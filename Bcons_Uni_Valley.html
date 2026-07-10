@@ -10,7 +10,7 @@
   html, body {
     width: 100%;
     height: 100%;
-    background: #000;
+    background: #fff;
     font-family: Arial, sans-serif;
     overflow: hidden;
   }
@@ -20,13 +20,14 @@
     height: 100vh;
     display: flex;
     flex-direction: column;
-    background: #000;
+    background: #fff;
   }
 
+  /* CHUYỂN NỀN MAIN VIEW SANG MÀU TRẮNG SANG TRỌNG */
   .main-view {
     flex: 1;
     position: relative;
-    background: #000;
+    background: #fff;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -51,6 +52,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    background: #fff;
   }
 
   #mainMediaWrap img, #mainMediaWrap video {
@@ -70,7 +72,7 @@
     bottom: 4px;
     right: 6px;
     font-size: 10px;
-    color: rgba(255,255,255,0.25);
+    color: rgba(0,0,0,0.3); /* Đổi chữ sang màu tối để nổi bật trên nền trắng */
     font-weight: 500;
     pointer-events: none;
   }
@@ -78,10 +80,10 @@
   /* THANH THUMBNAIL MÀU XÁM SÁNG CHUẨN ẢNH 2 */
   .thumb-rail {
     height: 105px;
-    background: #e4e4e4; /* Màu nền sáng theo ảnh 2 */
+    background: #e4e4e4;
     border-top: 1px solid #ccc;
     display: flex;
-    justify-content: center; /* Căn giữa các thumbnail */
+    justify-content: center;
     align-items: center;
     overflow-x: auto;
     gap: 8px;
@@ -97,10 +99,10 @@
     scrollbar-width: none;
   }
 
-  /* CHỈNH THUMBNAIL HÌNH CHỮ NHẬT NGANG ĐẸP NHƯ ẢNH 2 */
+  /* THUMBNAIL HÌNH CHỮ NHẬT NGANG ĐẸP NHƯ ẢNH 2 */
   .thumb {
-    width: 130px;  /* Tăng chiều rộng */
-    height: 75px;  /* Giảm chiều cao để ra tỷ lệ chữ nhật ngang trải dài */
+    width: 130px;
+    height: 75px;
     flex-shrink: 0;
     background: #222;
     border: 1px solid #aaa;
@@ -110,7 +112,8 @@
     align-items: center;
     justify-content: center;
     position: relative;
-    opacity: 0.4; /* Hiệu ứng mờ mượt cho các ảnh xung quanh */
+    opacity: 0.4;
+    border-radius: 2px;
     transition: all 0.2s ease;
   }
 
@@ -130,9 +133,9 @@
 
   /* THUMBNAIL KHI ĐƯỢC CHỌN (ACTIVE) CHUẨN ẢNH 2 */
   .thumb.active {
-    border: 2px solid #000; /* Viền đen đậm nổi bật */
-    opacity: 1; /* Sáng rõ hoàn toàn */
-    box-shadow: 0 0 4px rgba(0,0,0,0.3);
+    border: 2px solid #000;
+    opacity: 1;
+    box-shadow: 0 0 4px rgba(0,0,0,0.2);
   }
 
   .thumb:hover {
@@ -248,8 +251,6 @@
         rail.appendChild(t);
       });
     }
-
-    /* 🔴 ĐÃ ẨN/XÓA BỎ HOÀN TOÀN TÍNH NĂNG ĐIỀU HƯỚNG KEYDOWN THEO YÊU CẦU */
 
     // ===== ZOOM TRỰC TIẾP TRÊN ẢNH CHÍNH =====
     let zScale = 1, zPanX = 0, zPanY = 0;
