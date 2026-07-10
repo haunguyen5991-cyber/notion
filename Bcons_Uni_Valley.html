@@ -189,13 +189,19 @@
         .replace(/\.(mov|mp4)(\?.*)?$/i, '.jpg$2');
     }
 
+    // ⚠️ Ép định dạng phát về .mp4 (Cloudinary tự transcode on-the-fly, không nén thêm)
+    // .mov (QuickTime) không phát được trong in-app browser của Notion trên mobile (WKWebView)
+    function getPlayableVideoUrl(videoUrl) {
+      return videoUrl.replace(/\.mov(\?.*)?$/i, '.mp4$1');
+    }
+
     function updateMain() {
       const item = items[currentIndex];
       const wrap = document.getElementById('mainMediaWrap');
       wrap.innerHTML = '';
 
       if (item.type === 'video') {
-        wrap.innerHTML = '<video src="' + item.url + '" controls playsinline></video>';
+        wrap.innerHTML = '<video src="' + getPlayableVideoUrl(item.url) + '" controls playsinline></video>';
       } else {
         wrap.innerHTML = '<img src="' + item.url + '" loading="lazy" class="zoomable">';
       }
