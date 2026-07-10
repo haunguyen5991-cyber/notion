@@ -181,6 +181,14 @@
 
     let currentIndex = 0;
 
+    // ⚠️ Chuyển URL video Cloudinary -> URL ảnh JPG (frame giây thứ 0)
+    // Dùng cho thumbnail để hiển thị đúng trên mọi thiết bị, kể cả mobile/iframe Notion
+    function getVideoThumbUrl(videoUrl) {
+      return videoUrl
+        .replace('/video/upload/', '/video/upload/so_0/')
+        .replace(/\.(mov|mp4)(\?.*)?$/i, '.jpg$2');
+    }
+
     function updateMain() {
       const item = items[currentIndex];
       const wrap = document.getElementById('mainMediaWrap');
@@ -210,8 +218,9 @@
         const t = document.createElement('div');
         t.className = 'thumb' + (idx === 0 ? ' active' : '');
         if (item.type === 'video') {
+          const thumbImg = getVideoThumbUrl(item.url);
           t.innerHTML =
-            '<video src="' + item.url + '" muted preload="metadata" playsinline></video>' +
+            '<img src="' + thumbImg + '" loading="lazy">' +
             '<svg class="play-icon" viewBox="0 0 24 24" fill="white" style="filter:drop-shadow(0 0 2px rgba(0,0,0,0.8))"><path d="M8 5v14l11-7z"/></svg>';
         } else {
           t.innerHTML = '<img src="' + item.url + '" loading="lazy">';
