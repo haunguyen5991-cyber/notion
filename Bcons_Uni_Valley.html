@@ -10,7 +10,7 @@
   html, body {
     width: 100%;
     height: 100%;
-    background: #fff;
+    background: #000; /* Đổi về nền đen sang trọng theo thiết kế chuẩn */
     font-family: Arial, sans-serif;
     overflow: hidden;
   }
@@ -20,19 +20,18 @@
     height: 100vh;
     display: flex;
     flex-direction: column;
-    background: #fff;
+    background: #000;
   }
 
-  /* MAIN VIEW VỚI KHOẢNG CÁCH TRẮNG PHÍA DƯỚI */
+  /* MAIN VIEW */
   .main-view {
     flex: 1;
     position: relative;
-    background: #fff;
+    background: #000;
     display: flex;
     align-items: center;
     justify-content: center;
     overflow: hidden;
-    margin-bottom: 12px; /* Tạo khoảng trống màu trắng ngăn cách với thanh thumbnail */
   }
 
   .counter {
@@ -53,7 +52,6 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #fff;
   }
 
   #mainMediaWrap img, #mainMediaWrap video {
@@ -73,60 +71,51 @@
     bottom: 4px;
     right: 6px;
     font-size: 10px;
-    color: rgba(0,0,0,0.3);
+    color: rgba(255,255,255,0.25);
     font-weight: 500;
     pointer-events: none;
   }
 
-  /* KHUNG NỀN THUMBNAILS MỎNG VÀ LUÔN TỰ ĐỘNG CĂN GIỮA LINH HOẠT */
+  /* THANH CHỨA THUMBNAIL PHẢI SỬ DỤNG FLEX-START ĐỂ KHÔNG BỊ KHÓA TRÁI */
   .thumb-rail {
-    height: 85px; /* Giữ khung nền mỏng gọn gàng */
-    background: #e4e4e4;
-    border-top: 1px solid #ccc;
-    border-bottom: 1px solid #ccc;
+    height: 110px;
+    background: #111;
+    border-top: 1px solid #222;
     display: flex;
-    justify-content: center; /* Luôn tự động căn giữa các thumbnail */
+    justify-content: flex-start; /* Giữ trục cuộn xuất phát từ cạnh trái */
     align-items: center;
-    overflow-x: auto; /* Cho phép linh hoạt lướt qua lại khi danh sách dài */
-    gap: 8px;
-    padding: 0 15px;
+    overflow-x: auto;
+    gap: 10px;
+    padding: 10px 20px;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
   }
 
-  /* Khắc phục lỗi căn giữa trên một số trình duyệt khi nội dung tràn viền */
-  .thumb-rail::after {
-    content: '';
-    display: block;
-    flex-shrink: 0;
-    width: 1px;
-    height: 1px;
-    visibility: hidden;
-  }
+  /* Ẩn thanh cuộn để giữ giao diện sạch sẽ */
+  .thumb-rail::-webkit-scrollbar { display: none; }
+  .thumb-rail { -ms-overflow-style: none; scrollbar-width: none; }
 
-  /* Ẩn thanh cuộn vật lý */
-  .thumb-rail::-webkit-scrollbar {
-    display: none;
-  }
-  .thumb-rail {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
-
-  /* ĐỊNH DẠNG Ô THUMBNAIL */
+  /* ĐỊNH DẠNG Ô THUMBNAIL VÀ CƠ CHẾ CĂN GIỮA THÔNG MINH */
   .thumb {
-    width: 120px;
-    height: 68px;
+    width: 88px;
+    height: 88px;
     flex-shrink: 0;
     background: #222;
-    border: 1px solid #aaa;
+    border: 2px solid transparent;
     cursor: pointer;
     overflow: hidden;
     display: flex;
     align-items: center;
     justify-content: center;
     position: relative;
-    opacity: 0.4;
-    border-radius: 2px;
-    transition: all 0.2s ease;
+  }
+
+  /* Kỹ thuật căn giữa linh hoạt: Phần tử đầu và cuối tự đẩy lề nếu thừa không gian */
+  .thumb:first-child {
+    margin-left: auto;
+  }
+  .thumb:last-child {
+    margin-right: auto;
   }
 
   .thumb img, .thumb video {
@@ -138,32 +127,19 @@
 
   .thumb .play-icon {
     position: absolute;
-    width: 24px;
-    height: 24px;
+    width: 22px;
+    height: 22px;
     pointer-events: none;
   }
 
-  /* HIỆU ỨNG THUMBNAIL ĐƯỢC CHỌN */
-  .thumb.active {
-    border: 2px solid #000;
-    opacity: 1;
-    box-shadow: 0 0 4px rgba(0,0,0,0.2);
-  }
+  .thumb.active { border-color: #FF9500; }
+  .thumb:hover { border-color: #999; }
 
-  .thumb:hover {
-    opacity: 0.8;
-  }
-
-  /* ===== ZOOM TRỰC TIẾP TRÊN ẢNH CHÍNH ===== */
-  #mainMediaWrap img.zoomable {
-    cursor: zoom-in;
-  }
-  #mainMediaWrap img.zoomable.zoomed {
-    cursor: grab;
-  }
-  #mainMediaWrap img.zoomable.zoomed.dragging {
-    cursor: grabbing;
-  }
+  /* ===== ZOOM TRỰC TIẾP ===== */
+  #mainMediaWrap img.zoomable { cursor: zoom-in; }
+  #mainMediaWrap img.zoomable.zoomed { cursor: grab; }
+  #mainMediaWrap img.zoomable.zoomed.dragging { cursor: grabbing; }
+  
   .zoom-hint {
     position: absolute;
     bottom: 4px;
@@ -179,9 +155,7 @@
     opacity: 0;
     transition: opacity 0.3s;
   }
-  .main-view:hover .zoom-hint {
-    opacity: 1;
-  }
+  .main-view:hover .zoom-hint { opacity: 1; }
 </style>
 </head>
 <body>
@@ -209,8 +183,8 @@
     ];
 
     let currentIndex = 0;
+    let isInitialLoad = true;
 
-    // Chuyển link video gốc thành link ảnh thumbnail tĩnh của giây đầu tiên từ Cloudinary
     function getVideoThumbUrl(videoUrl) {
       return videoUrl
         .replace('/video/upload/', '/video/upload/so_0/')
@@ -234,17 +208,33 @@
 
       document.getElementById('counter').textContent = (currentIndex + 1) + ' / ' + items.length;
       document.getElementById('zoomHint').style.display = (item.type === 'video') ? 'none' : 'block';
+      
       updateThumbs();
       resetZoom();
     }
 
     function updateThumbs() {
-      document.querySelectorAll('.thumb').forEach((t, i) => {
+      const rail = document.getElementById('thumbRail');
+      const thumbs = document.querySelectorAll('.thumb');
+      
+      thumbs.forEach((t, i) => {
         t.classList.toggle('active', i === currentIndex);
-        if (i === currentIndex) {
-          t.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-        }
       });
+
+      // Bỏ qua cuộn tự động ở lần đầu tải trang để tránh nhảy màn hình ngoài ý muốn
+      if (isInitialLoad) {
+        isInitialLoad = false;
+        return;
+      }
+
+      // Cuộn mượt đưa ô được chọn vào giữa khung hiển thị thực tế
+      const activeThumb = thumbs[currentIndex];
+      if (activeThumb) {
+        const railWidth = rail.clientWidth;
+        const thumbLeft = activeThumb.offsetLeft;
+        const thumbWidth = activeThumb.clientWidth;
+        rail.scrollLeft = thumbLeft - (railWidth / 2) + (thumbWidth / 2);
+      }
     }
 
     function initThumbs() {
@@ -265,7 +255,14 @@
       });
     }
 
-    // ===== ZOOM TRỰC TIẾP TRÊN ẢNH CHÍNH =====
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowLeft') currentIndex = (currentIndex - 1 + items.length) % items.length;
+      if (e.key === 'ArrowRight') currentIndex = (currentIndex + 1) % items.length;
+      else return;
+      updateMain();
+    });
+
+    // ===== TRÌNH QUẢN LÝ ZOOM =====
     let zScale = 1, zPanX = 0, zPanY = 0;
     let zDragging = false, zStartX = 0, zStartY = 0, zStartPanX = 0, zStartPanY = 0;
     const Z_MIN = 1, Z_MAX = 6;
