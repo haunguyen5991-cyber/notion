@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gallery</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    width: 100%;
+    height: 100%;
+    background: #fff; /* Nền tổng màu trắng */
+    font-family: Arial, sans-serif;
+    overflow: hidden;
+  }
+
+  .gallery {
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+  }
+
+  /* MAIN VIEW VỚI KHOẢNG TRẮNG NGĂN CÁCH PHÍA DƯỚI */
+  .main-view {
+    flex: 1;
+    position: relative;
+    background: #fff; /* Nền vùng chứa ảnh sang trắng */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    margin-bottom: 12px; /* Khoảng trống màu trắng giữa main view và thumbnail */
+  }
+
+  .counter {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: rgba(0,0,0,0.6);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    z-index: 10;
+  }
+
+  #mainMediaWrap {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+  }
+
+  #mainMediaWrap img, #mainMediaWrap video {
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    max-height: 100%;
+    min-width: 0;
+    min-height: 0;
+    object-fit: contain;
+    transform-origin: center center;
+    will-change: transform;
+  }
+
+  .brand-label {
+    position: absolute;
+    bottom: 4px;
+    right: 6px;
+    font-size: 10px;
+    color: rgba(0,0,0,0.3); /* Màu chữ mờ trên nền trắng */
+    font-weight: 500;
+    pointer-events: none;
+  }
+
+  /* THANH CHỨA THUMBNAIL CHUYỂN SANG MÀU XÁM VÀ CO GIÃN THÔNG MINH */
+  .thumb-rail {
+    height: 110px;
+    background: #e4e4e4; /* Nền thanh thumbnail màu xám */
+    border-top: 1px solid #ccc;
+    border-bottom: 1px solid #ccc;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    overflow-x: auto;
+    gap: 10px;
+    padding: 10px 20px;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Ẩn thanh cuộn vật lý */
+  .thumb-rail::-webkit-scrollbar { display: none; }
+  .thumb-rail { -ms-overflow-style: none; scrollbar-width: none; }
+
+  /* ĐỊNH DẠNG Ô THUMBNAIL & CĂN GIỮA TRÁNH LỖI PHÂN RÃ KHUNG */
+  .thumb {
+    width: 88px;
+    height: 88px;
+    flex-shrink: 0;
+    background: #222;
+    border: 2px solid transparent;
+    cursor: pointer;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    border-radius: 2px;
+  }
+
+  /* Căn giữa thông minh bằng margin auto ở hai đầu */
+  .thumb:first-child {
+    margin-left: auto;
+  }
+  .thumb:last-child {
+    margin-right: auto;
+  }
+
+  .thumb img, .thumb video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    pointer-events: none;
+  }
+
+  .thumb .play-icon {
+    position: absolute;
+    width: 22px;
+    height: 22px;
+    pointer-events: none;
+  }
+
+  .thumb.active { border-color: #000; } /* Khung viền đen cho ảnh được chọn */
+  .thumb:hover { border-color: #666; }
+
+  /* ===== ZOOM TRỰC TIẾP ===== */
+  #mainMediaWrap img.zoomable { cursor: zoom-in; }
+  #mainMediaWrap img.zoomable.zoomed { cursor: grab; }
+  #mainMediaWrap img.zoomable.zoomed.dragging { cursor: grabbing; }
+  
+  .zoom-hint {
+    position: absolute;
+    bottom: 4px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.45);
+    color: rgba(255,255,255,0.85);
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 10px;
+    pointer-events: none;
+    z-index: 10;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .main-view:hover .zoom-hint { opacity: 1; }
+</style>
+</head>
+<body>
+  <div class="gallery">
+    <div class="main-view" id="mainView">
+      <div class="counter" id="counter">1 / 11</div>
+      <div class="zoom-hint" id="zoomHint">Cuộn để phóng to • Kéo để xem từng phần</div>
+      <div id="mainMediaWrap"></div>
+      <div class="brand-label">dulieunhapho.com</div>
+    </div>
+    <div class="thumb-rail" id="thumbRail"></div>
+  </div>
+
+  <script>
+    const items = [
+      { url: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783673080/1783673037485_1912694273111558205_7085495023723622370_9da1836acc9f937aac313f3c91b634f5_j1agbn.jpg', type: 'image' },
+      { url: 'https://file.notion.com/f/f/b876bd68-5348-819c-add0-0003134439f9/482afcbd-cec8-4f41-8c53-cd4fa4f0bad2/IMG_6909.jpeg?table=block&id=3986bd68-5348-80cf-8a64-f60f208fcb54&spaceId=b876bd68-5348-819c-add0-0003134439f9&expirationTimestamp=1783720800000&signature=Lg9Vuuy-n0PMPmiuZ1Bw2RrP0IgW0VagmI2zMFRXxjQ&downloadName=IMG_6909.jpeg', type: 'image' },
+      { url: 'https://bcons.vn/wp-content/uploads/2025/10/anh-thuc-te-bcons-city-3.jpg', type: 'image' },
+      { url: 'https://bcons.vn/wp-content/uploads/2025/10/anh-thuc-te-bcons-city-2.jpg', type: 'image' },
+      { url: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783673081/1783673037505_1912694273111558205_7085495023723622370_be82048aeb56b28083b1554438003e56_fkchz5.jpg', type: 'image' },
+      { url: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783699190/5fbedabc-24e8-4340-952c-520926f217d0.png', type: 'image' },
+      { url: 'https://bcons.vn/wp-content/uploads/2025/10/anh-thuc-te-bcons-city-1.jpg', type: 'image' },
+      { url: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783672537/Bcons-Uni-Valley_sxf8qp.png', type: 'image' },
+      { url: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783699244/d634af0c-465a-474e-a7c3-900543d9efa2.png', type: 'image' },
+      { url: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783672542/Truong_hoc_ykkxkk.jpg', type: 'image' },
+      { url: 'https://bcons.vn/wp-content/uploads/2025/01/anh-thuc-te-nha-pho-bcons-plaza-4.jpg', type: 'image' }
+    ];
+
+    let currentIndex = 0;
+    let isInitialLoad = true;
+
+    function updateMain() {
+      const item = items[currentIndex];
+      const wrap = document.getElementById('mainMediaWrap');
+      wrap.innerHTML = '';
+
+      if (item.type === 'video') {
+        const videoEl = document.createElement('video');
+        videoEl.src = item.url;
+        videoEl.controls = true;
+        videoEl.playsInline = true;
+        wrap.appendChild(videoEl);
+        
+        if (!isInitialLoad) {
+          videoEl.play().catch(err => console.log(err));
+        }
+      } else {
+        wrap.innerHTML = '<img src="' + item.url + '" loading="lazy" class="zoomable">';
+      }
+
+      document.getElementById('counter').textContent = (currentIndex + 1) + ' / ' + items.length;
+      document.getElementById('zoomHint').style.display = (item.type === 'video') ? 'none' : 'block';
+      
+      updateThumbs();
+      resetZoom();
+    }
+
+    function updateThumbs() {
+      const rail = document.getElementById('thumbRail');
+      const thumbs = document.querySelectorAll('.thumb');
+      
+      thumbs.forEach((t, i) => {
+        t.classList.toggle('active', i === currentIndex);
+      });
+
+      if (isInitialLoad) {
+        isInitialLoad = false;
+        return;
+      }
+
+      const activeThumb = thumbs[currentIndex];
+      if (activeThumb) {
+        const railWidth = rail.clientWidth;
+        const thumbLeft = activeThumb.offsetLeft;
+        const thumbWidth = activeThumb.clientWidth;
+        rail.scrollLeft = thumbLeft - (railWidth / 2) + (thumbWidth / 2);
+      }
+    }
+
+    function initThumbs() {
+      const rail = document.getElementById('thumbRail');
+      items.forEach((item, idx) => {
+        const t = document.createElement('div');
+        t.className = 'thumb' + (idx === 0 ? ' active' : '');
+        t.innerHTML = '<img src="' + item.url + '" loading="lazy">';
+        t.onclick = () => { currentIndex = idx; updateMain(); };
+        rail.appendChild(t);
+      });
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowLeft') currentIndex = (currentIndex - 1 + items.length) % items.length;
+      if (e.key === 'ArrowRight') currentIndex = (currentIndex + 1) % items.length;
+      else return;
+      updateMain();
+    });
+
+    // ===== TRÌNH QUẢN LÝ ZOOM =====
+    let zScale = 1, zPanX = 0, zPanY = 0;
+    let zDragging = false, zStartX = 0, zStartY = 0, zStartPanX = 0, zStartPanY = 0;
+    const Z_MIN = 1, Z_MAX = 6;
+
+    function applyZoomTransform() {
+      const img = document.querySelector('#mainMediaWrap img.zoomable');
+      if (!img) return;
+      img.style.transform = 'translate(' + zPanX + 'px,' + zPanY + 'px) scale(' + zScale + ')';
+      img.classList.toggle('zoomed', zScale > Z_MIN);
+    }
+
+    function resetZoom() {
+      zScale = 1; zPanX = 0; zPanY = 0;
+      applyZoomTransform();
+    }
+
+    function clampZoomPan() {
+      const maxPan = 3000;
+      zPanX = Math.max(-maxPan, Math.min(maxPan, zPanX));
+      zPanY = Math.max(-maxPan, Math.min(maxPan, zPanY));
+    }
+
+    function zoomAtPoint(delta, clientX, clientY, refEl) {
+      const rect = refEl.getBoundingClientRect();
+      const cx = clientX - rect.left - rect.width / 2;
+      const cy = clientY - rect.top - rect.height / 2;
+
+      const prevScale = zScale;
+      zScale = Math.min(Z_MAX, Math.max(Z_MIN, zScale + delta));
+      if (zScale === prevScale) return;
+
+      const ratio = zScale / prevScale;
+      zPanX = (zPanX - cx) * ratio + cx;
+      zPanY = (zPanY - cy) * ratio + cy;
+
+      if (zScale <= Z_MIN) { zPanX = 0; zPanY = 0; }
+      clampZoomPan();
+      applyZoomTransform();
+    }
+
+    (function() {
+      const wrap = document.getElementById('mainMediaWrap');
+
+      wrap.addEventListener('wheel', function(e) {
+        const img = wrap.querySelector('img.zoomable');
+        if (!img) return;
+        e.preventDefault();
+        const delta = e.deltaY < 0 ? 0.3 : -0.3;
+        zoomAtPoint(delta, e.clientX, e.clientY, wrap);
+      }, { passive: false });
+
+      wrap.addEventListener('mousedown', function(e) {
+        const img = wrap.querySelector('img.zoomable');
+        if (!img || zScale <= Z_MIN) return;
+        zDragging = true;
+        img.classList.add('dragging');
+        zStartX = e.clientX; zStartY = e.clientY;
+        zStartPanX = zPanX; zStartPanY = zPanY;
+      });
+      window.addEventListener('mousemove', function(e) {
+        if (!zDragging) return;
+        zPanX = zStartPanX + (e.clientX - zStartX);
+        zPanY = zStartPanY + (e.clientY - zStartY);
+        clampZoomPan();
+        applyZoomTransform();
+      });
+      window.addEventListener('mouseup', function() {
+        if (!zDragging) return;
+        zDragging = false;
+        const img = wrap.querySelector('img.zoomable');
+        if (img) img.classList.remove('dragging');
+      });
+
+      wrap.addEventListener('dblclick', function() {
+        if (wrap.querySelector('img.zoomable')) resetZoom();
+      });
+
+      let zLastTouchDist = null;
+      wrap.addEventListener('touchstart', function(e) {
+        const img = wrap.querySelector('img.zoomable');
+        if (!img) return;
+        if (e.touches.length === 2) {
+          zLastTouchDist = Math.hypot(
+            e.touches[0].clientX - e.touches[1].clientX,
+            e.touches[0].clientY - e.touches[1].clientY
+          );
+        } else if (e.touches.length === 1 && zScale > Z_MIN) {
+          zDragging = true;
+          zStartX = e.touches[0].clientX; zStartY = e.touches[0].clientY;
+          zStartPanX = zPanX; zStartPanY = zPanY;
+        }
+      }, { passive: true });
+
+      wrap.addEventListener('touchmove', function(e) {
+        const img = wrap.querySelector('img.zoomable');
+        if (!img) return;
+        if (e.touches.length === 2 && zLastTouchDist !== null) {
+          e.preventDefault();
+          const dist = Math.hypot(
+            e.touches[0].clientX - e.touches[1].clientX,
+            e.touches[0].clientY - e.touches[1].clientY
+          );
+          const midX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+          const midY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+          const delta = (dist - zLastTouchDist) * 0.01;
+          zoomAtPoint(delta, midX, midY, wrap);
+          zLastTouchDist = dist;
+        } else if (e.touches.length === 1 && zDragging) {
+          e.preventDefault();
+          zPanX = zStartPanX + (e.touches[0].clientX - zStartX);
+          zPanY = zStartPanY + (e.touches[0].clientY - zStartY);
+          clampZoomPan();
+          applyZoomTransform();
+        }
+      }, { passive: false });
+
+      wrap.addEventListener('touchend', function(e) {
+        if (e.touches.length < 2) zLastTouchDist = null;
+        if (e.touches.length === 0) zDragging = false;
+      }, { passive: true });
+    })();
+
+    initThumbs();
+    updateMain();
+  </script>
+</body>
+</html>
