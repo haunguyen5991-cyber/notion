@@ -10,38 +10,52 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jQuery-rwdImageMaps/1.6/jquery.rwdImageMaps.min.js"></script>
 
     <style>
-        /* ẨN THANH CUỘT VÀ ĐỔI NỀN TRẮNG TOÀN BỘ TRANG */
+        /* HIỂN THỊ TỰ NHIÊN - ẨN THANH CUỘT TRÌNH DUYỆT TRÊN */
         html, body {
             margin: 0;
             padding: 0;
-            overflow: hidden; /* Ẩn thanh cuộn hoàn toàn */
-            background-color: #ffffff; /* Đổi nền trang thành màu trắng */
+            width: 100%;
+            min-height: 100%;
+            overflow-x: hidden; /* Ẩn cuộn ngang */
+            overflow-y: auto;   /* Cho phép cuộn dọc tự nhiên để không bị mất hình */
+            background-color: #ffffff;
             font-family: Arial, sans-serif;
+        }
+
+        /* Ẩn thanh cuộn vật lý để giao diện sạch sẽ */
+        html::-webkit-scrollbar, body::-webkit-scrollbar {
+            display: none;
+        }
+        html {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
         }
 
         body {
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 20px 0; /* Khoảng cách trên dưới cho thoáng */
+            padding: 20px 0;
         }
 
         h2 { color: #333; margin-bottom: 5px; }
         p { color: #666; margin-bottom: 20px; text-align: center; padding: 0 15px; }
         
-        /* XÓA BỎ VIỀN, KHUNG VÀ BÓNG MỜ CỦA CONTAINER */
+        /* ĐỂ BẢN ĐỒ HIỂN THỊ HẾT CHIỀU CAO GỐC */
         .map-container {
             position: relative;
+            width: 100%;
             max-width: 100%;
-            background: #ffffff; /* Đồng bộ nền trắng */
-            padding: 0; /* Xóa khoảng đệm viền ảnh */
-            border-radius: 0; /* Xóa bo góc */
-            box-shadow: none; /* Xóa bỏ hoàn toàn bóng viền ngoài */
+            background: #ffffff;
+            padding: 0;
+            border-radius: 0;
+            box-shadow: none;
+            display: block;
         }
         .map-container img {
             display: block;
-            max-width: 100%;
-            height: auto;
+            width: 100%;
+            height: auto; /* Tự động tính toán theo tỷ lệ ảnh */
         }
 
         /* --- KHUNG POP-UP MODAL --- */
