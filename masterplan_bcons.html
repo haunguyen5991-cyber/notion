@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bản Đồ Tương Tác Bcons Uni Valley</title>
+    
+    <!-- Nhúng thư viện jQuery và Maphilight để xử lý đổi màu vùng chọn -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/maphilight/1.4.2/jquery.maphilight.min.js"></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h2 { color: #333; margin-bottom: 5px; }
+        p { color: #666; margin-bottom: 20px; }
+        
+        .map-container {
+            position: relative;
+            max-width: 100%;
+            background: #fff;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        /* Giữ ảnh hiển thị đúng kích thước */
+        .map-container img {
+            display: block;
+            max-width: 100%;
+            height: auto;
+        }
+
+        /* --- STYLE KHUNG POP-UP (MODAL) --- */
+        .popup-overlay {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            justify-content: center;
+            align-items: center;
+        }
+        .popup-content {
+            position: relative;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            max-width: 90%;
+            max-height: 90%;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.5);
+            text-align: center;
+        }
+        .popup-content h3 {
+            margin-top: 0;
+            color: #222;
+        }
+        .popup-content img {
+            max-width: 100%;
+            max-height: 65vh;
+            object-fit: contain;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+        .popup-link {
+            display: block;
+            word-break: break-all;
+            color: #007bff;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        .popup-link:hover { text-decoration: underline; }
+        
+        /* Nút đóng (X) */
+        .close-btn {
+            position: absolute;
+            top: -12px;
+            right: -12px;
+            background: #ff4d4d;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 28px;
+            height: 28px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+        .close-btn:hover { background: #cc0000; }
+    </style>
+</head>
+<body>
+
+    <h2>SƠ ĐỒ TƯƠNG TÁC BCONS UNI VALLEY</h2>
+    <p>Rê chuột để xem vị trí phân khu (màu cam) và click để xem ảnh thiết kế chi tiết.</p>
+
+    <!-- KHUNG CHỨA ẢNH MASTERPLAN M0 -->
+    <div class="map-container">
+        <img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783686087/masterplan_w7xmhr.jpg" usemap="#image-map" class="maphilight-target">
+        
+        <map name="image-map">
+            <area target="" alt="Layout 1" title="Layout 1" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783683857/be680720-1432-463e-b7ea-85e082c5a861.png" coords="767,1682,794,1594,1077,1704,1050,1782,918,1736" shape="poly">
+            <area target="" alt="Layout 1" title="Layout 1" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783683857/be680720-1432-463e-b7ea-85e082c5a861.png" coords="953,1466,984,1386,1172,1457,1141,1536" shape="poly">
+            <area target="" alt="Layout 2" title="Layout 2" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M2_us8qsf.jpg" coords="1311,1584,1430,1626,1340,1881,1220,1838" shape="poly">
+            <area target="" alt="Layout 2" title="Layout 2" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M2_us8qsf.jpg" coords="1472,1944,1351,1900,1443,1635,1563,1681" shape="poly">
+            <area target="" alt="Layout 2" title="Layout 2" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M2_us8qsf.jpg" coords="1059,1923,997,2044,1293,2201,1360,2084" shape="poly">
+            <area target="" alt="Layout 2" title="Layout 2" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M2_us8qsf.jpg" coords="726,1782,854,1829,803,1973,675,1926" shape="poly">
+            <area target="" alt="Layout 2" title="Layout 2" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M2_us8qsf.jpg" coords="1538,2179,1474,2296,1534,2329,1600,2209" shape="poly">
+            <area target="" alt="Layout 3" title="Layout 3" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M3_jt8v6r.jpg" coords="1083,926,1264,978,1201,1206,1033,1159" shape="poly">
+            <area target="" alt="Layout 3" title="Layout 3" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M3_jt8v6r.jpg" coords="1379,972,1560,1021,1481,1316,1300,1266" shape="poly">
+            <area target="" alt="Layout 3" title="Layout 3" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M3_jt8v6r.jpg" coords="1572,979,1746,1025,1649,1395,1475,1350" shape="poly">
+            <area target="" alt="Layout 3" title="Layout 3" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M3_jt8v6r.jpg" coords="674,1928,853,1990,829,2058,652,1990" shape="poly">
+            <area target="" alt="Layout 4" title="Layout 4" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678533/M4_fcxmci.jpg" coords="1344,1277,1311,1402,1446,1464,1483,1317" shape="poly">
+            <area target="" alt="Layout 4" title="Layout 4" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678533/M4_fcxmci.jpg" coords="1475,1348,1613,1386,1578,1522,1446,1463" shape="poly">
+            <area target="" alt="Layout 4" title="Layout 4" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678533/M4_fcxmci.jpg" coords="958,2022,1092,2095,1059,2192,922,2117" shape="poly">
+            <area target="" alt="Layout 5" title="Layout 5" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678533/M5_vtfhxl.jpg" coords="436,943,396,1042,800,1197,840,1091" shape="poly">
+            <area target="" alt="Layout 6" title="Layout 6" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678534/M6_yonyqn.jpg" coords="840,1089,800,1195,1117,1321,1165,1195,1032,1159" shape="poly">
+            <area target="" alt="Layout 6" title="Layout 6" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678534/M6_yonyqn.jpg" coords="1675,1705,1810,1751,1976,1078,1855,1045,1768,1374,1720,1557,1711,1599" shape="poly">
+            <area target="" alt="Layout 2" title="Layout 2" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M2_us8qsf.jpg" coords="1675,1704,1808,1750,1684,2068,1561,2022" shape="poly">
+        </map>
+    </div>
+
+    <!-- KHUNG POP-UP MODAL (MẶC ĐỊNH ẨN) -->
+    <div id="layoutModal" class="popup-overlay" onclick="closePopupOutside(event)">
+        <div class="popup-content">
+            <button class="close-btn" onclick="closePopup()">&times;</button>
+            <h3 id="popup-title">Chi tiết mặt bằng</h3>
+            <img id="popup-img" src="" alt="Layout chi tiết">
+            <a id="popup-link-href" class="popup-link" href="#" target="_blank">Xem ảnh gốc chất lượng cao</a>
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            // 1. Cấu hình hiệu ứng đổi màu Cam nhạt mờ khi rê chuột vào vùng chọn
+            $('.maphilight-target').maphilight({
+                fillColor: 'ff9900',   // Mã màu Cam (HEX)
+                fillOpacity: 0.4,      // Độ mờ (0.4 = trong suốt 40%)
+                strokeColor: 'ff6600', // Đường viền màu cam đậm hơn một chút
+                strokeWidth: 1,
+                alwaysOn: false        // Chỉ sáng lên khi di chuột vào vùng vẽ
+            });
+
+            // 2. Bắt sự kiện Click vào các vùng diện tích (area)
+            $('area').on('click', function(e) {
+                e.preventDefault(); // Ngăn trình duyệt nhảy trang theo link href mặc định
+                
+                var imageLink = $(this).attr('href'); // Lấy link ảnh từ thuộc tính href
+                var layoutTitle = $(this).attr('title'); // Lấy tiêu đề từ thuộc tính title
+                
+                // Đổ dữ liệu vào Pop-up
+                $('#popup-title').text(layoutTitle);
+                $('#popup-img').attr('src', imageLink);
+                $('#popup-link-href').attr('href', imageLink).text("Link ảnh gốc: " + imageLink);
+                
+                // Hiển thị Pop-up
+                $('#layoutModal').css('display', 'flex');
+            });
+        });
+
+        // Hàm đóng Pop-up khi nhấn nút X
+        function closePopup() {
+            $('#layoutModal').css('display', 'none');
+            $('#popup-img').attr('src', ''); // Reset ảnh để tiết kiệm tài nguyên bộ nhớ
+        }
+
+        // Hàm đóng Pop-up khi nhấn ra ngoài vùng màu đen
+        function closePopupOutside(event) {
+            if (event.target.id === 'layoutModal') {
+                closePopup();
+            }
+        }
+    </script>
+</body>
+</html>
