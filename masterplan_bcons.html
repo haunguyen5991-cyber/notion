@@ -5,11 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bản Đồ Tương Tác Bcons Uni Valley</title>
     
-    <!-- Nhúng jQuery và thư viện tạo hiệu ứng đổi màu -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/maphilight/1.4.2/jquery.maphilight.min.js"></script>
-    
-    <!-- KHẮC PHỤC LỆCH KHUNG: Nhúng thêm thư viện tự động sửa tọa độ khi ảnh co giãn -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jQuery-rwdImageMaps/1.6/jquery.rwdImageMaps.min.js"></script>
 
     <style>
@@ -33,14 +30,13 @@
             border-radius: 8px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }
-        /* Giữ ảnh tự động co giãn theo mọi màn hình */
         .map-container img {
             display: block;
             max-width: 100%;
             height: auto;
         }
 
-        /* --- STYLE KHUNG POP-UP (MODAL) --- */
+        /* --- KHUNG POP-UP MODAL --- */
         .popup-overlay {
             display: none;
             position: fixed;
@@ -58,33 +54,73 @@
             background-color: #fff;
             padding: 20px;
             border-radius: 8px;
-            max-width: 90%;
-            max-height: 90%;
+            width: 85%;
+            max-width: 1000px;
             box-shadow: 0 5px 25px rgba(0,0,0,0.5);
             text-align: center;
         }
         .popup-content h3 {
             margin-top: 0;
+            margin-bottom: 15px;
             color: #222;
         }
-        .popup-content img {
-            max-width: 100%;
-            max-height: 65vh;
-            object-fit: contain;
+
+        /* Khung chứa ảnh hỗ trợ Zoom và Kéo thả */
+        .img-viewport {
+            position: relative;
+            width: 100%;
+            height: 65vh; /* Giới hạn chiều cao hiển thị */
+            overflow: hidden; /* Ẩn phần ảnh tràn ra ngoài khi zoom */
             border: 1px solid #ddd;
             border-radius: 4px;
-            margin-bottom: 15px;
+            background: #fdfdfd;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
-        .popup-link {
-            display: block;
-            word-break: break-all;
-            color: #007bff;
-            text-decoration: none;
-            font-weight: bold;
-            font-size: 14px;
+        .img-viewport img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            transform-origin: center center;
+            cursor: grab;
+            user-select: none;
+            -webkit-user-drag: none;
+            transition: transform 0.1s ease-out; /* Tạo hiệu ứng zoom mượt */
         }
-        .popup-link:hover { text-decoration: underline; }
+        .img-viewport img:active {
+            cursor: grabbing;
+        }
+
+        /* --- THANH CÔNG CỤ KÍNH LÚP --- */
+        .zoom-controls {
+            position: absolute;
+            bottom: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.75);
+            padding: 6px 15px;
+            border-radius: 30px;
+            display: flex;
+            gap: 15px;
+            z-index: 10000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+        .zoom-controls button {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 2px 6px;
+            transition: color 0.2s, transform 0.1s;
+        }
+        .zoom-controls button:hover {
+            color: #ff9900;
+            transform: scale(1.1);
+        }
         
+        /* Nút đóng (X) */
         .close-btn {
             position: absolute;
             top: -12px;
@@ -99,6 +135,7 @@
             font-weight: bold;
             cursor: pointer;
             box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            z-index: 10001;
         }
         .close-btn:hover { background: #cc0000; }
     </style>
@@ -106,10 +143,9 @@
 <body>
 
     <h2>SƠ ĐỒ TƯƠNG TÁC BCONS UNI VALLEY</h2>
-    <p>Rê chuột để xem vị trí phân khu (màu cam) và click để xem ảnh thiết kế chi tiết.</p>
+    <p>Rê chuột để xem phân khu (cam nhạt) và click để xem ảnh chi tiết. Bạn có thể lăn chuột hoặc dùng kính lúp để phóng to bản vẽ.</p>
 
     <div class="map-container">
-        <!-- Đã sửa link ảnh gốc masterplan từ cloudinary của bạn -->
         <img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783686087/masterplan_w7xmhr.jpg" usemap="#image-map" class="maphilight-target">
         
         <map name="image-map">
@@ -138,17 +174,47 @@
         <div class="popup-content">
             <button class="close-btn" onclick="closePopup()">&times;</button>
             <h3 id="popup-title">Chi tiết mặt bằng</h3>
-            <img id="popup-img" src="" alt="Layout chi tiết">
-            <a id="popup-link-href" class="popup-link" href="#" target="_blank">Xem ảnh gốc chất lượng cao</a>
+            
+            <div class="img-viewport" id="viewport">
+                <img id="popup-img" src="" alt="Layout chi tiết">
+                
+                <div class="zoom-controls" onclick="event.stopPropagation()">
+                    <button id="btn-zoom-in" title="Phóng to">🔍 +</button>
+                    <button id="btn-zoom-out" title="Thu nhỏ">🔍 -</button>
+                    <button id="btn-zoom-reset" title="Đặt lại">↺</button>
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
+        // Khởi tạo các biến kiểm soát Zoom & Pan (Kéo thả)
+        let scale = 1;
+        let isDragging = false;
+        let startX, startY;
+        let translateX = 0, translateY = 0;
+
+        const $zoomImg = $('#popup-img');
+        const $viewport = $('#viewport');
+
+        // Hàm cập nhật sự thay đổi vị trí & kích thước ảnh
+        function updateTransform() {
+            $zoomImg.css('transform', `translate(${translateX}px, ${translateY}px) scale(${scale})`);
+        }
+
+        // Hàm Reset ảnh về trạng thái ban đầu
+        function resetZoom() {
+            scale = 1;
+            translateX = 0;
+            translateY = 0;
+            updateTransform();
+        }
+
         $(document).ready(function() {
-            // Bước 1: Kích hoạt rwdImageMaps trước để tính toán lại tọa độ co giãn
+            // Tự động co giãn bản đồ theo kích thước màn hình
             $('img[usemap]').rwdImageMaps();
 
-            // Bước 2: Khởi tạo maphilight để vẽ màu cam sau khi tọa độ được tính lại chuẩn xác
+            // Hiệu ứng đổi màu cam nhạt khi rê chuột vào phân khu
             $('.maphilight-target').maphilight({
                 fillColor: 'ff9900',   
                 fillOpacity: 0.4,      
@@ -157,25 +223,79 @@
                 alwaysOn: false        
             });
 
-            // Bước 3: Xử lý sự kiện Click mở pop-up
+            // Mở Pop-up khi Click phân khu
             $('area').on('click', function(e) {
                 e.preventDefault(); 
                 var imageLink = $(this).attr('href'); 
                 var layoutTitle = $(this).attr('title'); 
                 
                 $('#popup-title').text(layoutTitle);
-                $('#popup-img').attr('src', imageLink);
-                $('#popup-link-href').attr('href', imageLink).text("Link ảnh gốc: " + imageLink);
+                $zoomImg.attr('src', imageLink);
                 
+                resetZoom(); // Reset kích thước khi đổi sang xem ảnh khác
                 $('#layoutModal').css('display', 'flex');
+            });
+
+            // --- XỬ LÝ SỰ KIỆN ZOOM BẰNG LĂN CHUỘT (MOUSE WHEEL) ---
+            $viewport.on('wheel', function(e) {
+                e.preventDefault();
+                const delta = e.originalEvent.deltaY;
+                const zoomFactor = 1.1;
+
+                if (delta < 0) {
+                    if (scale < 5) scale *= zoomFactor; // Phóng to tối đa 5 lần
+                } else {
+                    if (scale > 0.8) scale /= zoomFactor; // Thu nhỏ tối thiểu 0.8 lần
+                }
+                updateTransform();
+            });
+
+            // --- XỬ LÝ SỰ KIỆN ZOOM BẰNG NÚT BẤM (KÍNH LÚP) ---
+            $('#btn-zoom-in').on('click', function() {
+                if (scale < 5) {
+                    scale *= 1.25;
+                    updateTransform();
+                }
+            });
+
+            $('#btn-zoom-out').on('click', function() {
+                if (scale > 0.8) {
+                    scale /= 1.25;
+                    updateTransform();
+                }
+            });
+
+            $('#btn-zoom-reset').on('click', function() {
+                resetZoom();
+            });
+
+            // --- XỬ LÝ SỰ KIỆN DI CHUYỂN ẢNH (DRAG / PANNING) ---
+            $zoomImg.on('mousedown', function(e) {
+                e.preventDefault();
+                isDragging = true;
+                startX = e.clientX - translateX;
+                startY = e.clientY - translateY;
+            });
+
+            $(window).on('mousemove', function(e) {
+                if (!isDragging) return;
+                translateX = e.clientX - startX;
+                translateY = e.clientY - startY;
+                updateTransform();
+            });
+
+            $(window).on('mouseup', function() {
+                isDragging = false;
             });
         });
 
+        // Đóng Pop-up khi click nút X
         function closePopup() {
             $('#layoutModal').css('display', 'none');
-            $('#popup-img').attr('src', ''); 
+            $zoomImg.attr('src', ''); 
         }
 
+        // Đóng Pop-up khi click vùng trống bên ngoài
         function closePopupOutside(event) {
             if (event.target.id === 'layoutModal') {
                 closePopup();
