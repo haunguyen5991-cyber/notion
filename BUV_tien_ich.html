@@ -76,7 +76,7 @@
     object-fit: contain;
   }
 
-  /* BỘ ĐIỀU KHIỂN ĐÃ ĐƯỢC THU MỎNG LẠI GIỐNG MASTERPLAN */
+  /* BỘ ĐIỀU KHIỂN HỢP NHẤT HÀNG NGANG PHÍA DƯỚI GÓC PHẢI (MẶC ĐỊNH DESKTOP) */
   .bottom-controls-container {
     position: absolute;
     bottom: 12px;
@@ -86,10 +86,11 @@
     align-items: center;
     gap: 8px;
     z-index: 500;
-    background: rgba(255, 255, 255, 0.85); /* Trả về màu nền mờ tinh tế */
-    padding: 4px 10px; /* Làm mỏng padding lại giống hệt masterplan */
+    background: rgba(255, 255, 255, 0.85);
+    padding: 4px 10px;
     border-radius: 20px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+    transition: all 0.2s ease;
   }
 
   .main-map-controls {
@@ -105,30 +106,27 @@
     font-weight: bold;
   }
   
-  /* THANH RAY ĐƯỢC CHỈNH MỎNG LẠI */
   .main-map-controls input[type="range"] {
     -webkit-appearance: none;
     appearance: none;
     width: 70px;
-    height: 3px; /* Độ dày thanh ray 3px chuẩn masterplan */
+    height: 3px;
     background: rgba(0,0,0,0.15);
     outline: none;
     border: none;
     cursor: pointer;
   }
 
-  /* Nút kéo trên Chrome, Safari, Opera và Edge */
   .main-map-controls input[type="range"]::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
-    width: 12px; /* Thu gọn đường kính nút tròn cam vừa vặn */
+    width: 12px;
     height: 12px;
     background: #ff9900;
     border-radius: 50%;
     cursor: pointer;
   }
 
-  /* Nút kéo trên Firefox */
   .main-map-controls input[type="range"]::-moz-range-thumb {
     width: 12px;
     height: 12px;
@@ -146,6 +144,15 @@
     padding-left: 8px;
     pointer-events: none;
     user-select: none;
+  }
+
+  /* CẤU HÌNH RIÊNG CHO MOBILE: CĂN GIỮA TUYỆT ĐỐI */
+  @media (max-width: 700px) {
+    .bottom-controls-container {
+      right: 50%;
+      transform: translateX(50%); /* Căn giữa chính xác theo chiều ngang */
+      bottom: 16px;
+    }
   }
 
   /* THANH CHỨA THUMBNAIL */
@@ -224,7 +231,6 @@
       <div class="zoom-hint" id="zoomHint">Kéo thanh trượt hoặc cuộn để phóng to • Kéo rê để xem chi tiết</div>
       <div id="mainMediaWrap"></div>
       
-      <!-- CỤM ZOOM TINH TẾ CHUẨN MASTERPLAN -->
       <div class="bottom-controls-container" id="controlsContainer">
         <div class="main-map-controls">
           <span>-</span>
