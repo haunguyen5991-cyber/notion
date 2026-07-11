@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Bản Đồ Tương Tác Bcons Uni Valley</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -23,7 +23,7 @@
   body::-webkit-scrollbar { display: none; }
   body { -ms-overflow-style: none; scrollbar-width: none; }
 
-  /* Bảng điều khiển tích hợp Watermark ở góc dưới bên trái */
+  /* Bảng điều khiển tích hợp góc dưới bên trái, đồng nhất kích cỡ chữ */
   .bottom-controls-container {
     position: fixed;
     bottom: 8px;
@@ -91,7 +91,7 @@
   .map-container img.masterplan.can-drag { cursor: grab; }
   .map-container img.masterplan.dragging { cursor: grabbing; }
 
-  /* GIAO DIỆN MOBILE: Đảm bảo phủ kín, không khoảng trống nhưng không làm mờ ảnh */
+  /* GIAO DIỆN MOBILE CHUẨN: Ảnh lấp đầy, không khoảng trống */
   @media (max-width: 700px) {
     html, body {
       height: 100%;
@@ -105,8 +105,8 @@
       position: absolute;
       top: 0;
       left: 0;
-      width: auto;   /* Không ép độ rộng cố định để giữ nguyên pixel gốc */
-      height: 100%;  /* Ép ảnh cao bằng màn hình để phủ kín khoảng trống trên/dưới */
+      width: auto;
+      height: 100%;
     }
     .main-map-controls input[type="range"] {
       width: 70px;
@@ -135,7 +135,7 @@
     stroke: rgba(255, 102, 0, 0.9);
   }
 
-  /* ===== MODAL POPUP CHI TIẾT GỐC ===== */
+  /* ===== MODAL POPUP CHI TIẾT GỐC GIỮ NGUYÊN ===== */
   .popup-overlay {
     display: none;
     position: fixed;
@@ -280,54 +280,50 @@
     let startX = 0, startY = 0;
     let startPanX = 0, startPanY = 0;
 
+    // Tính kích thước hiển thị thực tế của ảnh dựa trên cấu trúc CSS từng nền tảng
+    function getActualDimensions() {
+      const cw = container.clientWidth;
+      const ch = container.clientHeight;
+      if (mobileQuery.matches) {
+        // Trên Mobile: height cố định 100% bằng ch, width tỷ lệ thuận
+        const baseScale = ch / img.naturalHeight;
+        return {
+          w: img.naturalWidth * baseScale * mapZoomScale,
+          h: ch * mapZoomScale
+        };
+      } else {
+        // Trên Desktop: width cố định 100% bằng cw, height tỷ lệ thuận
+        const baseScale = cw / img.naturalWidth;
+        return {
+          w: cw * mapZoomScale,
+          h: img.naturalHeight * baseScale * mapZoomScale
+        };
+      }
+    }
+
     function applyMapTransform() {
-      // Trên desktop, khi scale = 1 thì khóa pan kéo để cuộn website tự nhiên
-      if (!mobileQuery.matches && mapZoomScale <= 1) {
+      const cw = container.clientWidth;
+      const ch = container.clientHeight;
+      const dim = getActualDimensions();
+
+      // THUẬT TOÁN ĐỊNH VỊ BIÊN TUYỆT ĐỐI: Không bao giờ được lộ viền trắng
+      if (mobileQuery.matches || mapZoomScale > 1) {
+        img.classList.add('can-drag');
+        
+        // Tính toán khoảng cách tối đa có thể di chuyển tính từ tâm transform-origin
+        const limitX = Math.max(0, (dim.w - cw) / 2);
+        const limitY = Math.max(0, (dim.h - ch) / 2);
+
+        if (panX < -limitX) panX = -limitX;
+        if (panX > limitX) panX = limitX;
+        if (panY < -limitY) panY = -limitY;
+        if (panY > limitY) panY = limitY;
+      } else {
+        // Mặc định Desktop scale=1 thì khóa cuộn kéo
         mapZoomScale = 1;
         panX = 0;
         panY = 0;
         img.classList.remove('can-drag');
-      } else {
-        img.classList.add('can-drag');
-      }
-
-      // THUẬT TOÁN GIỚI HẠN BIÊN AN TOÀN: Không bao giờ để lộ vùng trống trắng
-      const cw = container.clientWidth;
-      const ch = container.clientHeight;
-      
-      let currentW, currentH;
-      if (mobileQuery.matches) {
-        // Trên mobile, kích thước hiển thị cơ sở phụ thuộc vào height = 100%
-        const baseScale = ch / img.naturalHeight;
-        currentW = img.naturalWidth * baseScale * mapZoomScale;
-        currentH = ch * mapZoomScale;
-      } else {
-        // Trên desktop, kích thước hiển thị cơ sở phụ thuộc vào width = 100%
-        currentW = cw * mapZoomScale;
-        currentH = img.clientHeight * mapZoomScale;
-      }
-
-      // Ràng buộc tọa độ kéo không vượt khỏi viền ảnh
-      if (mobileQuery.matches || mapZoomScale > 1) {
-        const minX = mobileQuery.matches ? (cw - currentW)/2 : -((currentW - cw) / 2);
-        const maxX = mobileQuery.matches ? (currentW - cw)/2 : ((currentW - cw) / 2);
-        const minY = mobileQuery.matches ? (ch - currentH)/2 : -((currentH - ch) / 2);
-        const maxY = mobileQuery.matches ? (currentH - ch)/2 : ((currentH - ch) / 2);
-
-        // Chống kéo lọt ra vùng trống trắng ngoài rìa
-        if (currentW > cw) {
-          if (panX < minX) panX = minX;
-          if (panX > maxX) panX = maxX;
-        } else {
-          panX = 0;
-        }
-        
-        if (currentH > ch) {
-          if (panY < minY) panY = minY;
-          if (panY > maxY) panY = maxY;
-        } else {
-          panY = mobileQuery.matches ? 0 : 0;
-        }
       }
 
       const transformStr = 'translate(' + panX + 'px, ' + panY + 'px) scale(' + mapZoomScale + ')';
@@ -337,17 +333,14 @@
 
     function positionSVG() {
       if (!img.naturalWidth) return;
+      
+      // Đồng bộ kích thước SVG khít hoàn toàn theo kích thước hiển thị CSS của ảnh thẻ img
       svg.style.width = img.clientWidth + 'px';
       svg.style.height = img.clientHeight + 'px';
       
-      // Khởi tạo vị trí trung tâm mặc định chuẩn cho Mobile không để lại khoảng trống
-      if (mobileQuery.matches) {
-        panX = 0;
-        panY = 0;
-      } else {
-        panX = 0;
-        panY = 0;
-      }
+      // Khởi tạo trạng thái ban đầu nằm ngay ngắn ở trung tâm màn hình
+      panX = 0;
+      panY = 0;
       applyMapTransform();
     }
 
@@ -372,20 +365,21 @@
     if (img.complete && img.naturalWidth) { refresh(); } 
     else { img.addEventListener('load', refresh); }
     window.addEventListener('resize', positionSVG);
+    
     mobileQuery.addEventListener('change', () => {
       mapZoomScale = 1;
       zoomSlider.value = 1;
       refresh();
     });
 
-    // Lắng nghe Slider điều khiển Zoom
+    // Lắng nghe thanh Zoom trượt
     zoomSlider.addEventListener('input', (e) => {
       mapZoomScale = parseFloat(e.target.value);
       if (mapZoomScale < 1) mapZoomScale = 1;
       applyMapTransform();
     });
 
-    // Xử lý kéo bằng Chuột (Chỉ bật khi Desktop zoom > 1 hoặc trên Mobile)
+    // Sự kiện kéo bằng chuột trên máy tính
     container.addEventListener('mousedown', (e) => {
       if (!mobileQuery.matches && mapZoomScale <= 1) return; 
       isMapDragging = true;
@@ -413,7 +407,7 @@
       setTimeout(() => { isMapMoving = false; }, 50);
     });
 
-    // Xử lý kéo vuốt bằng Touch trên Mobile
+    // Sự kiện vuốt chạm kéo (Pan) bằng 1 ngón tay trên điện thoại Mobile
     container.addEventListener('touchstart', (e) => {
       if (e.touches.length !== 1) return; 
       isMapDragging = true;
@@ -429,9 +423,9 @@
       const dx = e.touches[0].clientX - startX;
       const dy = e.touches[0].clientY - startY;
 
-      if (Math.hypot(dx, dy) > 5) isMapMoving = true;
+      if (Math.hypot(dx, dy) > 4) isMapMoving = true;
       
-      e.preventDefault(); // Chặn hành vi cuộn mặc định khi đang rê sơ đồ
+      e.preventDefault(); // Chặn hành vi cuộn mặc định của web, dành quyền vuốt để lướt xem ảnh
       panX = startPanX + dx;
       panY = startPanY + dy;
       applyMapTransform();
@@ -443,7 +437,7 @@
     }, { passive: true });
 
 
-    // ===== MODAL POPUP CHI TIẾT GỐC GIỮ NGUYÊN =====
+    // ===== MODAL POPUP CHI TIẾT GIỮ NGUYÊN BẢN GỐC =====
     let scale = 1, translateX = 0, translateY = 0;
     let isDragging = false, pStartX = 0, pStartY = 0;
 
