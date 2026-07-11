@@ -16,23 +16,33 @@
     width: 100%;
     background: #ffffff;
     font-family: Arial, sans-serif;
-    /* Chỉ BODY cuộn (không phải cả html lẫn body) -> tránh hiện 2 thanh cuộn chồng nhau */
     overflow-y: auto;
     overflow-x: hidden;
     max-height: 100vh;
   }
 
-  /* Ẩn thanh cuộn nhưng VẪN giữ chức năng cuộn được bình thường */
-  body::-webkit-scrollbar {
-    display: none;
+  /* Tuỳ biến thanh cuộn siêu mỏng */
+  ::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
   }
-  body {
-    -ms-overflow-style: none;  /* Edge/IE cũ */
-    scrollbar-width: none;     /* Firefox */
+  ::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.03);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.4);
+  }
+  
+  /* Hỗ trợ Firefox */
+  html {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 0, 0, 0.2) rgba(0, 0, 0, 0.03);
   }
 
-  /* Watermark nhỏ, tinh tế, cố định ở góc dưới màn hình — không che nội dung,
-     không cản thao tác bấm/kéo bên dưới nó */
   .brand-label {
     position: fixed;
     bottom: 6px;
@@ -51,50 +61,34 @@
   .map-container {
     position: relative;
     width: 100%;
+    height: 100vh; /* Chuyển container thành full view cố định để phục vụ pan/zoom cho cả desktop */
+    overflow: hidden;
+    background: #fff;
   }
 
   .map-container img.masterplan {
-    display: block;
-    width: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: auto;
     height: auto;
+    max-width: none;
+    cursor: grab;
+    will-change: transform;
     user-select: none;
     -webkit-user-drag: none;
   }
-
-  /* ⚠️ RIÊNG CHO MOBILE: ảnh được PHÓNG TO lấp đầy khung (không còn khoảng trắng),
-     và có thể KÉO DI CHUYỂN để xem các phần bị che khuất do phóng to.
-     Kích thước/vị trí thực tế do JS điều khiển (biến số dưới đây chỉ là mặc định ban đầu).
-     Desktop giữ nguyên hoàn toàn như cũ (width:100%, height:auto), không đổi gì. */
-  @media (max-width: 700px) {
-    html, body {
-      height: 100%;
-      overflow: hidden;
-    }
-    .map-container {
-      height: 100vh;
-      overflow: hidden;
-      touch-action: none; /* để JS tự xử lý kéo, tránh trình duyệt cuộn trang khi kéo ảnh */
-    }
-    .map-container img.masterplan {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: auto;
-      height: auto;
-      max-width: none;
-      cursor: grab;
-      will-change: transform;
-    }
-    .map-container img.masterplan.dragging {
-      cursor: grabbing;
-    }
+  
+  .map-container img.masterplan.dragging {
+    cursor: grabbing;
   }
 
-  /* SVG chứa các vùng polygon click — được JS định vị chính xác khớp với vùng ảnh
-     thực tế đang hiển thị (sau khi object-fit:contain co giãn/letterbox) */
   .hotspot-svg {
     position: absolute;
     pointer-events: none;
+    will-change: transform;
+    top: 0;
+    left: 0;
   }
   .hotspot-svg polygon {
     fill: rgba(255, 153, 0, 0);
@@ -229,113 +223,88 @@
   </div>
 
   <script>
-    // ⚠️ Toạ độ polygon giữ NGUYÊN theo pixel gốc của ảnh masterplan (không đổi gì so với bản cũ)
     const zones = [
-      { title: 'Layout 1', image: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783683857/be680720-1432-463e-b7ea-85e082c5a861.png',
-        points: '767,1682 794,1594 1077,1704 1050,1782 918,1736' },
-      { title: 'Layout 1', image: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783683857/be680720-1432-463e-b7ea-85e082c5a861.png',
-        points: '953,1466 984,1386 1172,1457 1141,1536' },
-      { title: 'Layout 2', image: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M2_us8qsf.jpg',
-        points: '1311,1584 1430,1626 1340,1881 1220,1838' },
-      { title: 'Layout 2', image: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M2_us8qsf.jpg',
-        points: '1472,1944 1351,1900 1443,1635 1563,1681' },
-      { title: 'Layout 2', image: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M2_us8qsf.jpg',
-        points: '1059,1923 997,2044 1293,2201 1360,2084' },
-      { title: 'Layout 2', image: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M2_us8qsf.jpg',
-        points: '726,1782 854,1829 803,1973 675,1926' },
-      { title: 'Layout 2', image: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M2_us8qsf.jpg',
-        points: '1538,2179 1474,2296 1534,2329 1600,2209' },
-      { title: 'Layout 3', image: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M3_jt8v6r.jpg',
-        points: '1083,926 1264,978 1201,1206 1033,1159' },
-      { title: 'Layout 3', image: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M3_jt8v6r.jpg',
-        points: '1379,972 1560,1021 1481,1316 1300,1266' },
-      { title: 'Layout 3', image: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M3_jt8v6r.jpg',
-        points: '1572,979 1746,1025 1649,1395 1475,1350' },
-      { title: 'Layout 3', image: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M3_jt8v6r.jpg',
-        points: '674,1928 853,1990 829,2058 652,1990' },
-      { title: 'Layout 4', image: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678533/M4_fcxmci.jpg',
-        points: '1344,1277 1311,1402 1446,1464 1483,1317' },
-      { title: 'Layout 4', image: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678533/M4_fcxmci.jpg',
-        points: '1475,1348 1613,1386 1578,1522 1446,1463' },
-      { title: 'Layout 4', image: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678533/M4_fcxmci.jpg',
-        points: '958,2022 1092,2095 1059,2192 922,2117' },
-      { title: 'Layout 5', image: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678533/M5_vtfhxl.jpg',
-        points: '436,943 396,1042 800,1197 840,1091' },
-      { title: 'Layout 6', image: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678534/M6_yonyqn.jpg',
-        points: '840,1089 800,1195 1117,1321 1165,1195 1032,1159' },
-      { title: 'Layout 6', image: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678534/M6_yonyqn.jpg',
-        points: '1675,1705 1810,1751 1976,1078 1855,1045 1768,1374 1720,1557 1711,1599' },
-      { title: 'Layout 2', image: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M2_us8qsf.jpg',
-        points: '1675,1704 1808,1750 1684,2068 1561,2022' }
+      { title: 'Layout 1', image: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783683857/be680720-1432-463e-b7ea-85e082c5a861.png', points: '767,1682 794,1594 1077,1704 1050,1782 918,1736' },
+      { title: 'Layout 1', image: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783683857/be680720-1432-463e-b7ea-85e082c5a861.png', points: '953,1466 984,1386 1172,1457 1141,1536' },
+      { title: 'Layout 2', image: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M2_us8qsf.jpg', points: '1311,1584 1430,1626 1340,1881 1220,1838' },
+      { title: 'Layout 2', image: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M2_us8qsf.jpg', points: '1472,1944 1351,1900 1443,1635 1563,1681' },
+      { title: 'Layout 2', image: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M2_us8qsf.jpg', points: '1059,1923 997,2044 1293,2201 1360,2084' },
+      { title: 'Layout 2', image: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M2_us8qsf.jpg', points: '726,1782 854,1829 803,1973 675,1926' },
+      { title: 'Layout 2', image: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M2_us8qsf.jpg', points: '1538,2179 1474,2296 1534,2329 1600,2209' },
+      { title: 'Layout 3', image: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M3_jt8v6r.jpg', points: '1083,926 1264,978 1201,1206 1033,1159' },
+      { title: 'Layout 3', image: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M3_jt8v6r.jpg', points: '1379,972 1560,1021 1481,1316 1300,1266' },
+      { title: 'Layout 3', image: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M3_jt8v6r.jpg', points: '1572,979 1746,1025 1649,1395 1475,1350' },
+      { title: 'Layout 3', image: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M3_jt8v6r.jpg', points: '674,1928 853,1990 829,2058 652,1990' },
+      { title: 'Layout 4', image: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678533/M4_fcxmci.jpg', points: '1344,1277 1311,1402 1446,1464 1483,1317' },
+      { title: 'Layout 4', image: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678533/M4_fcxmci.jpg', points: '1475,1348 1613,1386 1578,1522 1446,1463' },
+      { title: 'Layout 4', image: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678533/M4_fcxmci.jpg', points: '958,2022 1092,2095 1059,2192 922,2117' },
+      { title: 'Layout 5', image: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678533/M5_vtfhxl.jpg', points: '436,943 396,1042 800,1197 840,1091' },
+      { title: 'Layout 6', image: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678534/M6_yonyqn.jpg', points: '840,1089 800,1195 1117,1321 1165,1195 1032,1159' },
+      { title: 'Layout 6', image: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678534/M6_yonyqn.jpg', points: '1675,1705 1810,1751 1976,1078 1855,1045 1768,1374 1720,1557 1711,1599' },
+      { title: 'Layout 2', image: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M2_us8qsf.jpg', points: '1675,1704 1808,1750 1684,2068 1561,2022' }
     ];
 
     const SVG_NS = 'http://www.w3.org/2000/svg';
     const img = document.getElementById('masterplanImg');
     const svg = document.getElementById('hotspotSvg');
     const container = document.getElementById('mapContainer');
-
-    // Desktop: ảnh co theo chiều rộng, container tự cao đúng bằng ảnh -> không cần pan.
-    // Mobile (<=700px): ảnh phóng to lấp đầy khung ("cover"), có thể KÉO DI CHUYỂN
-    // trong giới hạn để xem phần bị che khuất, không bao giờ lộ khoảng trắng.
     const mobileQuery = window.matchMedia('(max-width: 700px)');
 
-    let panX = 0, panY = 0;       // vị trí ảnh hiện tại (mobile)
-    let renderW = 0, renderH = 0; // kích thước ảnh đã phóng (mobile)
-    let minX = 0, maxX = 0, minY = 0, maxY = 0; // giới hạn kéo (mobile)
+    let currentScale = 1;
+    let panX = 0, panY = 0;       
+    let renderW = 0, renderH = 0; 
+    let minX = 0, maxX = 0, minY = 0, maxY = 0; 
 
     function clamp(v, lo, hi) { return Math.min(hi, Math.max(lo, v)); }
 
-    function applyMobileTransform() {
+    function applyTransform() {
       img.style.width = renderW + 'px';
       img.style.height = renderH + 'px';
       img.style.transform = 'translate(' + panX + 'px,' + panY + 'px)';
+      
       svg.style.width = renderW + 'px';
       svg.style.height = renderH + 'px';
-      svg.style.left = '0px';
-      svg.style.top = '0px';
       svg.style.transform = 'translate(' + panX + 'px,' + panY + 'px)';
     }
 
-    function positionSVG() {
+    function calculateBounds() {
+      const cw = container.clientWidth;
+      const ch = container.clientHeight;
+      minX = cw - renderW;
+      minY = ch - renderH;
+      
+      // Nếu ảnh nhỏ hơn khung, không cho kéo hoặc khóa ở 0
+      if (minX > 0) minX = 0;
+      if (minY > 0) minY = 0;
+
+      panX = clamp(panX, minX, maxX);
+      panY = clamp(panY, minY, maxY);
+    }
+
+    function initPosition() {
       const cw = container.clientWidth;
       const ch = container.clientHeight;
       const nw = img.naturalWidth;
       const nh = img.naturalHeight;
       if (!nw || !nh || !cw || !ch) return;
 
-      if (mobileQuery.matches) {
-        // "cover": phóng to đủ lấp đầy khung theo cạnh lớn hơn
-        const scale = Math.max(cw / nw, ch / nh);
-        renderW = nw * scale;
-        renderH = nh * scale;
+      // Xác định tỷ lệ cơ sở ban đầu để vừa khít màn hình
+      const baseScale = mobileQuery.matches ? Math.max(cw / nw, ch / nh) : Math.min(cw / nw, ch / nh);
+      
+      // Áp dụng độ phóng đại riêng: Mobile phóng to sẵn 1.6, Desktop bắt đầu từ 1.0 (vừa khung)
+      const zoomFactor = mobileQuery.matches ? 1.6 : 1.0;
+      currentScale = baseScale * zoomFactor;
 
-        // Giới hạn kéo: không bao giờ để lộ khoảng trắng ngoài rìa ảnh
-        minX = cw - renderW; maxX = 0;
-        minY = ch - renderH; maxY = 0;
+      renderW = nw * currentScale;
+      renderH = nh * currentScale;
 
-        // Căn giữa mặc định khi vừa vào / vừa đổi kích thước màn hình
-        panX = clamp((cw - renderW) / 2, minX, maxX);
-        panY = clamp((ch - renderH) / 2, minY, maxY);
+      calculateBounds();
 
-        // Reset kiểu inline mà chế độ desktop có thể để lại
-        img.style.position = 'absolute';
-        applyMobileTransform();
-      } else {
-        // Desktop: ảnh co theo width:100% tự nhiên (CSS lo hết), SVG chỉ cần khớp
-        // đúng kích thước hiển thị thực tế của ảnh, không cần pan.
-        img.style.width = '';
-        img.style.height = '';
-        img.style.transform = '';
-        const rect = img.getBoundingClientRect();
-        renderW = rect.width;
-        renderH = rect.height;
-        panX = 0; panY = 0;
-        svg.style.left = '0px';
-        svg.style.top = '0px';
-        svg.style.width = renderW + 'px';
-        svg.style.height = renderH + 'px';
-        svg.style.transform = '';
-      }
+      // Căn giữa ảnh
+      panX = (cw - renderW) / 2;
+      panY = (ch - renderH) / 2;
+
+      applyTransform();
     }
 
     function buildSVG() {
@@ -351,7 +320,7 @@
 
     function refresh() {
       buildSVG();
-      positionSVG();
+      initPosition();
     }
 
     if (img.complete && img.naturalWidth) {
@@ -359,15 +328,59 @@
     } else {
       img.addEventListener('load', refresh);
     }
-    window.addEventListener('resize', positionSVG);
+    window.addEventListener('resize', initPosition);
     mobileQuery.addEventListener('change', refresh);
 
-    // ===== KÉO DI CHUYỂN ảnh trên mobile (chỉ hoạt động khi mobileQuery.matches) =====
-    let mapDragging = false, mapStartX = 0, mapStartY = 0, mapStartPanX = 0, mapStartPanY = 0;
-    let mapTouchStartDist = null, mapTouchStartScale = 1;
+    // ===== HỖ TRỢ ZOOM TRÊN MASTERPLAN BẰNG CUỘN CHUỘT (CẢ DESKTOP & MOBILE) =====
+    container.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      const cw = container.clientWidth;
+      const ch = container.clientHeight;
+      const nw = img.naturalWidth;
+      const nh = img.naturalHeight;
 
+      // Lấy vị trí trỏ chuột so với vùng chứa để phóng to chuẩn tâm chuột
+      const rect = container.getBoundingClientRect();
+      const mouseX = e.clientX - rect.left;
+      const mouseY = e.clientY - rect.top;
+
+      // Tính tọa độ điểm trên ảnh trước khi thực hiện zoom
+      const imageX = (mouseX - panX) / currentScale;
+      const imageY = (mouseY - panY) / currentScale;
+
+      // Tính toán tỷ lệ zoom mới
+      const factor = 1.15;
+      const baseScale = mobileQuery.matches ? Math.max(cw / nw, ch / nh) : Math.min(cw / nw, ch / nh);
+      const maxScale = baseScale * 6; // Giới hạn phóng to tối đa 6 lần
+      const minScale = baseScale * 0.8; // Giới hạn thu nhỏ tối thiểu
+
+      if (e.deltaY < 0) {
+        if (currentScale < maxScale) currentScale *= factor;
+      } else {
+        if (currentScale > minScale) currentScale /= factor;
+      }
+
+      renderW = nw * currentScale;
+      renderH = nh * currentScale;
+
+      calculateBounds();
+
+      // Tính toán lại panX và panY để giữ nguyên vị trí tâm chuột
+      panX = mouseX - imageX * currentScale;
+      panY = mouseY - imageY * currentScale;
+
+      // Giới hạn lại sau khi dịch chuyển
+      panX = clamp(panX, minX, maxX);
+      panY = clamp(panY, minY, maxY);
+
+      applyTransform();
+    }, { passive: false });
+
+    // ===== TÍNH NĂNG KÉO DI CHUYỂN BẢN ĐỒ CHÍNH (CHUỘT & CẢM ỨNG) =====
+    let mapDragging = false, mapStartX = 0, mapStartY = 0, mapStartPanX = 0, mapStartPanY = 0;
+
+    // Thiết bị di động / Cảm ứng
     container.addEventListener('touchstart', (e) => {
-      if (!mobileQuery.matches) return;
       if (e.touches.length === 1) {
         mapDragging = true;
         img.classList.add('dragging');
@@ -375,23 +388,16 @@
         mapStartY = e.touches[0].clientY;
         mapStartPanX = panX;
         mapStartPanY = panY;
-      } else if (e.touches.length === 2) {
-        mapTouchStartDist = Math.hypot(
-          e.touches[0].clientX - e.touches[1].clientX,
-          e.touches[0].clientY - e.touches[1].clientY
-        );
       }
     }, { passive: true });
 
     container.addEventListener('touchmove', (e) => {
-      if (!mobileQuery.matches) return;
       if (e.touches.length === 1 && mapDragging) {
         e.preventDefault();
         panX = clamp(mapStartPanX + (e.touches[0].clientX - mapStartX), minX, maxX);
         panY = clamp(mapStartPanY + (e.touches[0].clientY - mapStartY), minY, maxY);
-        applyMobileTransform();
+        applyTransform();
       }
-      // (Pinch để phóng to thêm có thể bổ sung sau nếu cần; hiện tại giữ đơn giản: kéo để xem quanh)
     }, { passive: false });
 
     container.addEventListener('touchend', (e) => {
@@ -401,9 +407,8 @@
       }
     }, { passive: true });
 
-    // Hỗ trợ kéo bằng chuột luôn (test trên desktop thu nhỏ cửa sổ mô phỏng mobile)
+    // Chuột trên Desktop
     container.addEventListener('mousedown', (e) => {
-      if (!mobileQuery.matches) return;
       mapDragging = true;
       img.classList.add('dragging');
       mapStartX = e.clientX;
@@ -412,17 +417,17 @@
       mapStartPanY = panY;
     });
     window.addEventListener('mousemove', (e) => {
-      if (!mapDragging || !mobileQuery.matches) return;
+      if (!mapDragging) return;
       panX = clamp(mapStartPanX + (e.clientX - mapStartX), minX, maxX);
       panY = clamp(mapStartPanY + (e.clientY - mapStartY), minY, maxY);
-      applyMobileTransform();
+      applyTransform();
     });
     window.addEventListener('mouseup', () => {
       mapDragging = false;
       img.classList.remove('dragging');
     });
 
-    // ===== MODAL: zoom / pan (vanilla JS, không phụ thuộc jQuery) =====
+    // ===== MODAL POPUP (LAYOUT CHI TIẾT) =====
     let scale = 1, translateX = 0, translateY = 0;
     let isDragging = false, startX = 0, startY = 0;
 
@@ -491,7 +496,6 @@
       popupImg.classList.remove('dragging');
     });
 
-    // Hỗ trợ chạm/kéo trên mobile trong popup
     let touchStartDist = null;
     popupImg.addEventListener('touchstart', (e) => {
       if (e.touches.length === 1) {
@@ -528,6 +532,5 @@
       if (e.touches.length === 0) isDragging = false;
     }, { passive: true });
   </script>
-
 </body>
 </html>
