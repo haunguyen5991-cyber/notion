@@ -7,14 +7,38 @@
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
-  html, body {
+  html {
+    width: 100%;
+    background: #ffffff;
+  }
+
+  body {
     width: 100%;
     background: #ffffff;
     font-family: Arial, sans-serif;
-    /* Cho phép cuộn bên trong khung nếu ảnh cao hơn chiều cao Notion cấp cho
-       (ưu tiên hiện ảnh TO đúng theo chiều rộng, thay vì ép co nhỏ vừa khung) */
+    /* Chỉ BODY cuộn (không phải cả html lẫn body) -> tránh hiện 2 thanh cuộn chồng nhau */
     overflow-y: auto;
     overflow-x: hidden;
+    max-height: 100vh;
+  }
+
+  /* Thanh cuộn mỏng, tinh tế thay vì thanh mặc định to bản của trình duyệt */
+  body::-webkit-scrollbar {
+    width: 6px;
+  }
+  body::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  body::-webkit-scrollbar-thumb {
+    background: rgba(0,0,0,0.25);
+    border-radius: 10px;
+  }
+  body::-webkit-scrollbar-thumb:hover {
+    background: rgba(0,0,0,0.4);
+  }
+  body {
+    scrollbar-width: thin; /* Firefox */
+    scrollbar-color: rgba(0,0,0,0.25) transparent;
   }
 
   .map-container {
