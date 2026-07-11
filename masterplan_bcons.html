@@ -3,95 +3,45 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Gallery</title>
+<title>Bản Đồ Tương Tác Bcons Uni Valley</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
-  html, body {
+  html {
     width: 100%;
-    height: 100%;
-    background: #fff;
+    background: #ffffff;
+  }
+
+  body {
+    width: 100%;
+    background: #ffffff;
     font-family: Arial, sans-serif;
-    overflow: hidden;
+    overflow-y: auto;
+    overflow-x: hidden;
+    max-height: 100vh;
   }
 
-  .gallery {
-    width: 100%;
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-    background: #fff;
-  }
+  /* Ẩn thanh cuộn nhưng VẪN giữ chức năng cuộn được bình thường */
+  body::-webkit-scrollbar { display: none; }
+  body { -ms-overflow-style: none; scrollbar-width: none; }
 
-  /* MAIN VIEW VỚI KHOẢNG TRẮNG NGĂN CÁCH PHÍA DƯỚI */
-  .main-view {
-    flex: 1;
-    position: relative;
-    background: #fff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    margin-bottom: 12px;
-  }
-
-  .counter {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    background: rgba(0,0,0,0.6);
-    color: white;
-    padding: 5px 10px;
-    border-radius: 4px;
-    font-size: 12px;
-    z-index: 10;
-  }
-
-  #mainMediaWrap {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #fff;
-    position: relative;
-    overflow: hidden;
-  }
-
-  /* ĐẢM BẢO ẢNH FULL MAIN VIEW CẢ DESKTOP & MOBILE */
-  #mainMediaWrap img {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transform-origin: center center;
-    will-change: transform;
-  }
-  
-  #mainMediaWrap video {
-    width: 100%;
-    height: 100%;
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
-  }
-
-  /* BỘ ĐIỀU KHIỂN ĐÃ ĐƯỢC THU MỎNG LẠI GIỐNG MASTERPLAN */
+  /* KHUNG CHỨA ĐIỀU KHIỂN NẰM NGANG NHAU (KHÔNG XẾP CHỒNG) */
   .bottom-controls-container {
-    position: absolute;
+    position: fixed;
     bottom: 12px;
-    right: 12px;
+    right: 12px; /* Mặc định bên phải trên Desktop */
     display: flex;
-    flex-direction: row;
+    flex-direction: row; /* Nằm ngang hàng nhau */
     align-items: center;
-    gap: 8px;
+    gap: 8px; /* Khoảng cách giữa thanh zoom và label */
     z-index: 500;
-    background: rgba(255, 255, 255, 0.85); /* Trả về màu nền mờ tinh tế */
-    padding: 4px 10px; /* Làm mỏng padding lại giống hệt masterplan */
+    background: rgba(255, 255, 255, 0.85);
+    padding: 4px 10px;
     border-radius: 20px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.12);
   }
 
+  /* Thanh zoom thu gọn tinh tế */
   .main-map-controls {
     display: flex;
     align-items: center;
@@ -104,384 +54,492 @@
     color: #333;
     font-weight: bold;
   }
-  
-  /* THANH RAY ĐƯỢC CHỈNH MỎNG LẠI */
   .main-map-controls input[type="range"] {
-    -webkit-appearance: none;
-    appearance: none;
     width: 70px;
-    height: 3px; /* Độ dày thanh ray 3px chuẩn masterplan */
-    background: rgba(0,0,0,0.15);
+    height: 3px;
+    accent-color: #ff9900;
+    cursor: pointer;
     outline: none;
     border: none;
-    cursor: pointer;
+    background: rgba(0,0,0,0.15);
   }
 
-  /* Nút kéo trên Chrome, Safari, Opera và Edge */
-  .main-map-controls input[type="range"]::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 12px; /* Thu gọn đường kính nút tròn cam vừa vặn */
-    height: 12px;
-    background: #ff9900;
-    border-radius: 50%;
-    cursor: pointer;
-  }
-
-  /* Nút kéo trên Firefox */
-  .main-map-controls input[type="range"]::-moz-range-thumb {
-    width: 12px;
-    height: 12px;
-    background: #ff9900;
-    border: none;
-    border-radius: 50%;
-    cursor: pointer;
-  }
-
+  /* Chữ nhãn thương hiệu nằm kế bên thanh zoom */
   .brand-label {
     font-size: 11px;
     font-family: Arial, sans-serif;
     color: rgba(0, 0, 0, 0.5);
-    border-left: 1px solid rgba(0, 0, 0, 0.15);
+    border-left: 1px solid rgba(0, 0, 0, 0.15); /* Vạch ngăn cách nhỏ ở giữa */
     padding-left: 8px;
     pointer-events: none;
     user-select: none;
   }
 
-  /* THANH CHỨA THUMBNAIL */
-  .thumb-rail {
-    height: 110px;
-    background: #e4e4e4;
-    border-top: 1px solid #ccc;
-    border-bottom: 1px solid #ccc;
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    overflow-x: auto;
-    gap: 10px;
-    padding: 10px 20px;
-    scroll-behavior: smooth;
-    -webkit-overflow-scrolling: touch;
+  /* Khung chứa bản đồ chính */
+  .map-container {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    background: #ffffff;
   }
 
-  .thumb-rail::-webkit-scrollbar { display: none; }
-  .thumb-rail { -ms-overflow-style: none; scrollbar-width: none; }
+  .map-container img.masterplan {
+    display: block;
+    width: 100%;
+    height: auto;
+    user-select: none;
+    -webkit-user-drag: none;
+    will-change: transform;
+  }
 
-  .thumb {
-    width: 88px;
-    height: 88px;
-    flex-shrink: 0;
-    background: #222;
-    border: 2px solid transparent;
+  /* CẤU HÌNH RIÊNG CHO MOBILE (DƯỚI 700PX) */
+  @media (max-width: 700px) {
+    html, body {
+      height: 100%;
+      overflow: hidden;
+    }
+    .map-container {
+      height: 100vh;
+      width: 100vw;
+      overflow: hidden;
+      touch-action: none;
+    }
+    .map-container img.masterplan {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: auto;
+      height: auto;
+      max-width: none;
+      cursor: grab;
+    }
+    .map-container img.masterplan.dragging {
+      cursor: grabbing;
+    }
+
+    /* Đưa khung điều khiển ra CHÍNH GIỮA PHÍA DƯỚI khi ở giao diện Mobile */
+    .bottom-controls-container {
+      right: 50%;
+      transform: translateX(50%); /* Căn giữa tuyệt đối */
+      bottom: 16px;
+    }
+  }
+
+  /* SVG Hotspots */
+  .hotspot-svg {
+    position: absolute;
+    pointer-events: none;
+  }
+  .hotspot-svg polygon {
+    fill: rgba(255, 153, 0, 0);
+    stroke: transparent;
+    stroke-width: 2;
     cursor: pointer;
+    pointer-events: all;
+    transition: fill 0.15s, stroke 0.15s;
+    vector-effect: non-scaling-stroke;
+  }
+  .hotspot-svg polygon:hover {
+    fill: rgba(255, 153, 0, 0.35);
+    stroke: rgba(255, 102, 0, 0.9);
+  }
+
+  /* ===== MODAL POPUP CHI TIẾT ===== */
+  .popup-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: rgba(0,0,0,0.75);
+    align-items: center;
+    justify-content: center;
+  }
+  .popup-overlay.active { display: flex; }
+  .popup-content {
+    position: relative;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 1000px;
+    box-shadow: 0 5px 25px rgba(0,0,0,0.5);
+    text-align: center;
+  }
+  .popup-content h3 { margin-bottom: 12px; color: #222; font-size: 16px; }
+  .img-viewport {
+    position: relative;
+    width: 100%;
+    height: 65vh;
     overflow: hidden;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: #fdfdfd;
     display: flex;
     align-items: center;
     justify-content: center;
-    position: relative;
-    border-radius: 2px;
   }
-
-  .thumb:first-child { margin-left: auto; }
-  .thumb:last-child { margin-right: auto; }
-
-  .thumb img, .thumb video {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    pointer-events: none;
+  .img-viewport img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    transform-origin: center center;
+    cursor: grab;
+    user-select: none;
+    -webkit-user-drag: none;
+    transition: transform 0.08s ease-out;
   }
-
-  .thumb.active { border-color: #000; }
-  .thumb:hover { border-color: #666; }
-
-  #mainMediaWrap img.zoomable { cursor: zoom-in; }
-  #mainMediaWrap img.zoomable.zoomed { cursor: grab; }
-  #mainMediaWrap img.zoomable.zoomed.dragging { cursor: grabbing; }
-  
-  .zoom-hint {
+  .img-viewport img.dragging { cursor: grabbing; transition: none; }
+  .zoom-controls {
     position: absolute;
-    bottom: 4px;
+    bottom: 14px;
     left: 50%;
     transform: translateX(-50%);
-    background: rgba(0,0,0,0.45);
-    color: rgba(255,255,255,0.85);
-    font-size: 10px;
-    padding: 3px 8px;
-    border-radius: 10px;
-    pointer-events: none;
+    background: rgba(0,0,0,0.75);
+    padding: 6px 15px;
+    border-radius: 30px;
+    display: flex;
+    gap: 15px;
     z-index: 10;
-    opacity: 0;
-    transition: opacity 0.3s;
   }
-  .main-view:hover .zoom-hint { opacity: 1; }
+  .zoom-controls button { background: none; border: none; color: #fff; font-size: 18px; cursor: pointer; padding: 2px 6px; }
+  .zoom-controls button:hover { color: #ff9900; }
+  .close-btn {
+    position: absolute;
+    top: -12px;
+    right: -12px;
+    background: #ff4d4d;
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    font-size: 17px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+  }
+  .close-btn:hover { background: #cc0000; }
 </style>
 </head>
 <body>
-  <div class="gallery">
-    <div class="main-view" id="mainView">
-      <div class="counter" id="counter">1 / 11</div>
-      <div class="zoom-hint" id="zoomHint">Kéo thanh trượt hoặc cuộn để phóng to • Kéo rê để xem chi tiết</div>
-      <div id="mainMediaWrap"></div>
-      
-      <!-- CỤM ZOOM TINH TẾ CHUẨN MASTERPLAN -->
-      <div class="bottom-controls-container" id="controlsContainer">
-        <div class="main-map-controls">
-          <span>-</span>
-          <input type="range" id="mediaZoomSlider" min="1" max="5" step="0.05" value="1" title="Kéo để phóng to ảnh">
-          <span>+</span>
+
+  <div class="map-container" id="mapContainer">
+    <img class="masterplan" id="masterplanImg"
+         src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783686087/masterplan_w7xmhr.jpg"
+         alt="Masterplan">
+    <svg class="hotspot-svg" id="hotspotSvg"></svg>
+  </div>
+
+  <div class="bottom-controls-container">
+    <div class="main-map-controls">
+      <span>-</span>
+      <input type="range" id="mapZoomSlider" min="1" max="3" step="0.02" value="1" title="Kéo để phóng to bản đồ">
+      <span>+</span>
+    </div>
+    <div class="brand-label">dulieunhapho.com</div>
+  </div>
+
+  <div class="popup-overlay" id="popupOverlay">
+    <div class="popup-content">
+      <button class="close-btn" id="closeBtn">&times;</button>
+      <h3 id="popupTitle">Chi tiết mặt bằng</h3>
+      <div class="img-viewport" id="viewport">
+        <img id="popupImg" src="" alt="Layout chi tiết">
+        <div class="zoom-controls" id="zoomControls">
+          <button id="btnZoomIn" title="Phóng to">🔍 +</button>
+          <button id="btnZoomOut" title="Thu nhỏ">🔍 -</button>
+          <button id="btnZoomReset" title="Đặt lại">↺</button>
         </div>
-        <div class="brand-label">dulieunhapho.com</div>
       </div>
     </div>
-    <div class="thumb-rail" id="thumbRail"></div>
   </div>
 
   <script>
-    const items = [
-      { url: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783672545/z8024276505103_b04259f9580ef2e982ca4ddb0213a49f_mksqn3.jpg', type: 'image' },
-      { url: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783673080/1783673037485_1912694273111558205_7085495023723622370_9da1836acc9f937aac313f3c91b634f5_j1agbn.jpg', type: 'image' },
-      { url: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783710809/z8018839891735_2f212a8b4286ebf15e911ecc2745bccf_rnjsqs.jpg', type: 'image' },
-      { url: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783710818/z8018839899891_72dfb8b98fd9230d713b2ae612010889_bsd3ev.jpg', type: 'image' },
-      { url: 'https://bcons.vn/wp-content/uploads/2025/10/anh-thuc-te-bcons-city-3.jpg', type: 'image' },
-      { url: 'https://bcons.vn/wp-content/uploads/2025/10/anh-thuc-te-bcons-city-2.jpg', type: 'image' },
-      { url: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783673081/1783673037505_1912694273111558205_7085495023723622370_be82048aeb56b28083b1554438003e56_fkchz5.jpg', type: 'image' },
-      { url: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783699190/5fbedabc-24e8-4340-952c-520926f217d0.png', type: 'image' },
-      { url: 'https://bcons.vn/wp-content/uploads/2025/10/anh-thuc-te-bcons-city-1.jpg', type: 'image' },
-      { url: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783672537/Bcons-Uni-Valley_sxf8qp.png', type: 'image' },
-      { url: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783699244/d634af0c-465a-474e-a7c3-900543d9efa2.png', type: 'image' },
-      { url: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783672542/Truong_hoc_ykkxkk.jpg', type: 'image' },
-      { url: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783703660/2fc71894-b09b-4f80-be68-bcc4911957c7.png', type: 'image' }
+    const zones = [
+      { title: 'Layout 1', image: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783683857/be680720-1432-463e-b7ea-85e082c5a861.png', points: '767,1682 794,1594 1077,1704 1050,1782 918,1736' },
+      { title: 'Layout 1', image: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783683857/be680720-1432-463e-b7ea-85e082c5a861.png', points: '953,1466 984,1386 1172,1457 1141,1536' },
+      { title: 'Layout 2', image: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M2_us8qsf.jpg', points: '1311,1584 1430,1626 1340,1881 1220,1838' },
+      { title: 'Layout 2', image: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M2_us8qsf.jpg', points: '1472,1944 1351,1900 1443,1635 1563,1681' },
+      { title: 'Layout 2', image: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M2_us8qsf.jpg', points: '1059,1923 997,2044 1293,2201 1360,2084' },
+      { title: 'Layout 2', image: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M2_us8qsf.jpg', points: '726,1782 854,1829 803,1973 675,1926' },
+      { title: 'Layout 2', image: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M2_us8qsf.jpg', points: '1538,2179 1474,2296 1534,2329 1600,2209' },
+      { title: 'Layout 3', image: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M3_jt8v6r.jpg', points: '1083,926 1264,978 1201,1206 1033,1159' },
+      { title: 'Layout 3', image: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M3_jt8v6r.jpg', points: '1379,972 1560,1021 1481,1316 1300,1266' },
+      { title: 'Layout 3', image: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M3_jt8v6r.jpg', points: '1572,979 1746,1025 1649,1395 1475,1350' },
+      { title: 'Layout 3', image: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M3_jt8v6r.jpg', points: '674,1928 853,1990 829,2058 652,1990' },
+      { title: 'Layout 4', image: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678533/M4_fcxmci.jpg', points: '1344,1277 1311,1402 1446,1464 1483,1317' },
+      { title: 'Layout 4', image: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678533/M4_fcxmci.jpg', points: '1475,1348 1613,1386 1578,1522 1446,1463' },
+      { title: 'Layout 4', image: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678533/M4_fcxmci.jpg', points: '958,2022 1092,2095 1059,2192 922,2117' },
+      { title: 'Layout 5', image: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678533/M5_vtfhxl.jpg', points: '436,943 396,1042 800,1197 840,1091' },
+      { title: 'Layout 6', image: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678534/M6_yonyqn.jpg', points: '840,1089 800,1195 1117,1321 1165,1195 1032,1159' },
+      { title: 'Layout 6', image: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678534/M6_yonyqn.jpg', points: '1675,1705 1810,1751 1976,1078 1855,1045 1768,1374 1720,1557 1711,1599' },
+      { title: 'Layout 2', image: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M2_us8qsf.jpg', points: '1675,1704 1808,1750 1684,2068 1561,2022' }
     ];
 
-    let currentIndex = 0;
-    let isInitialLoad = true;
-    const zoomSlider = document.getElementById('mediaZoomSlider');
-    const controlsContainer = document.getElementById('controlsContainer');
+    const SVG_NS = 'http://www.w3.org/2000/svg';
+    const img = document.getElementById('masterplanImg');
+    const svg = document.getElementById('hotspotSvg');
+    const container = document.getElementById('mapContainer');
+    const zoomSlider = document.getElementById('mapZoomSlider');
+    const mobileQuery = window.matchMedia('(max-width: 700px)');
 
-    function updateMain() {
-      const item = items[currentIndex];
-      const wrap = document.getElementById('mainMediaWrap');
-      wrap.innerHTML = '';
+    let mapZoomScale = 1;
+    let panX = 0, panY = 0;
+    let isMapDragging = false;
+    let startX = 0, startY = 0;
+    let startPanX = 0, startPanY = 0;
+    let renderW = 0, renderH = 0;
+    let minX = 0, maxX = 0, minY = 0, maxY = 0;
 
-      if (item.type === 'video') {
-        const videoEl = document.createElement('video');
-        videoEl.src = item.url;
-        videoEl.controls = true;
-        videoEl.playsInline = true;
-        wrap.appendChild(videoEl);
-        controlsContainer.style.display = 'none';
-        
-        if (!isInitialLoad) {
-          videoEl.play().catch(err => console.log(err));
-        }
+    function clamp(v, lo, hi) { return Math.min(hi, Math.max(lo, v)); }
+
+    function applyMapTransform() {
+      const cw = container.clientWidth;
+      const ch = container.clientHeight;
+
+      if (mobileQuery.matches) {
+        // Áp dụng giới hạn biên chặt chẽ: Không cho lộ vùng trắng
+        minX = cw - renderW * mapZoomScale;
+        minY = ch - renderH * mapZoomScale;
+        maxX = 0;
+        maxY = 0;
+
+        // Nếu kích thước ảnh nhỏ hơn container (trường hợp hiếm), khóa ở vị trí 0
+        if (minX > 0) minX = 0;
+        if (minY > 0) minY = 0;
+
+        panX = clamp(panX, minX, maxX);
+        panY = clamp(panY, minY, maxY);
+
+        const transformStr = 'translate(' + panX + 'px, ' + panY + 'px) scale(' + mapZoomScale + ')';
+        img.style.transform = transformStr;
+        svg.style.transform = transformStr;
       } else {
-        const imgEl = document.createElement('img');
-        imgEl.src = item.url;
-        imgEl.loading = 'lazy';
-        imgEl.className = 'zoomable';
-        wrap.appendChild(imgEl);
-        controlsContainer.style.display = 'flex';
-      }
+        // Desktop giữ nguyên logic zoom tỉ lệ gốc cũ
+        if (mapZoomScale > 1) {
+          const baseScaleW = cw;
+          const baseScaleH = img.naturalHeight * (cw / img.naturalWidth);
+          const maxMoveX = Math.max(0, (baseScaleW * mapZoomScale - cw) / 2);
+          const maxMoveY = Math.max(0, (baseScaleH * mapZoomScale - baseScaleH) / 2);
 
-      document.getElementById('counter').textContent = (currentIndex + 1) + ' / ' + items.length;
-      document.getElementById('zoomHint').style.display = (item.type === 'video') ? 'none' : 'block';
-      
-      updateThumbs();
-      resetZoom();
-    }
-
-    function updateThumbs() {
-      const rail = document.getElementById('thumbRail');
-      const thumbs = document.querySelectorAll('.thumb');
-      
-      thumbs.forEach((t, i) => {
-        t.classList.toggle('active', i === currentIndex);
-      });
-
-      if (isInitialLoad) {
-        isInitialLoad = false;
-        return;
-      }
-
-      const activeThumb = thumbs[currentIndex];
-      if (activeThumb) {
-        const railWidth = rail.clientWidth;
-        const thumbLeft = activeThumb.offsetLeft;
-        const thumbWidth = activeThumb.clientWidth;
-        rail.scrollLeft = thumbLeft - (railWidth / 2) + (thumbWidth / 2);
-      }
-    }
-
-    function initThumbs() {
-      const rail = document.getElementById('thumbRail');
-      items.forEach((item, idx) => {
-        const t = document.createElement('div');
-        t.className = 'thumb' + (idx === 0 ? ' active' : '');
-        t.innerHTML = '<img src="' + item.url + '" loading="lazy">';
-        t.onclick = () => { currentIndex = idx; updateMain(); };
-        rail.appendChild(t);
-      });
-    }
-
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'ArrowLeft') currentIndex = (currentIndex - 1 + items.length) % items.length;
-      if (e.key === 'ArrowRight') currentIndex = (currentIndex + 1) % items.length;
-      else return;
-      updateMain();
-    });
-
-    // ===== TRÌNH QUẢN LÝ ZOOM ĐỒNG BỘ SLIDER =====
-    let zScale = 1, zPanX = 0, zPanY = 0;
-    let zDragging = false, zStartX = 0, zStartY = 0, zStartPanX = 0, zStartPanY = 0;
-    const Z_MIN = 1, Z_MAX = 5;
-
-    function applyZoomTransform() {
-      const img = document.querySelector('#mainMediaWrap img.zoomable');
-      if (!img) return;
-      img.style.transform = 'translate(' + zPanX + 'px,' + zPanY + 'px) scale(' + zScale + ')';
-      img.classList.toggle('zoomed', zScale > Z_MIN);
-      zoomSlider.value = zScale;
-    }
-
-    function resetZoom() {
-      zScale = 1; zPanX = 0; zPanY = 0;
-      applyZoomTransform();
-    }
-
-    function clampZoomPan() {
-      const wrap = document.getElementById('mainMediaWrap');
-      const maxPanX = (wrap.clientWidth * (zScale - 1)) / 2;
-      const maxPanY = (wrap.clientHeight * (zScale - 1)) / 2;
-      
-      zPanX = Math.max(-maxPanX, Math.min(maxPanX, zPanX));
-      zPanY = Math.max(-maxPanY, Math.min(maxPanY, zPanY));
-    }
-
-    function zoomAtPoint(delta, clientX, clientY, refEl) {
-      const rect = refEl.getBoundingClientRect();
-      const cx = clientX - rect.left - rect.width / 2;
-      const cy = clientY - rect.top - rect.height / 2;
-
-      const prevScale = zScale;
-      zScale = Math.min(Z_MAX, Math.max(Z_MIN, zScale + delta));
-      if (zScale === prevScale) return;
-
-      const ratio = zScale / prevScale;
-      zPanX = (zPanX - cx) * ratio + cx;
-      zPanY = (zPanY - cy) * ratio + cy;
-
-      if (zScale <= Z_MIN) { zPanX = 0; zPanY = 0; }
-      clampZoomPan();
-      applyZoomTransform();
-    }
-
-    zoomSlider.addEventListener('input', function(e) {
-      const nextScale = parseFloat(e.target.value);
-      const prevScale = zScale;
-      zScale = nextScale;
-      
-      const ratio = zScale / prevScale;
-      zPanX = zPanX * ratio;
-      zPanY = zPanY * ratio;
-      
-      if (zScale <= Z_MIN) { zPanX = 0; zPanY = 0; }
-      clampZoomPan();
-      applyZoomTransform();
-    });
-
-    (function() {
-      const wrap = document.getElementById('mainMediaWrap');
-
-      wrap.addEventListener('wheel', function(e) {
-        const img = wrap.querySelector('img.zoomable');
-        if (!img) return;
-        e.preventDefault();
-        const delta = e.deltaY < 0 ? 0.25 : -0.25;
-        zoomAtPoint(delta, e.clientX, e.clientY, wrap);
-      }, { passive: false });
-
-      wrap.addEventListener('mousedown', function(e) {
-        const img = wrap.querySelector('img.zoomable');
-        if (!img || zScale <= Z_MIN) return;
-        zDragging = true;
-        img.classList.add('dragging');
-        zStartX = e.clientX; zStartY = e.clientY;
-        zStartPanX = zPanX; zStartPanY = zPanY;
-      });
-      
-      window.addEventListener('mousemove', function(e) {
-        if (!zDragging) return;
-        zPanX = zStartPanX + (e.clientX - zStartX);
-        zPanY = zStartPanY + (e.clientY - zStartY);
-        clampZoomPan();
-        applyZoomTransform();
-      });
-      
-      window.addEventListener('mouseup', function() {
-        if (!zDragging) return;
-        zDragging = false;
-        const img = wrap.querySelector('img.zoomable');
-        if (img) img.classList.remove('dragging');
-      });
-
-      wrap.addEventListener('dblclick', function(e) {
-        const img = wrap.querySelector('img.zoomable');
-        if (!img) return;
-        if (zScale > Z_MIN) {
-          resetZoom();
+          panX = clamp(panX, -maxMoveX, maxMoveX);
+          panY = clamp(panY, -maxMoveY, maxMoveY);
         } else {
-          zoomAtPoint(1.5, e.clientX, e.clientY, wrap);
+          panX = 0;
+          panY = 0;
         }
+        const transformStr = 'translate(' + panX + 'px, ' + panY + 'px) scale(' + mapZoomScale + ')';
+        img.style.transform = transformStr;
+        svg.style.transform = transformStr;
+      }
+    }
+
+    function positionSVG() {
+      const cw = container.clientWidth;
+      const ch = container.clientHeight;
+      const nw = img.naturalWidth;
+      const nh = img.naturalHeight;
+      if (!nw || !nh || !cw || !ch) return;
+
+      if (mobileQuery.matches) {
+        // Phóng to lấp đầy màn hình (cover) chuẩn xác
+        const scale = Math.max(cw / nw, ch / nh);
+        renderW = nw * scale;
+        renderH = nh * scale;
+
+        img.style.position = 'absolute';
+        img.style.width = renderW + 'px';
+        img.style.height = renderH + 'px';
+        
+        svg.style.left = '0px';
+        svg.style.top = '0px';
+        svg.style.width = renderW + 'px';
+        svg.style.height = renderH + 'px';
+
+        // Khởi tạo vị trí căn giữa chuẩn xác không mất góc rìa
+        minX = cw - renderW;
+        minY = ch - renderH;
+        panX = clamp((cw - renderW) / 2, minX, 0);
+        panY = clamp((ch - renderH) / 2, minY, 0);
+
+        applyMapTransform();
+      } else {
+        // Trả lại style mặc định cho Desktop
+        img.style.position = '';
+        img.style.width = '';
+        img.style.height = '';
+        const rect = img.getBoundingClientRect();
+        renderW = rect.width;
+        renderH = rect.height;
+        svg.style.left = '0px';
+        svg.style.top = '0px';
+        svg.style.width = renderW + 'px';
+        svg.style.height = renderH + 'px';
+        applyMapTransform();
+      }
+    }
+
+    function buildSVG() {
+      svg.innerHTML = '';
+      svg.setAttribute('viewBox', '0 0 ' + img.naturalWidth + ' ' + img.naturalHeight);
+      zones.forEach(zone => {
+        const poly = document.createElementNS(SVG_NS, 'polygon');
+        poly.setAttribute('points', zone.points);
+        poly.addEventListener('click', () => {
+          openPopup(zone.title, zone.image);
+        });
+        svg.appendChild(poly);
       });
+    }
 
-      let zLastTouchDist = null;
-      wrap.addEventListener('touchstart', function(e) {
-        const img = wrap.querySelector('img.zoomable');
-        if (!img) return;
-        if (e.touches.length === 2) {
-          zLastTouchDist = Math.hypot(
-            e.touches[0].clientX - e.touches[1].clientX,
-            e.touches[0].clientY - e.touches[1].clientY
-          );
-        } else if (e.touches.length === 1 && zScale > Z_MIN) {
-          zDragging = true;
-          zStartX = e.touches[0].clientX; zStartY = e.touches[0].clientY;
-          zStartPanX = zPanX; zStartPanY = zPanY;
-        }
-      }, { passive: true });
+    function refresh() {
+      buildSVG();
+      positionSVG();
+    }
 
-      wrap.addEventListener('touchmove', function(e) {
-        const img = wrap.querySelector('img.zoomable');
-        if (!img) return;
-        if (e.touches.length === 2 && zLastTouchDist !== null) {
-          e.preventDefault();
-          const dist = Math.hypot(
-            e.touches[0].clientX - e.touches[1].clientX,
-            e.touches[0].clientY - e.touches[1].clientY
-          );
-          const midX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
-          const midY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
-          const delta = (dist - zLastTouchDist) * 0.01;
-          zoomAtPoint(delta, midX, midY, wrap);
-          zLastTouchDist = dist;
-        } else if (e.touches.length === 1 && zDragging) {
-          e.preventDefault();
-          zPanX = zStartPanX + (e.touches[0].clientX - zStartX);
-          zPanY = zStartPanY + (e.touches[0].clientY - zStartY);
-          clampZoomPan();
-          applyZoomTransform();
-        }
-      }, { passive: false });
+    if (img.complete && img.naturalWidth) { refresh(); } 
+    else { img.addEventListener('load', refresh); }
+    window.addEventListener('resize', positionSVG);
+    
+    mobileQuery.addEventListener('change', () => {
+      mapZoomScale = 1;
+      zoomSlider.value = 1;
+      refresh();
+    });
 
-      wrap.addEventListener('touchend', function(e) {
-        if (e.touches.length < 2) zLastTouchDist = null;
-        if (e.touches.length === 0) zDragging = false;
-      }, { passive: true });
-    })();
+    zoomSlider.addEventListener('input', (e) => {
+      mapZoomScale = parseFloat(e.target.value);
+      if (mapZoomScale < 1) mapZoomScale = 1;
+      applyMapTransform();
+    });
 
-    initThumbs();
-    updateMain();
+    // Sự kiện tương tác chuột và chạm di chuyển
+    container.addEventListener('mousedown', (e) => {
+      isMapDragging = true;
+      img.classList.add('dragging');
+      startX = e.clientX;
+      startY = e.clientY;
+      startPanX = panX;
+      startPanY = panY;
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      if (!isMapDragging) return;
+      panX = startPanX + (e.clientX - startX);
+      panY = startPanY + (e.clientY - startY);
+      applyMapTransform();
+    });
+
+    window.addEventListener('mouseup', () => {
+      isMapDragging = false;
+      img.classList.remove('dragging');
+    });
+
+    container.addEventListener('touchstart', (e) => {
+      if (e.touches.length !== 1) return; 
+      isMapDragging = true;
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+      startPanX = panX;
+      startPanY = panY;
+    }, { passive: true });
+
+    container.addEventListener('touchmove', (e) => {
+      if (!isMapDragging) return;
+      e.preventDefault(); 
+      panX = startPanX + (e.touches[0].clientX - startX);
+      panY = startPanY + (e.touches[0].clientY - startY);
+      applyMapTransform();
+    }, { passive: false });
+
+    container.addEventListener('touchend', () => {
+      isMapDragging = false;
+    }, { passive: true });
+
+    // ===== MODAL POPUP CHI TIẾT GIỮ NGUYÊN =====
+    let scale = 1, translateX = 0, translateY = 0;
+    let isDragging = false, pStartX = 0, pStartY = 0;
+
+    const popupOverlay = document.getElementById('popupOverlay');
+    const popupTitle = document.getElementById('popupTitle');
+    const popupImg = document.getElementById('popupImg');
+    const viewport = document.getElementById('viewport');
+    const closeBtn = document.getElementById('closeBtn');
+
+    function updateTransform() {
+      popupImg.style.transform = 'translate(' + translateX + 'px,' + translateY + 'px) scale(' + scale + ')';
+    }
+    function resetZoom() {
+      scale = 1; translateX = 0; translateY = 0;
+      updateTransform();
+    }
+    function openPopup(title, imageUrl) {
+      popupTitle.textContent = title;
+      popupImg.src = imageUrl;
+      resetZoom();
+      popupOverlay.classList.add('active');
+    }
+    function closePopup() {
+      popupOverlay.classList.remove('active');
+      popupImg.src = '';
+    }
+
+    closeBtn.onclick = closePopup;
+    popupOverlay.addEventListener('click', (e) => { if (e.target === popupOverlay) closePopup(); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closePopup(); });
+
+    viewport.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      const factor = 1.1;
+      if (e.deltaY < 0) { if (scale < 5) scale *= factor; }
+      else { if (scale > 0.8) scale /= factor; }
+      updateTransform();
+    }, { passive: false });
+
+    document.getElementById('btnZoomIn').onclick = () => { if (scale < 5) { scale *= 1.25; updateTransform(); } };
+    document.getElementById('btnZoomOut').onclick = () => { if (scale > 0.8) { scale /= 1.25; updateTransform(); } };
+    document.getElementById('btnZoomReset').onclick = resetZoom;
+
+    popupImg.addEventListener('mousedown', (e) => {
+      e.preventDefault(); isDragging = true;
+      popupImg.classList.add('dragging');
+      pStartX = e.clientX - translateX; pStartY = e.clientY - translateY;
+    });
+    window.addEventListener('mousemove', (e) => {
+      if (!isDragging) return;
+      translateX = e.clientX - pStartX; translateY = e.clientY - pStartY;
+      updateTransform();
+    });
+    window.addEventListener('mouseup', () => { isDragging = false; popupImg.classList.remove('dragging'); });
+
+    let touchStartDist = null;
+    popupImg.addEventListener('touchstart', (e) => {
+      if (e.touches.length === 1) {
+        isDragging = true;
+        pStartX = e.touches[0].clientX - translateX; pStartY = e.touches[0].clientY - translateY;
+      } else if (e.touches.length === 2) {
+        touchStartDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+      }
+    }, { passive: true });
+    popupImg.addEventListener('touchmove', (e) => {
+      if (e.touches.length === 1 && isDragging) {
+        e.preventDefault();
+        translateX = e.touches[0].clientX - pStartX; translateY = e.touches[0].clientY - pStartY;
+        updateTransform();
+      } else if (e.touches.length === 2 && touchStartDist !== null) {
+        e.preventDefault();
+        const dist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+        const delta = (dist - touchStartDist) * 0.01;
+        scale = Math.min(5, Math.max(0.8, scale + delta));
+        touchStartDist = dist;
+        updateTransform();
+      }
+    }, { passive: false });
+    popupImg.addEventListener('touchend', (e) => {
+      if (e.touches.length < 2) touchStartDist = null;
+      if (e.touches.length === 0) isDragging = false;
+    }, { passive: true });
   </script>
+
 </body>
 </html>
