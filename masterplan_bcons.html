@@ -10,18 +10,17 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jQuery-rwdImageMaps/1.6/jquery.rwdImageMaps.min.js"></script>
 
     <style>
-        /* GIỮ NỀN TRẮNG VÀ ẨN THANH CUỘT TRÌNH DUYỆT */
+        /* TỐI ƯU HÓA BODY NỀN TRẮNG */
         html, body {
             margin: 0;
             padding: 0;
             width: 100%;
-            height: auto; 
-            min-height: 100%;
+            height: auto;
             background-color: #ffffff;
             font-family: Arial, sans-serif;
         }
 
-        /* Vô hiệu hóa việc hiển thị thanh cuộn vật lý */
+        /* Ẩn thanh cuộn vật lý trình duyệt */
         html::-webkit-scrollbar, body::-webkit-scrollbar {
             display: none;
         }
@@ -36,43 +35,40 @@
             align-items: flex-start;
         }
         
-        /* CONTAINER CHÍNH CHỨA BẢN ĐỒ */
+        /* KHUNG CHỨA BẢN ĐỒ CHÍNH */
         .map-container {
             position: relative;
             width: 100%;
             max-width: 100%;
-            height: auto; 
+            height: auto !important; 
             background: #ffffff;
             padding: 0;
-            border-radius: 0;
-            box-shadow: none;
+            margin: 0;
         }
+        
         .map-container img {
             display: block;
-            width: 100%;
-            height: auto;
+            width: 100% !important;
+            height: auto !important;
         }
 
-        /* --- SỬA LỖI KHOẢNG TRỐNG TRÊN ĐIỆN THOẠI (CRITICAL FIX) --- */
+        /* --- ÉP THAY ĐỔI GIAO DIỆN TRÊN ĐIỆN THOẠI --- */
         @media screen and (max-width: 768px) {
-            /* Triệt tiêu chiều cao cố định của container map và mọi div phát sinh bên trong do maphilight */
-            .map-container, 
-            .map-container div {
-                height: auto !important;
-                max-height: 100% !important;
-            }
-            
-            /* Ép canvas của maphilight co giãn theo đúng chiều cao thực tế của ảnh */
-            .map-container canvas {
+            /* Ngăn chặn div tự sinh của maphilight chiếm diện tích thừa */
+            .map-container > div[style] {
                 width: 100% !important;
                 height: auto !important;
-                position: absolute;
-                top: 0;
-                left: 0;
+            }
+            /* Ép canvas hiển thị đè khít chuẩn xác theo ảnh gốc */
+            .map-container canvas {
+                width: 100% !important;
+                height: 100% !important;
+                left: 0 !important;
+                top: 0 !important;
             }
         }
 
-        /* --- KHUNG POP-UP MODAL MẶT BẰNG --- */
+        /* --- KHUNG POP-UP MODAL CHI TIẾT --- */
         .popup-overlay {
             display: none;
             position: fixed;
@@ -101,7 +97,7 @@
             color: #222;
         }
 
-        /* Khung chứa ảnh hỗ trợ Zoom và Kéo thả */
+        /* Khung hiển thị ảnh zoom trong popup */
         .img-viewport {
             position: relative;
             width: 100%;
@@ -115,7 +111,6 @@
             align-items: center;
         }
         
-        /* Tối ưu hóa không gian hiển thị của popup trên Mobile */
         @media screen and (max-width: 768px) {
             .popup-content {
                 width: 95%;
@@ -140,7 +135,7 @@
             cursor: grabbing;
         }
 
-        /* --- THANH CÔNG CỤ KÍNH LÚP --- */
+        /* BỘ ĐIỀU KHIỂN KÍNH LÚP */
         .zoom-controls {
             position: absolute;
             bottom: 15px;
@@ -168,7 +163,7 @@
             transform: scale(1.1);
         }
         
-        /* Nút đóng (X) */
+        /* Nút đóng X */
         .close-btn {
             position: absolute;
             top: -12px;
@@ -256,7 +251,10 @@
             const $targetImg = $('.maphilight-target');
             
             function initPlugins() {
+                // Kích hoạt tính năng responsive tọa độ bản đồ
                 $('img[usemap]').rwdImageMaps();
+                
+                // Khởi tạo thư viện tô sáng vùng maphilight
                 $targetImg.maphilight({
                     fillColor: 'ff9900',   
                     fillOpacity: 0.4,      
@@ -265,13 +263,17 @@
                     alwaysOn: false        
                 });
                 
-                // Sau khi maphilight render, ép lại CSS một lần nữa bằng JS để đảm bảo hoạt động trên Safari iOS
+                // GIẢI PHÁP CHÍNH: Chờ thư viện tạo cấu trúc dom xong, xử lý ép lại tỷ lệ chiều cao thực tế bằng Javascript
                 setTimeout(function() {
-                    $('.map-container').find('div').css('height', 'auto');
-                }, 300);
+                    const actualImgHeight = $targetImg.height();
+                    // Đặt lại chính xác chiều cao vùng chứa bị lỗi maphilight trên mobile
+                    $('.map-container > div').css({
+                        'height': actualImgHeight + 'px',
+                        'width': '100%'
+                    });
+                }, 400);
             }
 
-            // Kiểm tra ảnh tải xong chưa để chạy plugin chính xác
             if ($targetImg[0].complete) {
                 initPlugins();
             } else {
@@ -279,6 +281,14 @@
                     initPlugins();
                 });
             }
+
+            // Lắng nghe sự kiện xoay màn hình hoặc co giãn để tính lại chiều cao chuẩn xác
+            $(window).on('resize', function() {
+                setTimeout(function() {
+                    const actualImgHeight = $targetImg.height();
+                    $('.map-container > div').css('height', actualImgHeight + 'px');
+                }, 200);
+            });
 
             $('area').on('click', function(e) {
                 e.preventDefault(); 
@@ -292,7 +302,7 @@
                 $('#layoutModal').css('display', 'flex');
             });
 
-            // Xử lý lăn chuột zoom trong popup
+            // Xử lý zoom lăn chuột
             $viewport.on('wheel', function(e) {
                 e.preventDefault();
                 const delta = e.originalEvent.deltaY;
@@ -324,7 +334,7 @@
                 resetZoom();
             });
 
-            // Hỗ trợ kéo thả trên cả Desktop và Touch Device (Mobile)
+            // Quản lý kéo thả mượt mà cho Desktop & Mobile
             function startDrag(clientX, clientY) {
                 isDragging = true;
                 startX = clientX - translateX;
