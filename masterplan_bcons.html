@@ -15,7 +15,6 @@
             margin: 0;
             padding: 0;
             width: 100%;
-            /* Thay đổi height cố định thành chiều cao tự động tăng theo nội dung ảnh */
             height: auto; 
             min-height: 100%;
             background-color: #ffffff;
@@ -42,7 +41,7 @@
             position: relative;
             width: 100%;
             max-width: 100%;
-            height: auto; /* Đảm bảo container bao bọc hết chiều cao ảnh, không bị cắt */
+            height: auto; 
             background: #ffffff;
             padding: 0;
             border-radius: 0;
@@ -52,6 +51,19 @@
             display: block;
             width: 100%;
             height: auto;
+        }
+
+        /* THAY ĐỔI QUAN TRỌNG: Sửa lỗi khoảng trống do thư viện maphilight tạo ra trên điện thoại */
+        @media screen and (max-width: 768px) {
+            .map-container {
+                height: auto !important;
+                overflow: hidden !important;
+            }
+            /* Ép canvas tạo bởi maphilight không được chiếm dụng thêm chiều cao thừa */
+            .map-container canvas {
+                max-width: 100% !important;
+                height: auto !important;
+            }
         }
 
         /* --- KHUNG POP-UP MODAL --- */
@@ -96,6 +108,18 @@
             justify-content: center;
             align-items: center;
         }
+        
+        /* Tối ưu lại chiều cao popup trên điện thoại để không bị tràn màn hình */
+        @media screen and (max-width: 768px) {
+            .popup-content {
+                width: 95%;
+                padding: 15px 10px;
+            }
+            .img-viewport {
+                height: 50vh;
+            }
+        }
+
         .img-viewport img {
             max-width: 100%;
             max-height: 100%;
@@ -223,15 +247,27 @@
         }
 
         $(document).ready(function() {
-            $('img[usemap]').rwdImageMaps();
+            // Tối ưu hóa việc tải maphilight sau khi ảnh đã render xong kích thước thực tế
+            const $targetImg = $('.maphilight-target');
+            
+            function initPlugins() {
+                $('img[usemap]').rwdImageMaps();
+                $targetImg.maphilight({
+                    fillColor: 'ff9900',   
+                    fillOpacity: 0.4,      
+                    strokeColor: 'ff6600', 
+                    strokeWidth: 1,
+                    alwaysOn: false        
+                });
+            }
 
-            $('.maphilight-target').maphilight({
-                fillColor: 'ff9900',   
-                fillOpacity: 0.4,      
-                strokeColor: 'ff6600', 
-                strokeWidth: 1,
-                alwaysOn: false        
-            });
+            if ($targetImg[0].complete) {
+                initPlugins();
+            } else {
+                $targetImg.on('load', function() {
+                    initPlugins();
+                });
+            }
 
             $('area').on('click', function(e) {
                 e.preventDefault(); 
@@ -276,21 +312,43 @@
                 resetZoom();
             });
 
+            // Tương thích kéo thả cho cả chuột và cảm ứng trên điện thoại
+            function startDrag(clientX, clientY) {
+                isDragging = true;
+                startX = clientX - translateX;
+                startY = clientY - translateY;
+            }
+
+            function moveDrag(clientX, clientY) {
+                if (!isDragging) return;
+                translateX = clientX - startX;
+                translateY = clientY - startY;
+                updateTransform();
+            }
+
             $zoomImg.on('mousedown', function(e) {
                 e.preventDefault();
-                isDragging = true;
-                startX = e.clientX - translateX;
-                startY = e.clientY - translateY;
+                startDrag(e.clientX, e.clientY);
             });
 
             $(window).on('mousemove', function(e) {
-                if (!isDragging) return;
-                translateX = e.clientX - startX;
-                translateY = e.clientY - startY;
-                updateTransform();
+                moveDrag(e.clientX, e.clientY);
             });
 
-            $(window).on('mouseup', function() {
+            // Thêm Touch Event giúp kéo thả mượt mà trên Safari điện thoại
+            $zoomImg.on('touchstart', function(e) {
+                const touch = e.touches[0];
+                startDrag(touch.clientX, touch.clientY);
+            });
+
+            $zoomImg.on('touchmove', function(e) {
+                if (isDragging) {
+                    const touch = e.touches[0];
+                    moveDrag(touch.clientX, touch.clientY);
+                }
+            });
+
+            $(window).on('mouseup touchend', function() {
                 isDragging = false;
             });
         });
