@@ -1,382 +1,419 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Bản Đồ Tương Tác Bcons Uni Valley</title>
-    
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js\"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/maphilight/1.4.2/jquery.maphilight.min.js\"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jQuery-rwdImageMaps/1.6/jquery.rwdImageMaps.min.js\"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bản Đồ Tương Tác Bcons Uni Valley</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
 
-    <style>
-        /* GIỮ NỀN TRẮNG VÀ ẨN HOÀN TOÀN THANH CUỘT TRÊN TOÀN HỆ THỐNG */
-        html, body {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
-            background-color: #ffffff;
-            font-family: Arial, sans-serif;
-            overflow: hidden !important; /* Ngăn chặn cuộn trang web tổng */
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
+  html {
+    width: 100%;
+    background: #ffffff;
+  }
 
-        html::-webkit-scrollbar, body::-webkit-scrollbar {
-            display: none !important;
-        }
+  body {
+    width: 100%;
+    background: #ffffff;
+    font-family: Arial, sans-serif;
+    /* Chỉ BODY cuộn (không phải cả html lẫn body) -> tránh hiện 2 thanh cuộn chồng nhau */
+    overflow-y: auto;
+    overflow-x: hidden;
+    max-height: 100vh;
+  }
 
-        /* KHUNG CHỨA BẢN ĐỒ CHÍNH */
-        .map-container {
-            position: relative;
-            width: 100%;
-            height: 100vh;
-            background: #ffffff;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            /* Trên Mobile: Cho phép tự do vuốt kéo chuyển động qua lại mà không bị tĩnh */
-            overflow: auto !important; 
-            -webkit-overflow-scrolling: touch; /* Vuốt mượt mà trên iOS */
-        }
+  /* Thanh cuộn mỏng, tinh tế thay vì thanh mặc định to bản của trình duyệt */
+  body::-webkit-scrollbar {
+    width: 6px;
+  }
+  body::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  body::-webkit-scrollbar-thumb {
+    background: rgba(0,0,0,0.25);
+    border-radius: 10px;
+  }
+  body::-webkit-scrollbar-thumb:hover {
+    background: rgba(0,0,0,0.4);
+  }
+  body {
+    scrollbar-width: thin; /* Firefox */
+    scrollbar-color: rgba(0,0,0,0.25) transparent;
+  }
 
-        /* Ẩn thanh cuộn của khung chứa bản đồ */
-        .map-container::-webkit-scrollbar {
-            display: none !important;
-        }
-        .map-container {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
+  .map-container {
+    position: relative;
+    width: 100%;
+  }
 
-        .map-wrapper {
-            position: relative;
-            display: inline-block;
-        }
+  .map-container img.masterplan {
+    display: block;
+    width: 100%;
+    height: auto;
+    user-select: none;
+    -webkit-user-drag: none;
+  }
 
-        /* ĐỊNH DẠNG ẢNH TRÊN DESKTOP: GIỮ NGUYÊN */
-        .map-wrapper img {
-            display: block;
-            max-width: 100%;
-            max-height: 100vh;
-            object-fit: contain;
-        }
+  /* ⚠️ RIÊNG CHO MOBILE: phóng to ảnh lấp đầy khung Notion (chấp nhận cắt bớt viền
+     trên/dưới hoặc 2 bên), thay vì hiện đủ ảnh nhưng dư khoảng trắng.
+     Desktop giữ nguyên như cũ (width:100%, height:auto), không đổi gì. */
+  @media (max-width: 700px) {
+    html, body {
+      height: 100%;
+      overflow: hidden;
+    }
+    .map-container {
+      height: 100vh;
+      overflow: hidden;
+    }
+    .map-container img.masterplan {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
 
-        /* CẤU HÌNH PHÓNG TO TỰ ĐỘNG VÀ LINH HOẠT TRÊN MOBILE */
-        @media screen and (max-width: 768px) {
-            .map-container {
-                /* Thiết lập canh lề tự nhiên để cuộn mượt */
-                display: block !important; 
-            }
-            .map-wrapper img {
-                /* Ép ảnh phóng to lên 160% (hoặc điều chỉnh tùy ý bạn muốn zoom sâu bao nhiêu) 
-                   để lấp đầy khung hình đứng của điện thoại, loại bỏ vệt trắng */
-                width: auto !important;
-                max-width: none !important;
-                height: 100vh !important;
-                max-height: 100vh !important;
-                transform: scale(1.6); 
-                transform-origin: center center;
-                margin: 0 auto;
-            }
-        }
+  /* SVG chứa các vùng polygon click — được JS định vị chính xác khớp với vùng ảnh
+     thực tế đang hiển thị (sau khi object-fit:contain co giãn/letterbox) */
+  .hotspot-svg {
+    position: absolute;
+    pointer-events: none;
+  }
+  .hotspot-svg polygon {
+    fill: rgba(255, 153, 0, 0);
+    stroke: transparent;
+    stroke-width: 2;
+    cursor: pointer;
+    pointer-events: all;
+    transition: fill 0.15s, stroke 0.15s;
+    vector-effect: non-scaling-stroke;
+  }
+  .hotspot-svg polygon:hover {
+    fill: rgba(255, 153, 0, 0.35);
+    stroke: rgba(255, 102, 0, 0.9);
+  }
 
-        /* --- POPUP MODAL CHI TIẾT --- */
-        .popup-overlay {
-            display: none;
-            position: fixed;
-            z-index: 9999;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.7);
-            justify-content: center;
-            align-items: center;
-        }
-        
-        .popup-content {
-            position: relative;
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            width: 85%;
-            max-width: 1000px;
-            box-shadow: 0 5px 25px rgba(0,0,0,0.5);
-            text-align: center;
-        }
-        
-        .popup-content h3 {
-            margin-top: 0;
-            margin-bottom: 15px;
-            color: #222;
-        }
+  /* ===== MODAL POPUP ===== */
+  .popup-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: rgba(0,0,0,0.75);
+    align-items: center;
+    justify-content: center;
+  }
+  .popup-overlay.active { display: flex; }
 
-        .img-viewport {
-            position: relative;
-            width: 100%;
-            height: 65vh;
-            overflow: hidden !important;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            background: #fdfdfd;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
+  .popup-content {
+    position: relative;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 1000px;
+    box-shadow: 0 5px 25px rgba(0,0,0,0.5);
+    text-align: center;
+  }
+  .popup-content h3 {
+    margin-bottom: 12px;
+    color: #222;
+    font-size: 16px;
+  }
 
-        @media screen and (max-width: 768px) {
-            .popup-content {
-                width: 95%;
-                padding: 15px 10px;
-            }
-            .img-viewport {
-                height: 55vh;
-            }
-        }
+  .img-viewport {
+    position: relative;
+    width: 100%;
+    height: 65vh;
+    overflow: hidden;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: #fdfdfd;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .img-viewport img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    transform-origin: center center;
+    cursor: grab;
+    user-select: none;
+    -webkit-user-drag: none;
+    transition: transform 0.08s ease-out;
+  }
+  .img-viewport img.dragging { cursor: grabbing; transition: none; }
 
-        .img-viewport img {
-            max-width: 100%;
-            max-height: 100%;
-            object-fit: contain;
-            transform-origin: center center;
-            cursor: grab;
-            user-select: none;
-            -webkit-user-drag: none;
-            transition: transform 0.1s ease-out;
-        }
-        
-        .img-viewport img:active {
-            cursor: grabbing;
-        }
+  .zoom-controls {
+    position: absolute;
+    bottom: 14px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.75);
+    padding: 6px 15px;
+    border-radius: 30px;
+    display: flex;
+    gap: 15px;
+    z-index: 10;
+  }
+  .zoom-controls button {
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 18px;
+    cursor: pointer;
+    padding: 2px 6px;
+  }
+  .zoom-controls button:hover { color: #ff9900; }
 
-        .zoom-controls {
-            position: absolute;
-            bottom: 15px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.75);
-            padding: 6px 15px;
-            border-radius: 30px;
-            display: flex;
-            gap: 15px;
-            z-index: 10000;
-        }
-        
-        .zoom-controls button {
-            background: none;
-            border: none;
-            color: white;
-            font-size: 18px;
-            cursor: pointer;
-            padding: 2px 6px;
-        }
-
-        .close-btn {
-            position: absolute;
-            top: -12px;
-            right: -12px;
-            background: #ff4d4d;
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 28px;
-            height: 28px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            z-index: 10001;
-        }
-    </style>
+  .close-btn {
+    position: absolute;
+    top: -12px;
+    right: -12px;
+    background: #ff4d4d;
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    font-size: 17px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+  }
+  .close-btn:hover { background: #cc0000; }
+</style>
 </head>
 <body>
 
-    <div class="map-container" id="mapContainer">
-        <div class="map-wrapper">
-            <img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783686087/masterplan_w7xmhr.jpg\" usemap="#image-map" id="mapImage">
-            
-            <map name="image-map">
-                <area target="" alt="Layout 1" title="Layout 1" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783683857/be680720-1432-463e-b7ea-85e082c5a861.png\" coords="767,1682,794,1594,1077,1704,1050,1782,918,1736" shape="poly">
-                <area target="" alt="Layout 1" title="Layout 1" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783683857/be680720-1432-463e-b7ea-85e082c5a861.png\" coords="953,1466,984,1386,1172,1457,1141,1536" shape="poly">
-                <area target="" alt="Layout 2" title="Layout 2" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M2_us8qsf.jpg\" coords="1311,1584,1430,1626,1340,1881,1220,1838" shape="poly">
-                <area target="" alt="Layout 2" title="Layout 2" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M2_us8qsf.jpg\" coords="1472,1944,1351,1900,1443,1635,1563,1681" shape="poly">
-                <area target="" alt="Layout 2" title="Layout 2" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M2_us8qsf.jpg\" coords="1059,1923,997,2044,1293,2201,1360,2084" shape="poly">
-                <area target="" alt="Layout 2" title="Layout 2" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M2_us8qsf.jpg\" coords="726,1782,854,1829,803,1973,675,1926" shape="poly">
-                <area target="" alt="Layout 2" title="Layout 2" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M2_us8qsf.jpg\" coords="1538,2179,1474,2296,1534,2329,1600,2209" shape="poly">
-                <area target="" alt="Layout 3" title="Layout 3" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M3_jt8v6r.jpg\" coords="1083,926,1264,978,1201,1206,1033,1159" shape="poly">
-                <area target="" alt="Layout 3" title="Layout 3" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M3_jt8v6r.jpg\" coords="1379,972,1560,1021,1481,1316,1300,1266" shape="poly">
-                <area target="" alt="Layout 3" title="Layout 3" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M3_jt8v6r.jpg\" coords="1572,979,1746,1025,1649,1395,1475,1350" shape="poly">
-                <area target="" alt="Layout 3" title="Layout 3" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M3_jt8v6r.jpg\" coords="674,1928,853,1990,829,2058,652,1990" shape="poly">
-                <area target="" alt="Layout 4" title="Layout 4" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678533/M4_fcxmci.jpg\" coords="1344,1277,1311,1402,1446,1464,1483,1317" shape="poly">
-                <area target="" alt="Layout 4" title="Layout 4" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678533/M4_fcxmci.jpg\" coords="1475,1348,1613,1386,1578,1522,1446,1463" shape="poly">
-                <area target="" alt="Layout 4" title="Layout 4" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678533/M4_fcxmci.jpg\" coords="958,2022,1092,2095,1059,2192,922,2117" shape="poly">
-                <area target="" alt="Layout 5" title="Layout 5" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678533/M5_vtfhxl.jpg\" coords="436,943,396,1042,800,1197,840,1091" shape="poly">
-                <area target="" alt="Layout 6" title="Layout 6" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678534/M6_yonyqn.jpg\" coords="840,1089,800,1195,1117,1321,1165,1195,1032,1159" shape="poly">
-                <area target="" alt="Layout 6" title="Layout 6" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678534/M6_yonyqn.jpg\" coords="1675,1705,1810,1751,1976,1078,1855,1045,1768,1374,1720,1557,1711,1599" shape="poly">
-                <area target="" alt="Layout 2" title="Layout 2" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M2_us8qsf.jpg\" coords="1675,1704,1808,1750,1684,2068,1561,2022" shape="poly">
-            </map>
+  <div class="map-container" id="mapContainer">
+    <img class="masterplan" id="masterplanImg"
+         src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783686087/masterplan_w7xmhr.jpg"
+         alt="Masterplan">
+    <svg class="hotspot-svg" id="hotspotSvg"></svg>
+  </div>
+
+  <div class="popup-overlay" id="popupOverlay">
+    <div class="popup-content">
+      <button class="close-btn" id="closeBtn">&times;</button>
+      <h3 id="popupTitle">Chi tiết mặt bằng</h3>
+      <div class="img-viewport" id="viewport">
+        <img id="popupImg" src="" alt="Layout chi tiết">
+        <div class="zoom-controls" id="zoomControls">
+          <button id="btnZoomIn" title="Phóng to">🔍 +</button>
+          <button id="btnZoomOut" title="Thu nhỏ">🔍 -</button>
+          <button id="btnZoomReset" title="Đặt lại">↺</button>
         </div>
+      </div>
     </div>
+  </div>
 
-    <div id="layoutModal" class="popup-overlay" onclick="closePopupOutside(event)">
-        <div class="popup-content">
-            <button class="close-btn" onclick="closePopup()">&times;</button>
-            <h3 id="popup-title">Chi tiết mặt bằng</h3>
-            <div class="img-viewport" id="viewport">
-                <img id="popup-img" src="" alt="Layout chi tiết">
-                <div class="zoom-controls" onclick="event.stopPropagation()">
-                    <button id="btn-zoom-in">🔍 +</button>
-                    <button id="btn-zoom-out">🔍 -</button>
-                    <button id="btn-zoom-reset">↺</button>
-                </div>
-            </div>
-        </div>
-    </div>
+  <script>
+    // ⚠️ Toạ độ polygon giữ NGUYÊN theo pixel gốc của ảnh masterplan (không đổi gì so với bản cũ)
+    const zones = [
+      { title: 'Layout 1', image: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783683857/be680720-1432-463e-b7ea-85e082c5a861.png',
+        points: '767,1682 794,1594 1077,1704 1050,1782 918,1736' },
+      { title: 'Layout 1', image: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783683857/be680720-1432-463e-b7ea-85e082c5a861.png',
+        points: '953,1466 984,1386 1172,1457 1141,1536' },
+      { title: 'Layout 2', image: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M2_us8qsf.jpg',
+        points: '1311,1584 1430,1626 1340,1881 1220,1838' },
+      { title: 'Layout 2', image: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M2_us8qsf.jpg',
+        points: '1472,1944 1351,1900 1443,1635 1563,1681' },
+      { title: 'Layout 2', image: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M2_us8qsf.jpg',
+        points: '1059,1923 997,2044 1293,2201 1360,2084' },
+      { title: 'Layout 2', image: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M2_us8qsf.jpg',
+        points: '726,1782 854,1829 803,1973 675,1926' },
+      { title: 'Layout 2', image: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M2_us8qsf.jpg',
+        points: '1538,2179 1474,2296 1534,2329 1600,2209' },
+      { title: 'Layout 3', image: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M3_jt8v6r.jpg',
+        points: '1083,926 1264,978 1201,1206 1033,1159' },
+      { title: 'Layout 3', image: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M3_jt8v6r.jpg',
+        points: '1379,972 1560,1021 1481,1316 1300,1266' },
+      { title: 'Layout 3', image: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M3_jt8v6r.jpg',
+        points: '1572,979 1746,1025 1649,1395 1475,1350' },
+      { title: 'Layout 3', image: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M3_jt8v6r.jpg',
+        points: '674,1928 853,1990 829,2058 652,1990' },
+      { title: 'Layout 4', image: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678533/M4_fcxmci.jpg',
+        points: '1344,1277 1311,1402 1446,1464 1483,1317' },
+      { title: 'Layout 4', image: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678533/M4_fcxmci.jpg',
+        points: '1475,1348 1613,1386 1578,1522 1446,1463' },
+      { title: 'Layout 4', image: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678533/M4_fcxmci.jpg',
+        points: '958,2022 1092,2095 1059,2192 922,2117' },
+      { title: 'Layout 5', image: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678533/M5_vtfhxl.jpg',
+        points: '436,943 396,1042 800,1197 840,1091' },
+      { title: 'Layout 6', image: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678534/M6_yonyqn.jpg',
+        points: '840,1089 800,1195 1117,1321 1165,1195 1032,1159' },
+      { title: 'Layout 6', image: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678534/M6_yonyqn.jpg',
+        points: '1675,1705 1810,1751 1976,1078 1855,1045 1768,1374 1720,1557 1711,1599' },
+      { title: 'Layout 2', image: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M2_us8qsf.jpg',
+        points: '1675,1704 1808,1750 1684,2068 1561,2022' }
+    ];
 
-    <script>
-        $(function() {
-            // Khởi tạo các thư viện maphilight và rwdImageMaps gốc của bạn
-            $('#mapImage').maphilight({
-                fillColor: 'ff9900',
-                fillOpacity: 0.3,
-                strokeColor: 'ff6600',
-                strokeWidth: 2,
-                fade: true
-            });
-            $('#mapImage').rwdImageMaps();
+    const SVG_NS = 'http://www.w3.org/2000/svg';
+    const img = document.getElementById('masterplanImg');
+    const svg = document.getElementById('hotspotSvg');
+    const container = document.getElementById('mapContainer');
 
-            // Tự động cuộn khung chứa bản đồ vào chính giữa trên màn hình Mobile khi tải trang xong
-            if (window.innerWidth <= 768) {
-                setTimeout(function() {
-                    var container = document.getElementById('mapContainer');
-                    if (container) {
-                        container.scrollLeft = (container.scrollWidth - container.clientWidth) / 2;
-                        container.scrollTop = (container.scrollHeight - container.clientHeight) / 2;
-                    }
-                }, 300);
-            }
+    function buildSVG() {
+      svg.innerHTML = '';
+      svg.setAttribute('viewBox', '0 0 ' + img.naturalWidth + ' ' + img.naturalHeight);
+      zones.forEach(zone => {
+        const poly = document.createElementNS(SVG_NS, 'polygon');
+        poly.setAttribute('points', zone.points);
+        poly.addEventListener('click', () => openPopup(zone.title, zone.image));
+        svg.appendChild(poly);
+      });
+    }
 
-            // Xử lý sự kiện click vào từng lô đất mở Popup
-            $('area').on('click', function(e) {
-                e.preventDefault();
-                var title = $(this).attr('title');
-                var href = $(this).attr('href');
-                
-                $('#popup-title').text(title);
-                $zoomImg.attr('src', href);
-                resetZoom();
-                $('#layoutModal').css('display', 'flex');
-            });
+    // Desktop: ảnh co theo chiều rộng, container tự cao đúng bằng ảnh -> "contain" (min).
+    // Mobile (<=700px): ảnh phóng to lấp đầy khung, có thể cắt bớt viền -> "cover" (max).
+    const mobileQuery = window.matchMedia('(max-width: 700px)');
 
-            // --- HỆ THỐNG ĐIỀU KHIỂN ZOOM MƯỢT MÀ TRONG POPUP ---
-            var $zoomImg = $('#popup-img');
-            var scale = 1;
-            var translateX = 0;
-            var translateY = 0;
-            var isDragging = false;
-            var startX = 0, startY = 0;
+    function positionSVG() {
+      const cw = container.clientWidth;
+      const ch = container.clientHeight;
+      const nw = img.naturalWidth;
+      const nh = img.naturalHeight;
+      if (!nw || !nh || !cw || !ch) return;
 
-            function updateTransform() {
-                $zoomImg.css('transform', 'translate(' + translateX + 'px, ' + translateY + 'px) scale(' + scale + ')');
-            }
+      const scale = mobileQuery.matches
+        ? Math.max(cw / nw, ch / nh)  // cover: lấp đầy, cho phép cắt viền
+        : Math.min(cw / nw, ch / nh); // contain: vừa khít, không cắt
 
-            function resetZoom() {
-                scale = 1;
-                translateX = 0;
-                translateY = 0;
-                updateTransform();
-            }
+      const renderW = nw * scale;
+      const renderH = nh * scale;
+      const offsetX = (cw - renderW) / 2;
+      const offsetY = (ch - renderH) / 2;
 
-            // Zoom bằng con lăn chuột trong popup
-            document.getElementById('viewport').addEventListener('wheel', function(e) {
-                e.preventDefault();
-                var zoomFactor = 1.1;
-                if (e.deltaY < 0) {
-                    if (scale < 5) scale *= zoomFactor;
-                } else {
-                    if (scale > 0.8) scale /= zoomFactor;
-                }
-                updateTransform();
-            }, { passive: false });
+      svg.style.left = offsetX + 'px';
+      svg.style.top = offsetY + 'px';
+      svg.style.width = renderW + 'px';
+      svg.style.height = renderH + 'px';
+    }
 
-            $('#btn-zoom-in').on('click', function() { if (scale < 5) { scale *= 1.25; updateTransform(); } });
-            $('#btn-zoom-out').on('click', function() { if (scale > 0.8) { scale /= 1.25; updateTransform(); } });
-            $('#btn-zoom-reset').on('click', function() { resetZoom(); });
+    function refresh() {
+      buildSVG();
+      positionSVG();
+    }
 
-            // Kéo thả bằng chuột máy tính
-            $zoomImg.on('mousedown', function(e) {
-                e.preventDefault();
-                isDragging = true;
-                startX = e.clientX - translateX;
-                startY = e.clientY - translateY;
-                $zoomImg.css('cursor', 'grabbing');
-            });
+    if (img.complete && img.naturalWidth) {
+      refresh();
+    } else {
+      img.addEventListener('load', refresh);
+    }
+    window.addEventListener('resize', positionSVG);
+    mobileQuery.addEventListener('change', positionSVG);
 
-            $(window).on('mousemove', function(e) {
-                if (!isDragging) return;
-                translateX = e.clientX - startX;
-                translateY = e.clientY - startY;
-                updateTransform();
-            });
+    // ===== MODAL: zoom / pan (vanilla JS, không phụ thuộc jQuery) =====
+    let scale = 1, translateX = 0, translateY = 0;
+    let isDragging = false, startX = 0, startY = 0;
 
-            $(window).on('mouseup', function() {
-                isDragging = false;
-                $zoomImg.css('cursor', 'grab');
-            });
+    const popupOverlay = document.getElementById('popupOverlay');
+    const popupTitle = document.getElementById('popupTitle');
+    const popupImg = document.getElementById('popupImg');
+    const viewport = document.getElementById('viewport');
+    const closeBtn = document.getElementById('closeBtn');
 
-            // Hỗ trợ chạm kéo và zoom đa điểm (Pinch to zoom) trên điện thoại trong popup
-            var touchStartDist = null;
-            var popupImgEl = document.getElementById('popup-img');
+    function updateTransform() {
+      popupImg.style.transform = 'translate(' + translateX + 'px,' + translateY + 'px) scale(' + scale + ')';
+    }
 
-            popupImgEl.addEventListener('touchstart', function(e) {
-                if (e.touches.length === 1) {
-                    isDragging = true;
-                    startX = e.touches[0].clientX - translateX;
-                    startY = e.touches[0].clientY - translateY;
-                } else if (e.touches.length === 2) {
-                    touchStartDist = Math.hypot(
-                        e.touches[0].clientX - e.touches[1].clientX,
-                        e.touches[0].clientY - e.touches[1].clientY
-                    );
-                }
-            }, { passive: true });
+    function resetZoom() {
+      scale = 1; translateX = 0; translateY = 0;
+      updateTransform();
+    }
 
-            popupImgEl.addEventListener('touchmove', function(e) {
-                if (e.touches.length === 1 && isDragging) {
-                    e.preventDefault();
-                    translateX = e.touches[0].clientX - startX;
-                    translateY = e.touches[0].clientY - startY;
-                    updateTransform();
-                } else if (e.touches.length === 2 && touchStartDist !== null) {
-                    e.preventDefault();
-                    var dist = Math.hypot(
-                        e.touches[0].clientX - e.touches[1].clientX,
-                        e.touches[0].clientY - e.touches[1].clientY
-                    );
-                    var delta = (dist - touchStartDist) * 0.01;
-                    scale = Math.min(5, Math.max(0.8, scale + delta));
-                    touchStartDist = dist;
-                    updateTransform();
-                }
-            }, { passive: false });
+    function openPopup(title, imageUrl) {
+      popupTitle.textContent = title;
+      popupImg.src = imageUrl;
+      resetZoom();
+      popupOverlay.classList.add('active');
+    }
 
-            window.addEventListener('touchend', function() {
-                isDragging = false;
-                touchStartDist = null;
-            });
-        });
+    function closePopup() {
+      popupOverlay.classList.remove('active');
+      popupImg.src = '';
+    }
 
-        function closePopup() {
-            $('#layoutModal').css('display', 'none');
-            $('#popup-img').attr('src', ''); 
-        }
+    closeBtn.onclick = closePopup;
+    popupOverlay.addEventListener('click', (e) => {
+      if (e.target === popupOverlay) closePopup();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closePopup();
+    });
 
-        function closePopupOutside(event) {
-            if (event.target.id === 'layoutModal') {
-                closePopup();
-            }
-        }
-    </script>
+    viewport.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      const factor = 1.1;
+      if (e.deltaY < 0) { if (scale < 5) scale *= factor; }
+      else { if (scale > 0.8) scale /= factor; }
+      updateTransform();
+    }, { passive: false });
+
+    document.getElementById('btnZoomIn').onclick = () => { if (scale < 5) { scale *= 1.25; updateTransform(); } };
+    document.getElementById('btnZoomOut').onclick = () => { if (scale > 0.8) { scale /= 1.25; updateTransform(); } };
+    document.getElementById('btnZoomReset').onclick = resetZoom;
+
+    popupImg.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      isDragging = true;
+      popupImg.classList.add('dragging');
+      startX = e.clientX - translateX;
+      startY = e.clientY - translateY;
+    });
+    window.addEventListener('mousemove', (e) => {
+      if (!isDragging) return;
+      translateX = e.clientX - startX;
+      translateY = e.clientY - startY;
+      updateTransform();
+    });
+    window.addEventListener('mouseup', () => {
+      isDragging = false;
+      popupImg.classList.remove('dragging');
+    });
+
+    // Hỗ trợ chạm/kéo trên mobile trong popup
+    let touchStartDist = null;
+    popupImg.addEventListener('touchstart', (e) => {
+      if (e.touches.length === 1) {
+        isDragging = true;
+        startX = e.touches[0].clientX - translateX;
+        startY = e.touches[0].clientY - translateY;
+      } else if (e.touches.length === 2) {
+        touchStartDist = Math.hypot(
+          e.touches[0].clientX - e.touches[1].clientX,
+          e.touches[0].clientY - e.touches[1].clientY
+        );
+      }
+    }, { passive: true });
+    popupImg.addEventListener('touchmove', (e) => {
+      if (e.touches.length === 1 && isDragging) {
+        e.preventDefault();
+        translateX = e.touches[0].clientX - startX;
+        translateY = e.touches[0].clientY - startY;
+        updateTransform();
+      } else if (e.touches.length === 2 && touchStartDist !== null) {
+        e.preventDefault();
+        const dist = Math.hypot(
+          e.touches[0].clientX - e.touches[1].clientX,
+          e.touches[0].clientY - e.touches[1].clientY
+        );
+        const delta = (dist - touchStartDist) * 0.01;
+        scale = Math.min(5, Math.max(0.8, scale + delta));
+        touchStartDist = dist;
+        updateTransform();
+      }
+    }, { passive: false });
+    popupImg.addEventListener('touchend', (e) => {
+      if (e.touches.length < 2) touchStartDist = null;
+      if (e.touches.length === 0) isDragging = false;
+    }, { passive: true });
+  </script>
+
 </body>
 </html>
