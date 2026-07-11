@@ -76,7 +76,7 @@
     object-fit: contain;
   }
 
-  /* BỘ ĐIỀU KHIỂN HỢP NHẤT HÀNG NGANG PHÍA DƯỚI GÓC PHẢI */
+  /* BỘ ĐIỀU KHIỂN ĐÃ ĐƯỢC THU MỎNG LẠI GIỐNG MASTERPLAN */
   .bottom-controls-container {
     position: absolute;
     bottom: 12px;
@@ -86,8 +86,8 @@
     align-items: center;
     gap: 8px;
     z-index: 500;
-    background: rgba(240, 240, 240, 0.9); /* Màu nền xám nhạt bo góc giống mẫu */
-    padding: 6px 14px;
+    background: rgba(255, 255, 255, 0.85); /* Trả về màu nền mờ tinh tế */
+    padding: 4px 10px; /* Làm mỏng padding lại giống hệt masterplan */
     border-radius: 20px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.12);
   }
@@ -95,26 +95,25 @@
   .main-map-controls {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 5px;
     user-select: none;
   }
   .main-map-controls span {
-    font-size: 16px; /* Tăng cỡ chữ dấu - và + */
+    font-size: 11px;
     font-family: Arial, sans-serif;
     color: #333;
     font-weight: bold;
   }
   
-  /* CUSTOM THANH SLIDER ĐỂ CÓ NÚT CAM TO GIỐNG MẪU */
+  /* THANH RAY ĐƯỢC CHỈNH MỎNG LẠI */
   .main-map-controls input[type="range"] {
     -webkit-appearance: none;
     appearance: none;
-    width: 80px;
-    height: 4px;
-    background: #444; /* Màu thanh ray đen xám */
+    width: 70px;
+    height: 3px; /* Độ dày thanh ray 3px chuẩn masterplan */
+    background: rgba(0,0,0,0.15);
     outline: none;
     border: none;
-    border-radius: 2px;
     cursor: pointer;
   }
 
@@ -122,18 +121,17 @@
   .main-map-controls input[type="range"]::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
-    width: 20px; /* Tăng kích thước nút tròn cam */
-    height: 20px;
-    background: #ff9900; /* Màu cam thương hiệu */
+    width: 12px; /* Thu gọn đường kính nút tròn cam vừa vặn */
+    height: 12px;
+    background: #ff9900;
     border-radius: 50%;
     cursor: pointer;
-    transition: transform 0.1s;
   }
 
   /* Nút kéo trên Firefox */
   .main-map-controls input[type="range"]::-moz-range-thumb {
-    width: 20px;
-    height: 20px;
+    width: 12px;
+    height: 12px;
     background: #ff9900;
     border: none;
     border-radius: 50%;
@@ -141,11 +139,11 @@
   }
 
   .brand-label {
-    font-size: 13px;
+    font-size: 11px;
     font-family: Arial, sans-serif;
-    color: #555;
-    border-left: 1px solid rgba(0, 0, 0, 0.2);
-    padding-left: 10px;
+    color: rgba(0, 0, 0, 0.5);
+    border-left: 1px solid rgba(0, 0, 0, 0.15);
+    padding-left: 8px;
     pointer-events: none;
     user-select: none;
   }
@@ -226,7 +224,7 @@
       <div class="zoom-hint" id="zoomHint">Kéo thanh trượt hoặc cuộn để phóng to • Kéo rê để xem chi tiết</div>
       <div id="mainMediaWrap"></div>
       
-      <!-- CỤM ZOOM GIỐNG HỆT MẪU NẰM NGANG PHÍA DƯỚI GÓC PHẢI -->
+      <!-- CỤM ZOOM TINH TẾ CHUẨN MASTERPLAN -->
       <div class="bottom-controls-container" id="controlsContainer">
         <div class="main-map-controls">
           <span>-</span>
