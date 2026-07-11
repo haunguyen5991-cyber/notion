@@ -22,23 +22,30 @@
     max-height: 100vh;
   }
 
-  /* Thanh cuộn mỏng, tinh tế thay vì thanh mặc định to bản của trình duyệt */
+  /* Ẩn thanh cuộn nhưng VẪN giữ chức năng cuộn được bình thường */
   body::-webkit-scrollbar {
-    width: 6px;
-  }
-  body::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  body::-webkit-scrollbar-thumb {
-    background: rgba(0,0,0,0.25);
-    border-radius: 10px;
-  }
-  body::-webkit-scrollbar-thumb:hover {
-    background: rgba(0,0,0,0.4);
+    display: none;
   }
   body {
-    scrollbar-width: thin; /* Firefox */
-    scrollbar-color: rgba(0,0,0,0.25) transparent;
+    -ms-overflow-style: none;  /* Edge/IE cũ */
+    scrollbar-width: none;     /* Firefox */
+  }
+
+  /* Watermark nhỏ, tinh tế, cố định ở góc dưới màn hình — không che nội dung,
+     không cản thao tác bấm/kéo bên dưới nó */
+  .brand-label {
+    position: fixed;
+    bottom: 6px;
+    right: 8px;
+    font-size: 10px;
+    font-family: Arial, sans-serif;
+    color: rgba(0,0,0,0.28);
+    background: rgba(255,255,255,0.55);
+    padding: 2px 7px;
+    border-radius: 4px;
+    pointer-events: none;
+    z-index: 500;
+    user-select: none;
   }
 
   .map-container {
@@ -54,9 +61,10 @@
     -webkit-user-drag: none;
   }
 
-  /* ⚠️ RIÊNG CHO MOBILE: phóng to ảnh lấp đầy khung Notion (chấp nhận cắt bớt viền
-     trên/dưới hoặc 2 bên), thay vì hiện đủ ảnh nhưng dư khoảng trắng.
-     Desktop giữ nguyên như cũ (width:100%, height:auto), không đổi gì. */
+  /* ⚠️ RIÊNG CHO MOBILE: ảnh được PHÓNG TO lấp đầy khung (không còn khoảng trắng),
+     và có thể KÉO DI CHUYỂN để xem các phần bị che khuất do phóng to.
+     Kích thước/vị trí thực tế do JS điều khiển (biến số dưới đây chỉ là mặc định ban đầu).
+     Desktop giữ nguyên hoàn toàn như cũ (width:100%, height:auto), không đổi gì. */
   @media (max-width: 700px) {
     html, body {
       height: 100%;
@@ -65,14 +73,20 @@
     .map-container {
       height: 100vh;
       overflow: hidden;
+      touch-action: none; /* để JS tự xử lý kéo, tránh trình duyệt cuộn trang khi kéo ảnh */
     }
     .map-container img.masterplan {
       position: absolute;
       top: 0;
       left: 0;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
+      width: auto;
+      height: auto;
+      max-width: none;
+      cursor: grab;
+      will-change: transform;
+    }
+    .map-container img.masterplan.dragging {
+      cursor: grabbing;
     }
   }
 
@@ -197,6 +211,8 @@
     <svg class="hotspot-svg" id="hotspotSvg"></svg>
   </div>
 
+  <div class="brand-label">dulieunhapho.com</div>
+
   <div class="popup-overlay" id="popupOverlay">
     <div class="popup-content">
       <button class="close-btn" id="closeBtn">&times;</button>
@@ -258,6 +274,70 @@
     const svg = document.getElementById('hotspotSvg');
     const container = document.getElementById('mapContainer');
 
+    // Desktop: ảnh co theo chiều rộng, container tự cao đúng bằng ảnh -> không cần pan.
+    // Mobile (<=700px): ảnh phóng to lấp đầy khung ("cover"), có thể KÉO DI CHUYỂN
+    // trong giới hạn để xem phần bị che khuất, không bao giờ lộ khoảng trắng.
+    const mobileQuery = window.matchMedia('(max-width: 700px)');
+
+    let panX = 0, panY = 0;       // vị trí ảnh hiện tại (mobile)
+    let renderW = 0, renderH = 0; // kích thước ảnh đã phóng (mobile)
+    let minX = 0, maxX = 0, minY = 0, maxY = 0; // giới hạn kéo (mobile)
+
+    function clamp(v, lo, hi) { return Math.min(hi, Math.max(lo, v)); }
+
+    function applyMobileTransform() {
+      img.style.width = renderW + 'px';
+      img.style.height = renderH + 'px';
+      img.style.transform = 'translate(' + panX + 'px,' + panY + 'px)';
+      svg.style.width = renderW + 'px';
+      svg.style.height = renderH + 'px';
+      svg.style.left = '0px';
+      svg.style.top = '0px';
+      svg.style.transform = 'translate(' + panX + 'px,' + panY + 'px)';
+    }
+
+    function positionSVG() {
+      const cw = container.clientWidth;
+      const ch = container.clientHeight;
+      const nw = img.naturalWidth;
+      const nh = img.naturalHeight;
+      if (!nw || !nh || !cw || !ch) return;
+
+      if (mobileQuery.matches) {
+        // "cover": phóng to đủ lấp đầy khung theo cạnh lớn hơn
+        const scale = Math.max(cw / nw, ch / nh);
+        renderW = nw * scale;
+        renderH = nh * scale;
+
+        // Giới hạn kéo: không bao giờ để lộ khoảng trắng ngoài rìa ảnh
+        minX = cw - renderW; maxX = 0;
+        minY = ch - renderH; maxY = 0;
+
+        // Căn giữa mặc định khi vừa vào / vừa đổi kích thước màn hình
+        panX = clamp((cw - renderW) / 2, minX, maxX);
+        panY = clamp((ch - renderH) / 2, minY, maxY);
+
+        // Reset kiểu inline mà chế độ desktop có thể để lại
+        img.style.position = 'absolute';
+        applyMobileTransform();
+      } else {
+        // Desktop: ảnh co theo width:100% tự nhiên (CSS lo hết), SVG chỉ cần khớp
+        // đúng kích thước hiển thị thực tế của ảnh, không cần pan.
+        img.style.width = '';
+        img.style.height = '';
+        img.style.transform = '';
+        const rect = img.getBoundingClientRect();
+        renderW = rect.width;
+        renderH = rect.height;
+        panX = 0; panY = 0;
+        svg.style.left = '0px';
+        svg.style.top = '0px';
+        svg.style.width = renderW + 'px';
+        svg.style.height = renderH + 'px';
+        svg.style.transform = '';
+      }
+    }
+
     function buildSVG() {
       svg.innerHTML = '';
       svg.setAttribute('viewBox', '0 0 ' + img.naturalWidth + ' ' + img.naturalHeight);
@@ -267,32 +347,6 @@
         poly.addEventListener('click', () => openPopup(zone.title, zone.image));
         svg.appendChild(poly);
       });
-    }
-
-    // Desktop: ảnh co theo chiều rộng, container tự cao đúng bằng ảnh -> "contain" (min).
-    // Mobile (<=700px): ảnh phóng to lấp đầy khung, có thể cắt bớt viền -> "cover" (max).
-    const mobileQuery = window.matchMedia('(max-width: 700px)');
-
-    function positionSVG() {
-      const cw = container.clientWidth;
-      const ch = container.clientHeight;
-      const nw = img.naturalWidth;
-      const nh = img.naturalHeight;
-      if (!nw || !nh || !cw || !ch) return;
-
-      const scale = mobileQuery.matches
-        ? Math.max(cw / nw, ch / nh)  // cover: lấp đầy, cho phép cắt viền
-        : Math.min(cw / nw, ch / nh); // contain: vừa khít, không cắt
-
-      const renderW = nw * scale;
-      const renderH = nh * scale;
-      const offsetX = (cw - renderW) / 2;
-      const offsetY = (ch - renderH) / 2;
-
-      svg.style.left = offsetX + 'px';
-      svg.style.top = offsetY + 'px';
-      svg.style.width = renderW + 'px';
-      svg.style.height = renderH + 'px';
     }
 
     function refresh() {
@@ -306,7 +360,67 @@
       img.addEventListener('load', refresh);
     }
     window.addEventListener('resize', positionSVG);
-    mobileQuery.addEventListener('change', positionSVG);
+    mobileQuery.addEventListener('change', refresh);
+
+    // ===== KÉO DI CHUYỂN ảnh trên mobile (chỉ hoạt động khi mobileQuery.matches) =====
+    let mapDragging = false, mapStartX = 0, mapStartY = 0, mapStartPanX = 0, mapStartPanY = 0;
+    let mapTouchStartDist = null, mapTouchStartScale = 1;
+
+    container.addEventListener('touchstart', (e) => {
+      if (!mobileQuery.matches) return;
+      if (e.touches.length === 1) {
+        mapDragging = true;
+        img.classList.add('dragging');
+        mapStartX = e.touches[0].clientX;
+        mapStartY = e.touches[0].clientY;
+        mapStartPanX = panX;
+        mapStartPanY = panY;
+      } else if (e.touches.length === 2) {
+        mapTouchStartDist = Math.hypot(
+          e.touches[0].clientX - e.touches[1].clientX,
+          e.touches[0].clientY - e.touches[1].clientY
+        );
+      }
+    }, { passive: true });
+
+    container.addEventListener('touchmove', (e) => {
+      if (!mobileQuery.matches) return;
+      if (e.touches.length === 1 && mapDragging) {
+        e.preventDefault();
+        panX = clamp(mapStartPanX + (e.touches[0].clientX - mapStartX), minX, maxX);
+        panY = clamp(mapStartPanY + (e.touches[0].clientY - mapStartY), minY, maxY);
+        applyMobileTransform();
+      }
+      // (Pinch để phóng to thêm có thể bổ sung sau nếu cần; hiện tại giữ đơn giản: kéo để xem quanh)
+    }, { passive: false });
+
+    container.addEventListener('touchend', (e) => {
+      if (e.touches.length === 0) {
+        mapDragging = false;
+        img.classList.remove('dragging');
+      }
+    }, { passive: true });
+
+    // Hỗ trợ kéo bằng chuột luôn (test trên desktop thu nhỏ cửa sổ mô phỏng mobile)
+    container.addEventListener('mousedown', (e) => {
+      if (!mobileQuery.matches) return;
+      mapDragging = true;
+      img.classList.add('dragging');
+      mapStartX = e.clientX;
+      mapStartY = e.clientY;
+      mapStartPanX = panX;
+      mapStartPanY = panY;
+    });
+    window.addEventListener('mousemove', (e) => {
+      if (!mapDragging || !mobileQuery.matches) return;
+      panX = clamp(mapStartPanX + (e.clientX - mapStartX), minX, maxX);
+      panY = clamp(mapStartPanY + (e.clientY - mapStartY), minY, maxY);
+      applyMobileTransform();
+    });
+    window.addEventListener('mouseup', () => {
+      mapDragging = false;
+      img.classList.remove('dragging');
+    });
 
     // ===== MODAL: zoom / pan (vanilla JS, không phụ thuộc jQuery) =====
     let scale = 1, translateX = 0, translateY = 0;
