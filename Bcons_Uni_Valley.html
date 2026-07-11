@@ -47,7 +47,6 @@
     z-index: 10;
   }
 
-  /* WRAPPER ĐƯỢC THIẾT KẾ ĐỂ CHỨA CẢ ẢNH BẢO VỆ PHÍA SAU VIDEO */
   #mainMediaWrap {
     width: 100%;
     height: 100%;
@@ -55,7 +54,6 @@
     align-items: center;
     justify-content: center;
     background: #fff;
-    position: relative;
   }
 
   #mainMediaWrap img, #mainMediaWrap video {
@@ -70,23 +68,6 @@
     will-change: transform;
   }
 
-  /* Ảnh nền bảo vệ để chống màn hình trắng trên Safari iOS */
-  .video-fallback-bg {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    z-index: 1;
-  }
-
-  #mainMediaWrap video {
-    position: relative;
-    z-index: 2;
-    background: transparent;
-  }
-
   .brand-label {
     position: absolute;
     bottom: 4px;
@@ -95,7 +76,6 @@
     color: rgba(0,0,0,0.3);
     font-weight: 500;
     pointer-events: none;
-    z-index: 10;
   }
 
   /* THANH CHỨA THUMBNAIL MÀU XÁM */
@@ -153,14 +133,13 @@
     width: 22px;
     height: 22px;
     pointer-events: none;
-    z-index: 2;
   }
 
   .thumb.active { border-color: #000; }
   .thumb:hover { border-color: #666; }
 
   /* ===== ZOOM TRỰC TIẾP ===== */
-  #mainMediaWrap img.zoomable { cursor: zoom-in; position: relative; z-index: 2; }
+  #mainMediaWrap img.zoomable { cursor: zoom-in; }
   #mainMediaWrap img.zoomable.zoomed { cursor: grab; }
   #mainMediaWrap img.zoomable.zoomed.dragging { cursor: grabbing; }
   
@@ -226,22 +205,13 @@
       wrap.innerHTML = '';
 
       if (item.type === 'video') {
-        const thumbUrl = getVideoThumbUrl(item.url);
-        
-        // 1. Tạo ảnh nền đệm bảo vệ (Chống lỗi trắng màn hình hoàn toàn trên iOS Safari)
-        const fallbackImg = document.createElement('img');
-        fallbackImg.src = thumbUrl;
-        fallbackImg.className = 'video-fallback-bg';
-        wrap.appendChild(fallbackImg);
-
-        // 2. Tạo thẻ video đè lên trên ảnh nền
         const videoEl = document.createElement('video');
         videoEl.src = getPlayableVideoUrl(item.url);
         videoEl.controls = true;
         videoEl.playsInline = true;
-        videoEl.muted = true; // Bắt buộc tắt tiếng để iOS/Safari cho phép nạp dữ liệu mượt mà
-        videoEl.setAttribute('preload', 'auto');
-        videoEl.poster = thumbUrl;
+        
+        // THAY ĐỔI: Tắt tự động phát (no autoplay) và lấy ảnh thumb gán làm poster đại diện
+        videoEl.poster = getVideoThumbUrl(item.url);
         
         wrap.appendChild(videoEl);
       } else {
