@@ -63,7 +63,7 @@
     position: absolute;
     width: 100%;
     height: 100%;
-    object-fit: cover; /* Phóng to lấp đầy hoàn toàn vùng chứa */
+    object-fit: cover;
     transform-origin: center center;
     will-change: transform;
   }
@@ -86,8 +86,8 @@
     align-items: center;
     gap: 8px;
     z-index: 500;
-    background: rgba(255, 255, 255, 0.85);
-    padding: 4px 10px;
+    background: rgba(240, 240, 240, 0.9); /* Màu nền xám nhạt bo góc giống mẫu */
+    padding: 6px 14px;
     border-radius: 20px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.12);
   }
@@ -95,31 +95,57 @@
   .main-map-controls {
     display: flex;
     align-items: center;
-    gap: 5px;
+    gap: 8px;
     user-select: none;
   }
   .main-map-controls span {
-    font-size: 11px;
+    font-size: 16px; /* Tăng cỡ chữ dấu - và + */
     font-family: Arial, sans-serif;
     color: #333;
     font-weight: bold;
   }
+  
+  /* CUSTOM THANH SLIDER ĐỂ CÓ NÚT CAM TO GIỐNG MẪU */
   .main-map-controls input[type="range"] {
-    width: 70px;
-    height: 3px;
-    accent-color: #ff9900;
-    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+    width: 80px;
+    height: 4px;
+    background: #444; /* Màu thanh ray đen xám */
     outline: none;
     border: none;
-    background: rgba(0,0,0,0.15);
+    border-radius: 2px;
+    cursor: pointer;
+  }
+
+  /* Nút kéo trên Chrome, Safari, Opera và Edge */
+  .main-map-controls input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px; /* Tăng kích thước nút tròn cam */
+    height: 20px;
+    background: #ff9900; /* Màu cam thương hiệu */
+    border-radius: 50%;
+    cursor: pointer;
+    transition: transform 0.1s;
+  }
+
+  /* Nút kéo trên Firefox */
+  .main-map-controls input[type="range"]::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    background: #ff9900;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
   }
 
   .brand-label {
-    font-size: 11px;
+    font-size: 13px;
     font-family: Arial, sans-serif;
-    color: rgba(0, 0, 0, 0.5);
-    border-left: 1px solid rgba(0, 0, 0, 0.15);
-    padding-left: 8px;
+    color: #555;
+    border-left: 1px solid rgba(0, 0, 0, 0.2);
+    padding-left: 10px;
     pointer-events: none;
     user-select: none;
   }
@@ -200,11 +226,12 @@
       <div class="zoom-hint" id="zoomHint">Kéo thanh trượt hoặc cuộn để phóng to • Kéo rê để xem chi tiết</div>
       <div id="mainMediaWrap"></div>
       
+      <!-- CỤM ZOOM GIỐNG HỆT MẪU NẰM NGANG PHÍA DƯỚI GÓC PHẢI -->
       <div class="bottom-controls-container" id="controlsContainer">
         <div class="main-map-controls">
-          <span>Thu nhỏ</span>
+          <span>-</span>
           <input type="range" id="mediaZoomSlider" min="1" max="5" step="0.05" value="1" title="Kéo để phóng to ảnh">
-          <span>Phóng to</span>
+          <span>+</span>
         </div>
         <div class="brand-label">dulieunhapho.com</div>
       </div>
@@ -245,7 +272,7 @@
         videoEl.controls = true;
         videoEl.playsInline = true;
         wrap.appendChild(videoEl);
-        controlsContainer.style.display = 'none'; // Ẩn zoom khi chạy video
+        controlsContainer.style.display = 'none';
         
         if (!isInitialLoad) {
           videoEl.play().catch(err => console.log(err));
@@ -256,7 +283,7 @@
         imgEl.loading = 'lazy';
         imgEl.className = 'zoomable';
         wrap.appendChild(imgEl);
-        controlsContainer.style.display = 'flex'; // Hiện thanh zoom cho ảnh
+        controlsContainer.style.display = 'flex';
       }
 
       document.getElementById('counter').textContent = (currentIndex + 1) + ' / ' + items.length;
@@ -306,7 +333,7 @@
       updateMain();
     });
 
-    // ===== TRÌNH QUẢN LÝ ZOOM NÂNG CẤP ĐỒNG BỘ SLIDER =====
+    // ===== TRÌNH QUẢN LÝ ZOOM ĐỒNG BỘ SLIDER =====
     let zScale = 1, zPanX = 0, zPanY = 0;
     let zDragging = false, zStartX = 0, zStartY = 0, zStartPanX = 0, zStartPanY = 0;
     const Z_MIN = 1, Z_MAX = 5;
@@ -324,7 +351,6 @@
       applyZoomTransform();
     }
 
-    // Giới hạn biên chặt chẽ dựa trên tỉ lệ phóng to để không lộ khoảng trống nền bên dưới
     function clampZoomPan() {
       const wrap = document.getElementById('mainMediaWrap');
       const maxPanX = (wrap.clientWidth * (zScale - 1)) / 2;
@@ -352,7 +378,6 @@
       applyZoomTransform();
     }
 
-    // Lắng nghe sự kiện kéo thanh trượt Slider
     zoomSlider.addEventListener('input', function(e) {
       const nextScale = parseFloat(e.target.value);
       const prevScale = zScale;
