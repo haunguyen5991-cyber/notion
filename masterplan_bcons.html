@@ -1,389 +1,430 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bản Đồ Tương Tác Bcons Uni Valley</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gallery</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    width: 100%;
+    height: 100%;
+    background: #fff;
+    font-family: Arial, sans-serif;
+    overflow: hidden;
+  }
+
+  .gallery {
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+  }
+
+  /* MAIN VIEW VỚI KHOẢNG TRẮNG NGĂN CÁCH PHÍA DƯỚI */
+  .main-view {
+    flex: 1;
+    position: relative;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    margin-bottom: 12px;
+  }
+
+  .counter {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: rgba(0,0,0,0.6);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    z-index: 10;
+  }
+
+  #mainMediaWrap {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+  }
+
+  #mainMediaWrap img, #mainMediaWrap video {
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    max-height: 100%;
+    min-width: 0;
+    min-height: 0;
+    object-fit: contain;
+    transform-origin: center center;
+    will-change: transform;
+  }
+
+  .brand-label {
+    position: absolute;
+    bottom: 4px;
+    right: 6px;
+    font-size: 10px;
+    color: rgba(0,0,0,0.3);
+    font-weight: 500;
+    pointer-events: none;
+  }
+
+  /* THANH CHỨA THUMBNAIL MÀU XÁM */
+  .thumb-rail {
+    height: 110px;
+    background: #e4e4e4;
+    border-top: 1px solid #ccc;
+    border-bottom: 1px solid #ccc;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    overflow-x: auto;
+    gap: 10px;
+    padding: 10px 20px;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Ẩn thanh cuộn */
+  .thumb-rail::-webkit-scrollbar { display: none; }
+  .thumb-rail { -ms-overflow-style: none; scrollbar-width: none; }
+
+  /* ĐỊNH DẠNG Ô THUMBNAIL */
+  .thumb {
+    width: 88px;
+    height: 88px;
+    flex-shrink: 0;
+    background: #222;
+    border: 2px solid transparent;
+    cursor: pointer;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    border-radius: 2px;
+  }
+
+  .thumb:first-child {
+    margin-left: auto;
+  }
+  .thumb:last-child {
+    margin-right: auto;
+  }
+
+  .thumb img, .thumb video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    pointer-events: none;
+  }
+
+  .thumb .play-icon {
+    position: absolute;
+    width: 22px;
+    height: 22px;
+    pointer-events: none;
+  }
+
+  .thumb.active { border-color: #000; }
+  .thumb:hover { border-color: #666; }
+
+  /* ===== ZOOM TRỰC TIẾP ===== */
+  #mainMediaWrap img.zoomable { cursor: zoom-in; }
+  #mainMediaWrap img.zoomable.zoomed { cursor: grab; }
+  #mainMediaWrap img.zoomable.zoomed.dragging { cursor: grabbing; }
+  
+  .zoom-hint {
+    position: absolute;
+    bottom: 4px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.45);
+    color: rgba(255,255,255,0.85);
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 10px;
+    pointer-events: none;
+    z-index: 10;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .main-view:hover .zoom-hint { opacity: 1; }
+
+  /* ========================================================
+     CẤU HÌNH TỐI ƯU RIÊNG CHO ĐIỆN THOẠI (SỬA LỖI KHUNG TRỐNG)
+     ======================================================== */
+  @media screen and (max-width: 768px) {
+    html, body {
+      overflow-y: auto !important; /* Cho phép cuộn trang tự nhiên nếu nội dung dài */
+      height: auto !important;
+    }
     
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/maphilight/1.4.2/jquery.maphilight.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jQuery-rwdImageMaps/1.6/jquery.rwdImageMaps.min.js"></script>
+    .gallery {
+      height: auto !important; /* Hủy bỏ 100vh gây trống khung */
+    }
 
-    <style>
-        /* TỐI ƯU HÓA BODY NỀN TRẮNG */
-        html, body {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: auto;
-            background-color: #ffffff;
-            font-family: Arial, sans-serif;
-        }
+    .main-view {
+      flex: none !important;     /* Không cho kéo giãn tự do */
+      height: auto !important;   /* Chiều cao đi theo ảnh/video */
+      min-height: 250px;         /* Khoảng trống tối thiểu an toàn */
+      margin-bottom: 8px;
+    }
 
-        /* Ẩn thanh cuộn vật lý trình duyệt */
-        html::-webkit-scrollbar, body::-webkit-scrollbar {
-            display: none;
-        }
-        html, body {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
+    #mainMediaWrap {
+      height: auto !important;
+    }
 
-        body {
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-        }
-        
-        /* KHUNG CHỨA BẢN ĐỒ CHÍNH */
-        .map-container {
-            position: relative;
-            width: 100%;
-            max-width: 100%;
-            height: auto !important; 
-            background: #ffffff;
-            padding: 0;
-            margin: 0;
-        }
-        
-        .map-container img {
-            display: block;
-            width: 100% !important;
-            height: auto !important;
-        }
-
-        /* --- ÉP THAY ĐỔI GIAO DIỆN TRÊN ĐIỆN THOẠI --- */
-        @media screen and (max-width: 768px) {
-            /* Ngăn chặn div tự sinh của maphilight chiếm diện tích thừa */
-            .map-container > div[style] {
-                width: 100% !important;
-                height: auto !important;
-            }
-            /* Ép canvas hiển thị đè khít chuẩn xác theo ảnh gốc */
-            .map-container canvas {
-                width: 100% !important;
-                height: 100% !important;
-                left: 0 !important;
-                top: 0 !important;
-            }
-        }
-
-        /* --- KHUNG POP-UP MODAL CHI TIẾT --- */
-        .popup-overlay {
-            display: none;
-            position: fixed;
-            z-index: 9999;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.7);
-            justify-content: center;
-            align-items: center;
-        }
-        .popup-content {
-            position: relative;
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            width: 85%;
-            max-width: 1000px;
-            box-shadow: 0 5px 25px rgba(0,0,0,0.5);
-            text-align: center;
-        }
-        .popup-content h3 {
-            margin-top: 0;
-            margin-bottom: 15px;
-            color: #222;
-        }
-
-        /* Khung hiển thị ảnh zoom trong popup */
-        .img-viewport {
-            position: relative;
-            width: 100%;
-            height: 65vh; 
-            overflow: hidden; 
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            background: #fdfdfd;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        
-        @media screen and (max-width: 768px) {
-            .popup-content {
-                width: 95%;
-                padding: 15px 10px;
-            }
-            .img-viewport {
-                height: 55vh;
-            }
-        }
-
-        .img-viewport img {
-            max-width: 100%;
-            max-height: 100%;
-            object-fit: contain;
-            transform-origin: center center;
-            cursor: grab;
-            user-select: none;
-            -webkit-user-drag: none;
-            transition: transform 0.1s ease-out; 
-        }
-        .img-viewport img:active {
-            cursor: grabbing;
-        }
-
-        /* BỘ ĐIỀU KHIỂN KÍNH LÚP */
-        .zoom-controls {
-            position: absolute;
-            bottom: 15px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.75);
-            padding: 6px 15px;
-            border-radius: 30px;
-            display: flex;
-            gap: 15px;
-            z-index: 10000;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-        }
-        .zoom-controls button {
-            background: none;
-            border: none;
-            color: white;
-            font-size: 18px;
-            cursor: pointer;
-            padding: 2px 6px;
-            transition: color 0.2s, transform 0.1s;
-        }
-        .zoom-controls button:hover {
-            color: #ff9900;
-            transform: scale(1.1);
-        }
-        
-        /* Nút đóng X */
-        .close-btn {
-            position: absolute;
-            top: -12px;
-            right: -12px;
-            background: #ff4d4d;
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 28px;
-            height: 28px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-            z-index: 10001;
-        }
-        .close-btn:hover { background: #cc0000; }
-    </style>
+    #mainMediaWrap img, #mainMediaWrap video {
+      width: 100% !important;
+      height: auto !important;   /* Ép tỷ lệ chiều cao co giãn theo đúng file gốc */
+      max-height: 65vh !important; /* Giới hạn chiều cao tối đa vừa tầm mắt trên điện thoại */
+    }
+  }
+</style>
 </head>
 <body>
-
-    <div class="map-container">
-        <img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783686087/masterplan_w7xmhr.jpg" usemap="#image-map" class="maphilight-target">
-        
-        <map name="image-map">
-            <area target="" alt="Layout 1" title="Layout 1" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783683857/be680720-1432-463e-b7ea-85e082c5a861.png" coords="767,1682,794,1594,1077,1704,1050,1782,918,1736" shape="poly">
-            <area target="" alt="Layout 1" title="Layout 1" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783683857/be680720-1432-463e-b7ea-85e082c5a861.png" coords="953,1466,984,1386,1172,1457,1141,1536" shape="poly">
-            <area target="" alt="Layout 2" title="Layout 2" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M2_us8qsf.jpg" coords="1311,1584,1430,1626,1340,1881,1220,1838" shape="poly">
-            <area target="" alt="Layout 2" title="Layout 2" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M2_us8qsf.jpg" coords="1472,1944,1351,1900,1443,1635,1563,1681" shape="poly">
-            <area target="" alt="Layout 2" title="Layout 2" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M2_us8qsf.jpg" coords="1059,1923,997,2044,1293,2201,1360,2084" shape="poly">
-            <area target="" alt="Layout 2" title="Layout 2" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M2_us8qsf.jpg" coords="726,1782,854,1829,803,1973,675,1926" shape="poly">
-            <area target="" alt="Layout 2" title="Layout 2" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M2_us8qsf.jpg" coords="1538,2179,1474,2296,1534,2329,1600,2209" shape="poly">
-            <area target="" alt="Layout 3" title="Layout 3" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M3_jt8v6r.jpg" coords="1083,926,1264,978,1201,1206,1033,1159" shape="poly">
-            <area target="" alt="Layout 3" title="Layout 3" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M3_jt8v6r.jpg" coords="1379,972,1560,1021,1481,1316,1300,1266" shape="poly">
-            <area target="" alt="Layout 3" title="Layout 3" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M3_jt8v6r.jpg" coords="1572,979,1746,1025,1649,1395,1475,1350" shape="poly">
-            <area target="" alt="Layout 3" title="Layout 3" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M3_jt8v6r.jpg" coords="674,1928,853,1990,829,2058,652,1990" shape="poly">
-            <area target="" alt="Layout 4" title="Layout 4" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678533/M4_fcxmci.jpg" coords="1344,1277,1311,1402,1446,1464,1483,1317" shape="poly">
-            <area target="" alt="Layout 4" title="Layout 4" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678533/M4_fcxmci.jpg" coords="1475,1348,1613,1386,1578,1522,1446,1463" shape="poly">
-            <area target="" alt="Layout 4" title="Layout 4" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678533/M4_fcxmci.jpg" coords="958,2022,1092,2095,1059,2192,922,2117" shape="poly">
-            <area target="" alt="Layout 5" title="Layout 5" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678533/M5_vtfhxl.jpg" coords="436,943,396,1042,800,1197,840,1091" shape="poly">
-            <area target="" alt="Layout 6" title="Layout 6" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678534/M6_yonyqn.jpg" coords="840,1089,800,1195,1117,1321,1165,1195,1032,1159" shape="poly">
-            <area target="" alt="Layout 6" title="Layout 6" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678534/M6_yonyqn.jpg" coords="1675,1705,1810,1751,1976,1078,1855,1045,1768,1374,1720,1557,1711,1599" shape="poly">
-            <area target="" alt="Layout 2" title="Layout 2" href="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M2_us8qsf.jpg" coords="1675,1704,1808,1750,1684,2068,1561,2022" shape="poly">
-        </map>
+  <div class="gallery">
+    <div class="main-view" id="mainView">
+      <div class="counter" id="counter">1 / 10</div>
+      <div class="zoom-hint" id="zoomHint">Cuộn để phóng to • Kéo để xem từng phần</div>
+      <div id="mainMediaWrap"></div>
+      <div class="brand-label">dulieunhapho.com</div>
     </div>
+    <div class="thumb-rail" id="thumbRail"></div>
+  </div>
 
-    <div id="layoutModal" class="popup-overlay" onclick="closePopupOutside(event)">
-        <div class="popup-content">
-            <button class="close-btn" onclick="closePopup()">&times;</button>
-            <h3 id="popup-title">Chi tiết mặt bằng</h3>
-            
-            <div class="img-viewport" id="viewport">
-                <img id="popup-img" src="" alt="Layout chi tiết">
-                
-                <div class="zoom-controls" onclick="event.stopPropagation()">
-                    <button id="btn-zoom-in" title="Phóng to">🔍 +</button>
-                    <button id="btn-zoom-out" title="Thu nhỏ">🔍 -</button>
-                    <button id="btn-zoom-reset" title="Đặt lại">↺</button>
-                </div>
-            </div>
-        </div>
-    </div>
+  <script>
+    const items = [
+      { url: 'https://res.cloudinary.com/oy7u6ywg/video/upload/v1783707302/1783707169567_1912694273111558205_7085495023723622370_kay7ff.mp4', type: 'video' },
+      { url: 'https://res.cloudinary.com/oy7u6ywg/video/upload/v1783672544/T%E1%BB%95ng_quan_zw6hw8.mov', type: 'video' },
+      { url: 'https://res.cloudinary.com/oy7u6ywg/video/upload/v1783707300/1783707169557_1912694273111558205_7085495023723622370_zupcqk.mp4', type: 'video' },
+      { url: 'https://res.cloudinary.com/oy7u6ywg/video/upload/v1783707304/1783707169575_1912694273111558205_7085495023723622370_udvczq.mp4', type: 'video' },
+      { url: 'https://res.cloudinary.com/oy7u6ywg/video/upload/v1783707299/1783707169545_1912694273111558205_7085495023723622370_sjdmmb.mp4', type: 'video' },
+      { url: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783674828/2a370a16-7f56-42c9-b2b9-0fa18e00e67e.png', type: 'image' },
+      { url: 'https://datxanh.homes/wp-content/uploads/2025/01/mat-bang-tong-nha-pho-bcons-uni.jpg', type: 'image' },
+      { url: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783675502/d47af77e-10a3-4b5b-b67c-5f2d735dce34.png', type: 'image' },
+      { url: 'https://nhadatxanhmienbac.com/wp-content/uploads/2025/02/Bcons-Uni-Valley-Flycam-0602-01.jpg', type: 'image' },
+      { url: 'https://res.cloudinary.com/oy7u6ywg/video/upload/v1783708714/1783708638214_1912694273111558205_7085495023723622370_ouc2r5.mp4', type: 'video' }
+    ];
 
-    <script>
-        let scale = 1;
-        let isDragging = false;
-        let startX, startY;
-        let translateX = 0, translateY = 0;
+    let currentIndex = 0;
+    let isInitialLoad = true;
 
-        const $zoomImg = $('#popup-img');
-        const $viewport = $('#viewport');
+    function getVideoThumbUrl(videoUrl) {
+      return videoUrl
+        .replace('/video/upload/', '/video/upload/so_0/')
+        .replace(/\.(mov|mp4)(\?.*)?$/i, '.jpg$2');
+    }
 
-        function updateTransform() {
-            $zoomImg.css('transform', `translate(${translateX}px, ${translateY}px) scale(${scale})`);
+    function getPlayableVideoUrl(videoUrl) {
+      return videoUrl.replace(/\.mov(\?.*)?$/i, '.mp4$1');
+    }
+
+    function updateMain() {
+      const item = items[currentIndex];
+      const wrap = document.getElementById('mainMediaWrap');
+      wrap.innerHTML = '';
+
+      if (item.type === 'video') {
+        const videoEl = document.createElement('video');
+        videoEl.src = getPlayableVideoUrl(item.url);
+        videoEl.controls = true;
+        videoEl.playsInline = true;
+        videoEl.poster = getVideoThumbUrl(item.url);
+        wrap.appendChild(videoEl);
+      } else {
+        wrap.innerHTML = '<img src="' + item.url + '" loading="lazy" class="zoomable">';
+      }
+
+      document.getElementById('counter').textContent = (currentIndex + 1) + ' / ' + items.length;
+      document.getElementById('zoomHint').style.display = (item.type === 'video') ? 'none' : 'block';
+      
+      updateThumbs();
+      resetZoom();
+    }
+
+    function updateThumbs() {
+      const rail = document.getElementById('thumbRail');
+      const thumbs = document.querySelectorAll('.thumb');
+      
+      thumbs.forEach((t, i) => {
+        t.classList.toggle('active', i === currentIndex);
+      });
+
+      if (isInitialLoad) {
+        isInitialLoad = false;
+        return;
+      }
+
+      const activeThumb = thumbs[currentIndex];
+      if (activeThumb) {
+        const railWidth = rail.clientWidth;
+        const thumbLeft = activeThumb.offsetLeft;
+        const thumbWidth = activeThumb.clientWidth;
+        rail.scrollLeft = thumbLeft - (railWidth / 2) + (thumbWidth / 2);
+      }
+    }
+
+    function initThumbs() {
+      const rail = document.getElementById('thumbRail');
+      items.forEach((item, idx) => {
+        const t = document.createElement('div');
+        t.className = 'thumb' + (idx === 0 ? ' active' : '');
+        if (item.type === 'video') {
+          const thumbImg = getVideoThumbUrl(item.url);
+          t.innerHTML =
+            '<img src="' + thumbImg + '" loading="lazy">' +
+            '<svg class="play-icon" viewBox="0 0 24 24" fill="white" style="filter:drop-shadow(0 0 2px rgba(0,0,0,0.8))"><path d="M8 5v14l11-7z"/></svg>';
+        } else {
+          t.innerHTML = '<img src="' + item.url + '" loading="lazy">';
         }
+        t.onclick = () => { currentIndex = idx; updateMain(); };
+        rail.appendChild(t);
+      });
+    }
 
-        function resetZoom() {
-            scale = 1;
-            translateX = 0;
-            translateY = 0;
-            updateTransform();
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowLeft') currentIndex = (currentIndex - 1 + items.length) % items.length;
+      if (e.key === 'ArrowRight') currentIndex = (currentIndex + 1) % items.length;
+      else return;
+      updateMain();
+    });
+
+    // ===== TRÌNH QUẢN LÝ ZOOM =====
+    let zScale = 1, zPanX = 0, zPanY = 0;
+    let zDragging = false, zStartX = 0, zStartY = 0, zStartPanX = 0, zStartPanY = 0;
+    const Z_MIN = 1, Z_MAX = 6;
+
+    function applyZoomTransform() {
+      const img = document.querySelector('#mainMediaWrap img.zoomable');
+      if (!img) return;
+      img.style.transform = 'translate(' + zPanX + 'px,' + zPanY + 'px) scale(' + zScale + ')';
+      img.classList.toggle('zoomed', zScale > Z_MIN);
+    }
+
+    function resetZoom() {
+      zScale = 1; zPanX = 0; zPanY = 0;
+      applyZoomTransform();
+    }
+
+    function clampZoomPan() {
+      const maxPan = 3000;
+      zPanX = Math.max(-maxPan, Math.min(maxPan, zPanX));
+      zPanY = Math.max(-maxPan, Math.min(maxPan, zPanY));
+    }
+
+    function zoomAtPoint(delta, clientX, clientY, refEl) {
+      const rect = refEl.getBoundingClientRect();
+      const cx = clientX - rect.left - rect.width / 2;
+      const cy = clientY - rect.top - rect.height / 2;
+
+      const prevScale = zScale;
+      zScale = Math.min(Z_MAX, Math.max(Z_MIN, zScale + delta));
+      if (zScale === prevScale) return;
+
+      const ratio = zScale / prevScale;
+      zPanX = (zPanX - cx) * ratio + cx;
+      zPanY = (zPanY - cy) * ratio + cy;
+
+      if (zScale <= Z_MIN) { zPanX = 0; zPanY = 0; }
+      clampZoomPan();
+      applyZoomTransform();
+    }
+
+    (function() {
+      const wrap = document.getElementById('mainMediaWrap');
+
+      wrap.addEventListener('wheel', function(e) {
+        const img = wrap.querySelector('img.zoomable');
+        if (!img) return;
+        e.preventDefault();
+        const delta = e.deltaY < 0 ? 0.3 : -0.3;
+        zoomAtPoint(delta, e.clientX, e.clientY, wrap);
+      }, { passive: false });
+
+      wrap.addEventListener('mousedown', function(e) {
+        const img = wrap.querySelector('img.zoomable');
+        if (!img || zScale <= Z_MIN) return;
+        zDragging = true;
+        img.classList.add('dragging');
+        zStartX = e.clientX; zStartY = e.clientY;
+        zStartPanX = zPanX; zStartPanY = zPanY;
+      });
+      window.addEventListener('mousemove', function(e) {
+        if (!zDragging) return;
+        zPanX = zStartPanX + (e.clientX - zStartX);
+        zPanY = zStartPanY + (e.clientY - zStartY);
+        clampZoomPan();
+        applyZoomTransform();
+      });
+      window.addEventListener('mouseup', function() {
+        if (!zDragging) return;
+        zDragging = false;
+        const img = wrap.querySelector('img.zoomable');
+        if (img) img.classList.remove('dragging');
+      });
+
+      wrap.addEventListener('dblclick', function() {
+        if (wrap.querySelector('img.zoomable')) resetZoom();
+      });
+
+      let zLastTouchDist = null;
+      wrap.addEventListener('touchstart', function(e) {
+        const img = wrap.querySelector('img.zoomable');
+        if (!img) return;
+        if (e.touches.length === 2) {
+          zLastTouchDist = Math.hypot(
+            e.touches[0].clientX - e.touches[1].clientX,
+            e.touches[0].clientY - e.touches[1].clientY
+          );
+        } else if (e.touches.length === 1 && zScale > Z_MIN) {
+          zDragging = true;
+          zStartX = e.touches[0].clientX; zStartY = e.touches[0].clientY;
+          zStartPanX = zPanX; zStartPanY = zPanY;
         }
+      }, { passive: true });
 
-        $(document).ready(function() {
-            const $targetImg = $('.maphilight-target');
-            
-            function initPlugins() {
-                // Kích hoạt tính năng responsive tọa độ bản đồ
-                $('img[usemap]').rwdImageMaps();
-                
-                // Khởi tạo thư viện tô sáng vùng maphilight
-                $targetImg.maphilight({
-                    fillColor: 'ff9900',   
-                    fillOpacity: 0.4,      
-                    strokeColor: 'ff6600', 
-                    strokeWidth: 1,
-                    alwaysOn: false        
-                });
-                
-                // GIẢI PHÁP CHÍNH: Chờ thư viện tạo cấu trúc dom xong, xử lý ép lại tỷ lệ chiều cao thực tế bằng Javascript
-                setTimeout(function() {
-                    const actualImgHeight = $targetImg.height();
-                    // Đặt lại chính xác chiều cao vùng chứa bị lỗi maphilight trên mobile
-                    $('.map-container > div').css({
-                        'height': actualImgHeight + 'px',
-                        'width': '100%'
-                    });
-                }, 400);
-            }
-
-            if ($targetImg[0].complete) {
-                initPlugins();
-            } else {
-                $targetImg.on('load', function() {
-                    initPlugins();
-                });
-            }
-
-            // Lắng nghe sự kiện xoay màn hình hoặc co giãn để tính lại chiều cao chuẩn xác
-            $(window).on('resize', function() {
-                setTimeout(function() {
-                    const actualImgHeight = $targetImg.height();
-                    $('.map-container > div').css('height', actualImgHeight + 'px');
-                }, 200);
-            });
-
-            $('area').on('click', function(e) {
-                e.preventDefault(); 
-                var imageLink = $(this).attr('href'); 
-                var layoutTitle = $(this).attr('title'); 
-                
-                $('#popup-title').text(layoutTitle);
-                $zoomImg.attr('src', imageLink);
-                
-                resetZoom(); 
-                $('#layoutModal').css('display', 'flex');
-            });
-
-            // Xử lý zoom lăn chuột
-            $viewport.on('wheel', function(e) {
-                e.preventDefault();
-                const delta = e.originalEvent.deltaY;
-                const zoomFactor = 1.1;
-
-                if (delta < 0) {
-                    if (scale < 5) scale *= zoomFactor; 
-                } else {
-                    if (scale > 0.8) scale /= zoomFactor; 
-                }
-                updateTransform();
-            });
-
-            $('#btn-zoom-in').on('click', function() {
-                if (scale < 5) {
-                    scale *= 1.25;
-                    updateTransform();
-                }
-            });
-
-            $('#btn-zoom-out').on('click', function() {
-                if (scale > 0.8) {
-                    scale /= 1.25;
-                    updateTransform();
-                }
-            });
-
-            $('#btn-zoom-reset').on('click', function() {
-                resetZoom();
-            });
-
-            // Quản lý kéo thả mượt mà cho Desktop & Mobile
-            function startDrag(clientX, clientY) {
-                isDragging = true;
-                startX = clientX - translateX;
-                startY = clientY - translateY;
-            }
-
-            function moveDrag(clientX, clientY) {
-                if (!isDragging) return;
-                translateX = clientX - startX;
-                translateY = clientY - startY;
-                updateTransform();
-            }
-
-            $zoomImg.on('mousedown', function(e) {
-                e.preventDefault();
-                startDrag(e.clientX, e.clientY);
-            });
-
-            $(window).on('mousemove', function(e) {
-                moveDrag(e.clientX, e.clientY);
-            });
-
-            $zoomImg.on('touchstart', function(e) {
-                const touch = e.touches[0];
-                startDrag(touch.clientX, touch.clientY);
-            });
-
-            $zoomImg.on('touchmove', function(e) {
-                if (isDragging) {
-                    const touch = e.touches[0];
-                    moveDrag(touch.clientX, touch.clientY);
-                }
-            });
-
-            $(window).on('mouseup touchend', function() {
-                isDragging = false;
-            });
-        });
-
-        function closePopup() {
-            $('#layoutModal').css('display', 'none');
-            $zoomImg.attr('src', ''); 
+      wrap.addEventListener('touchmove', function(e) {
+        const img = wrap.querySelector('img.zoomable');
+        if (!img) return;
+        if (e.touches.length === 2 && zLastTouchDist !== null) {
+          e.preventDefault();
+          const dist = Math.hypot(
+            e.touches[0].clientX - e.touches[1].clientX,
+            e.touches[0].clientY - e.touches[1].clientY
+          );
+          const midX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+          const midY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+          const delta = (dist - zLastTouchDist) * 0.01;
+          zoomAtPoint(delta, midX, midY, wrap);
+          zLastTouchDist = dist;
+        } else if (e.touches.length === 1 && zDragging) {
+          e.preventDefault();
+          zPanX = zStartPanX + (e.touches[0].clientX - zStartX);
+          zPanY = zStartPanY + (e.touches[0].clientY - zStartY);
+          clampZoomPan();
+          applyZoomTransform();
         }
+      }, { passive: false });
 
-        function closePopupOutside(event) {
-            if (event.target.id === 'layoutModal') {
-                closePopup();
-            }
-        }
-    </script>
+      wrap.addEventListener('touchend', function(e) {
+        if (e.touches.length < 2) zLastTouchDist = null;
+        if (e.touches.length === 0) zDragging = false;
+      }, { passive: true });
+    })();
+
+    initThumbs();
+    updateMain();
+  </script>
 </body>
 </html>
