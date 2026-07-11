@@ -61,9 +61,9 @@
   .map-container {
     position: relative;
     width: 100%;
-    height: 100vh; /* Chuyển container thành full view cố định để phục vụ pan/zoom cho cả desktop */
+    height: 100vh;
     overflow: hidden;
-    background: #fff;
+    background: #ffffff;
   }
 
   .map-container img.masterplan {
@@ -248,14 +248,10 @@
     const img = document.getElementById('masterplanImg');
     const svg = document.getElementById('hotspotSvg');
     const container = document.getElementById('mapContainer');
-    const mobileQuery = window.matchMedia('(max-width: 700px)');
 
     let currentScale = 1;
     let panX = 0, panY = 0;       
     let renderW = 0, renderH = 0; 
-    let minX = 0, maxX = 0, minY = 0, maxY = 0; 
-
-    function clamp(v, lo, hi) { return Math.min(hi, Math.max(lo, v)); }
 
     function applyTransform() {
       img.style.width = renderW + 'px';
@@ -267,20 +263,6 @@
       svg.style.transform = 'translate(' + panX + 'px,' + panY + 'px)';
     }
 
-    function calculateBounds() {
-      const cw = container.clientWidth;
-      const ch = container.clientHeight;
-      minX = cw - renderW;
-      minY = ch - renderH;
-      
-      // Nếu ảnh nhỏ hơn khung, không cho kéo hoặc khóa ở 0
-      if (minX > 0) minX = 0;
-      if (minY > 0) minY = 0;
-
-      panX = clamp(panX, minX, maxX);
-      panY = clamp(panY, minY, maxY);
-    }
-
     function initPosition() {
       const cw = container.clientWidth;
       const ch = container.clientHeight;
@@ -288,19 +270,14 @@
       const nh = img.naturalHeight;
       if (!nw || !nh || !cw || !ch) return;
 
-      // Xác định tỷ lệ cơ sở ban đầu để vừa khít màn hình
-      const baseScale = mobileQuery.matches ? Math.max(cw / nw, ch / nh) : Math.min(cw / nw, ch / nh);
-      
-      // Áp dụng độ phóng đại riêng: Mobile phóng to sẵn 1.6, Desktop bắt đầu từ 1.0 (vừa khung)
-      const zoomFactor = mobileQuery.matches ? 1.6 : 1.0;
-      currentScale = baseScale * zoomFactor;
+      // Khớp vừa khung theo tỷ lệ hình học chuẩn (không bóp méo ảnh)
+      const baseScale = Math.min(cw / nw, ch / nh);
+      currentScale = baseScale;
 
       renderW = nw * currentScale;
       renderH = nh * currentScale;
 
-      calculateBounds();
-
-      // Căn giữa ảnh
+      // Căn giữa hình ảnh tự động
       panX = (cw - renderW) / 2;
       panY = (ch - renderH) / 2;
 
@@ -329,57 +306,39 @@
       img.addEventListener('load', refresh);
     }
     window.addEventListener('resize', initPosition);
-    mobileQuery.addEventListener('change', refresh);
 
-    // ===== HỖ TRỢ ZOOM TRÊN MASTERPLAN BẰNG CUỘN CHUỘT (CẢ DESKTOP & MOBILE) =====
+    // Phóng to/Thu nhỏ bằng cuộn chuột (Desktop)
     container.addEventListener('wheel', (e) => {
       e.preventDefault();
-      const cw = container.clientWidth;
-      const ch = container.clientHeight;
       const nw = img.naturalWidth;
       const nh = img.naturalHeight;
 
-      // Lấy vị trí trỏ chuột so với vùng chứa để phóng to chuẩn tâm chuột
       const rect = container.getBoundingClientRect();
       const mouseX = e.clientX - rect.left;
       const mouseY = e.clientY - rect.top;
 
-      // Tính tọa độ điểm trên ảnh trước khi thực hiện zoom
       const imageX = (mouseX - panX) / currentScale;
       const imageY = (mouseY - panY) / currentScale;
 
-      // Tính toán tỷ lệ zoom mới
       const factor = 1.15;
-      const baseScale = mobileQuery.matches ? Math.max(cw / nw, ch / nh) : Math.min(cw / nw, ch / nh);
-      const maxScale = baseScale * 6; // Giới hạn phóng to tối đa 6 lần
-      const minScale = baseScale * 0.8; // Giới hạn thu nhỏ tối thiểu
-
       if (e.deltaY < 0) {
-        if (currentScale < maxScale) currentScale *= factor;
+        currentScale *= factor;
       } else {
-        if (currentScale > minScale) currentScale /= factor;
+        if (currentScale > 0.1) currentScale /= factor;
       }
 
       renderW = nw * currentScale;
       renderH = nh * currentScale;
 
-      calculateBounds();
-
-      // Tính toán lại panX và panY để giữ nguyên vị trí tâm chuột
       panX = mouseX - imageX * currentScale;
       panY = mouseY - imageY * currentScale;
-
-      // Giới hạn lại sau khi dịch chuyển
-      panX = clamp(panX, minX, maxX);
-      panY = clamp(panY, minY, maxY);
 
       applyTransform();
     }, { passive: false });
 
-    // ===== TÍNH NĂNG KÉO DI CHUYỂN BẢN ĐỒ CHÍNH (CHUỘT & CẢM ỨNG) =====
+    // Kéo thả di chuyển (Pan) đa nền tảng
     let mapDragging = false, mapStartX = 0, mapStartY = 0, mapStartPanX = 0, mapStartPanY = 0;
 
-    // Thiết bị di động / Cảm ứng
     container.addEventListener('touchstart', (e) => {
       if (e.touches.length === 1) {
         mapDragging = true;
@@ -394,20 +353,17 @@
     container.addEventListener('touchmove', (e) => {
       if (e.touches.length === 1 && mapDragging) {
         e.preventDefault();
-        panX = clamp(mapStartPanX + (e.touches[0].clientX - mapStartX), minX, maxX);
-        panY = clamp(mapStartPanY + (e.touches[0].clientY - mapStartY), minY, maxY);
+        panX = mapStartPanX + (e.touches[0].clientX - mapStartX);
+        panY = mapStartPanY + (e.touches[0].clientY - mapStartY);
         applyTransform();
       }
     }, { passive: false });
 
-    container.addEventListener('touchend', (e) => {
-      if (e.touches.length === 0) {
-        mapDragging = false;
-        img.classList.remove('dragging');
-      }
-    }, { passive: true });
+    container.addEventListener('touchend', () => {
+      mapDragging = false;
+      img.classList.remove('dragging');
+    });
 
-    // Chuột trên Desktop
     container.addEventListener('mousedown', (e) => {
       mapDragging = true;
       img.classList.add('dragging');
@@ -418,8 +374,8 @@
     });
     window.addEventListener('mousemove', (e) => {
       if (!mapDragging) return;
-      panX = clamp(mapStartPanX + (e.clientX - mapStartX), minX, maxX);
-      panY = clamp(mapStartPanY + (e.clientY - mapStartY), minY, maxY);
+      panX = mapStartPanX + (e.clientX - mapStartX);
+      panY = mapStartPanY + (e.clientY - mapStartY);
       applyTransform();
     });
     window.addEventListener('mouseup', () => {
@@ -427,7 +383,7 @@
       img.classList.remove('dragging');
     });
 
-    // ===== MODAL POPUP (LAYOUT CHI TIẾT) =====
+    // ===== MODAL POPUP LAYOUT CHI TIẾT =====
     let scale = 1, translateX = 0, translateY = 0;
     let isDragging = false, startX = 0, startY = 0;
 
