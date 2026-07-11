@@ -7,41 +7,33 @@
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
-  html {
-    width: 100%;
-    background: #ffffff;
-  }
-
-  body {
+  html, body {
     width: 100%;
     background: #ffffff;
     font-family: Arial, sans-serif;
+  }
+
+  body {
     overflow-y: auto;
     overflow-x: hidden;
     max-height: 100vh;
   }
 
   /* Ẩn thanh cuộn trình duyệt */
-  body::-webkit-scrollbar {
-    display: none;
-  }
-  body {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
+  body::-webkit-scrollbar { display: none; }
+  body { -ms-overflow-style: none; scrollbar-width: none; }
 
-  /* KHUNG CHỨA WATERMARK VÀ THANH ZOOM ĐỒNG NHẤT (Góc dưới bên phải) */
+  /* Bảng điều khiển tích hợp Watermark ở góc dưới bên trái */
   .bottom-controls-container {
     position: fixed;
     bottom: 8px;
-    right: 8px;
+    left: 8px;
     display: flex;
     align-items: center;
     gap: 6px;
     z-index: 500;
   }
 
-  /* Thanh kéo zoom tinh tế */
   .main-map-controls {
     background: rgba(255,255,255,0.85);
     padding: 3px 10px;
@@ -67,7 +59,6 @@
     background: rgba(0,0,0,0.15);
   }
 
-  /* Nhãn thương hiệu nhúng kèm */
   .brand-label {
     font-size: 10px;
     font-family: Arial, sans-serif;
@@ -80,10 +71,12 @@
     box-shadow: 0 1px 4px rgba(0,0,0,0.05);
   }
 
+  /* Khung chứa bản đồ chính */
   .map-container {
     position: relative;
     width: 100%;
     overflow: hidden;
+    background: #ffffff;
   }
 
   .map-container img.masterplan {
@@ -95,42 +88,32 @@
     transform-origin: center center;
     will-change: transform;
   }
-  .map-container img.masterplan.can-drag {
-    cursor: grab;
-  }
-  .map-container img.masterplan.dragging {
-    cursor: grabbing;
-  }
+  .map-container img.masterplan.can-drag { cursor: grab; }
+  .map-container img.masterplan.dragging { cursor: grabbing; }
 
-  /* TỐI ƯU HOÀN TOÀN CHO MOBILE: Ảnh tự zoom lấp đầy khung hình che kín khoảng trống */
+  /* GIAO DIỆN MOBILE: Đảm bảo phủ kín, không khoảng trống nhưng không làm mờ ảnh */
   @media (max-width: 700px) {
     html, body {
       height: 100%;
       overflow: hidden;
     }
     .map-container {
-      height: 100vh; /* Chiều cao tràn toàn bộ màn hình mobile */
-      overflow: hidden;
+      height: 100vh;
+      width: 100vw;
     }
     .map-container img.masterplan {
       position: absolute;
       top: 0;
       left: 0;
-      width: 100%;
-      height: 100%;
-      object-fit: cover; /* QUAN TRỌNG: Phóng to lấp đầy, không để lộ khoảng trống viền trắng */
-    }
-    .bottom-controls-container {
-      bottom: 6px;
-      right: 6px;
-      gap: 4px;
+      width: auto;   /* Không ép độ rộng cố định để giữ nguyên pixel gốc */
+      height: 100%;  /* Ép ảnh cao bằng màn hình để phủ kín khoảng trống trên/dưới */
     }
     .main-map-controls input[type="range"] {
       width: 70px;
     }
   }
 
-  /* SVG chứa các vùng polygon click */
+  /* SVG Hotspots */
   .hotspot-svg {
     position: absolute;
     pointer-events: none;
@@ -152,7 +135,7 @@
     stroke: rgba(255, 102, 0, 0.9);
   }
 
-  /* ===== MODAL POPUP CHI TIẾT ===== */
+  /* ===== MODAL POPUP CHI TIẾT GỐC ===== */
   .popup-overlay {
     display: none;
     position: fixed;
@@ -163,7 +146,6 @@
     justify-content: center;
   }
   .popup-overlay.active { display: flex; }
-
   .popup-content {
     position: relative;
     background: #fff;
@@ -174,12 +156,7 @@
     box-shadow: 0 5px 25px rgba(0,0,0,0.5);
     text-align: center;
   }
-  .popup-content h3 {
-    margin-bottom: 12px;
-    color: #222;
-    font-size: 16px;
-  }
-
+  .popup-content h3 { margin-bottom: 12px; color: #222; font-size: 16px; }
   .img-viewport {
     position: relative;
     width: 100%;
@@ -203,7 +180,6 @@
     transition: transform 0.08s ease-out;
   }
   .img-viewport img.dragging { cursor: grabbing; transition: none; }
-
   .zoom-controls {
     position: absolute;
     bottom: 14px;
@@ -216,16 +192,8 @@
     gap: 15px;
     z-index: 10;
   }
-  .zoom-controls button {
-    background: none;
-    border: none;
-    color: #fff;
-    font-size: 18px;
-    cursor: pointer;
-    padding: 2px 6px;
-  }
+  .zoom-controls button { background: none; border: none; color: #fff; font-size: 18px; cursor: pointer; padding: 2px 6px; }
   .zoom-controls button:hover { color: #ff9900; }
-
   .close-btn {
     position: absolute;
     top: -12px;
@@ -313,7 +281,7 @@
     let startPanX = 0, startPanY = 0;
 
     function applyMapTransform() {
-      // Trên desktop, nếu scale = 1 thì khóa tính năng kéo pan để cuộn trang mượt
+      // Trên desktop, khi scale = 1 thì khóa pan kéo để cuộn website tự nhiên
       if (!mobileQuery.matches && mapZoomScale <= 1) {
         mapZoomScale = 1;
         panX = 0;
@@ -323,33 +291,42 @@
         img.classList.add('can-drag');
       }
 
-      // Xử lý giới hạn biên kéo để ảnh cover/zoom không bị đẩy lộ khoảng trắng
+      // THUẬT TOÁN GIỚI HẠN BIÊN AN TOÀN: Không bao giờ để lộ vùng trống trắng
+      const cw = container.clientWidth;
+      const ch = container.clientHeight;
+      
+      let currentW, currentH;
       if (mobileQuery.matches) {
-        // Trạng thái cơ bản lúc khởi động trên Mobile (object-fit: cover)
-        const cw = container.clientWidth;
-        const ch = container.clientHeight;
-        const nw = img.naturalWidth;
-        const nh = img.naturalHeight;
-        if (nw && nh && cw && ch) {
-          const baseScale = Math.max(cw / nw, ch / nh);
-          const currentW = nw * baseScale * mapZoomScale;
-          const currentH = nh * baseScale * mapZoomScale;
-          
-          const minX = cw - currentW;
-          const minY = ch - currentH;
-          
-          if (panX < minX) panX = minX;
-          if (panX > 0) panX = 0;
-          if (panY < minY) panY = minY;
-          if (panY > 0) panY = 0;
-        }
+        // Trên mobile, kích thước hiển thị cơ sở phụ thuộc vào height = 100%
+        const baseScale = ch / img.naturalHeight;
+        currentW = img.naturalWidth * baseScale * mapZoomScale;
+        currentH = ch * mapZoomScale;
       } else {
-        // Giới hạn biên trên Desktop khi zoom lớn hơn 1
-        if (mapZoomScale > 1) {
-          const maxPanX = img.clientWidth * (mapZoomScale - 1) / 2;
-          const maxPanY = img.clientHeight * (mapZoomScale - 1) / 2;
-          if (Math.abs(panX) > maxPanX) panX = panX > 0 ? maxPanX : -maxPanX;
-          if (Math.abs(panY) > maxPanY) panY = panY > 0 ? maxPanY : -maxPanY;
+        // Trên desktop, kích thước hiển thị cơ sở phụ thuộc vào width = 100%
+        currentW = cw * mapZoomScale;
+        currentH = img.clientHeight * mapZoomScale;
+      }
+
+      // Ràng buộc tọa độ kéo không vượt khỏi viền ảnh
+      if (mobileQuery.matches || mapZoomScale > 1) {
+        const minX = mobileQuery.matches ? (cw - currentW)/2 : -((currentW - cw) / 2);
+        const maxX = mobileQuery.matches ? (currentW - cw)/2 : ((currentW - cw) / 2);
+        const minY = mobileQuery.matches ? (ch - currentH)/2 : -((currentH - ch) / 2);
+        const maxY = mobileQuery.matches ? (currentH - ch)/2 : ((currentH - ch) / 2);
+
+        // Chống kéo lọt ra vùng trống trắng ngoài rìa
+        if (currentW > cw) {
+          if (panX < minX) panX = minX;
+          if (panX > maxX) panX = maxX;
+        } else {
+          panX = 0;
+        }
+        
+        if (currentH > ch) {
+          if (panY < minY) panY = minY;
+          if (panY > maxY) panY = maxY;
+        } else {
+          panY = mobileQuery.matches ? 0 : 0;
         }
       }
 
@@ -363,14 +340,15 @@
       svg.style.width = img.clientWidth + 'px';
       svg.style.height = img.clientHeight + 'px';
       
-      // Khi tải hoặc xoay màn hình mobile, tự căn giữa mặc định không lộ khoảng trống
+      // Khởi tạo vị trí trung tâm mặc định chuẩn cho Mobile không để lại khoảng trống
       if (mobileQuery.matches) {
-        const cw = container.clientWidth;
-        const ch = container.clientHeight;
-        const baseScale = Math.max(cw / img.naturalWidth, ch / img.naturalHeight);
-        panX = (cw - img.naturalWidth * baseScale) / 2;
-        panY = (ch - img.naturalHeight * baseScale) / 2;
+        panX = 0;
+        panY = 0;
+      } else {
+        panX = 0;
+        panY = 0;
       }
+      applyMapTransform();
     }
 
     function buildSVG() {
@@ -389,7 +367,6 @@
     function refresh() {
       buildSVG();
       positionSVG();
-      applyMapTransform();
     }
 
     if (img.complete && img.naturalWidth) { refresh(); } 
@@ -401,14 +378,14 @@
       refresh();
     });
 
-    // Lắng nghe thanh Zoom Slider
+    // Lắng nghe Slider điều khiển Zoom
     zoomSlider.addEventListener('input', (e) => {
       mapZoomScale = parseFloat(e.target.value);
       if (mapZoomScale < 1) mapZoomScale = 1;
       applyMapTransform();
     });
 
-    // Sự kiện Kéo bằng chuột
+    // Xử lý kéo bằng Chuột (Chỉ bật khi Desktop zoom > 1 hoặc trên Mobile)
     container.addEventListener('mousedown', (e) => {
       if (!mobileQuery.matches && mapZoomScale <= 1) return; 
       isMapDragging = true;
@@ -436,7 +413,7 @@
       setTimeout(() => { isMapMoving = false; }, 50);
     });
 
-    // Sự kiện Kéo bằng Touch trên mobile 
+    // Xử lý kéo vuốt bằng Touch trên Mobile
     container.addEventListener('touchstart', (e) => {
       if (e.touches.length !== 1) return; 
       isMapDragging = true;
@@ -454,7 +431,7 @@
 
       if (Math.hypot(dx, dy) > 5) isMapMoving = true;
       
-      e.preventDefault(); 
+      e.preventDefault(); // Chặn hành vi cuộn mặc định khi đang rê sơ đồ
       panX = startPanX + dx;
       panY = startPanY + dy;
       applyMapTransform();
@@ -466,7 +443,7 @@
     }, { passive: true });
 
 
-    // ===== MODAL POPUP CHI TIẾT GỐC VÀ DỊCH CHUYỂN =====
+    // ===== MODAL POPUP CHI TIẾT GỐC GIỮ NGUYÊN =====
     let scale = 1, translateX = 0, translateY = 0;
     let isDragging = false, pStartX = 0, pStartY = 0;
 
@@ -479,19 +456,16 @@
     function updateTransform() {
       popupImg.style.transform = 'translate(' + translateX + 'px,' + translateY + 'px) scale(' + scale + ')';
     }
-
     function resetZoom() {
       scale = 1; translateX = 0; translateY = 0;
       updateTransform();
     }
-
     function openPopup(title, imageUrl) {
       popupTitle.textContent = title;
       popupImg.src = imageUrl;
       resetZoom();
       popupOverlay.classList.add('active');
     }
-
     function closePopup() {
       popupOverlay.classList.remove('active');
       popupImg.src = '';
@@ -514,48 +488,34 @@
     document.getElementById('btnZoomReset').onclick = resetZoom;
 
     popupImg.addEventListener('mousedown', (e) => {
-      e.preventDefault();
-      isDragging = true;
+      e.preventDefault(); isDragging = true;
       popupImg.classList.add('dragging');
-      pStartX = e.clientX - translateX;
-      pStartY = e.clientY - translateY;
+      pStartX = e.clientX - translateX; pStartY = e.clientY - translateY;
     });
     window.addEventListener('mousemove', (e) => {
       if (!isDragging) return;
-      translateX = e.clientX - pStartX;
-      translateY = e.clientY - pStartY;
+      translateX = e.clientX - pStartX; translateY = e.clientY - pStartY;
       updateTransform();
     });
-    window.addEventListener('mouseup', () => {
-      isDragging = false;
-      popupImg.classList.remove('dragging');
-    });
+    window.addEventListener('mouseup', () => { isDragging = false; popupImg.classList.remove('dragging'); });
 
     let touchStartDist = null;
     popupImg.addEventListener('touchstart', (e) => {
       if (e.touches.length === 1) {
         isDragging = true;
-        pStartX = e.touches[0].clientX - translateX;
-        pStartY = e.touches[0].clientY - translateY;
+        pStartX = e.touches[0].clientX - translateX; pStartY = e.touches[0].clientY - translateY;
       } else if (e.touches.length === 2) {
-        touchStartDist = Math.hypot(
-          e.touches[0].clientX - e.touches[1].clientX,
-          e.touches[0].clientY - e.touches[1].clientY
-        );
+        touchStartDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
       }
     }, { passive: true });
     popupImg.addEventListener('touchmove', (e) => {
       if (e.touches.length === 1 && isDragging) {
         e.preventDefault();
-        translateX = e.touches[0].clientX - pStartX;
-        translateY = e.touches[0].clientY - pStartY;
+        translateX = e.touches[0].clientX - pStartX; translateY = e.touches[0].clientY - pStartY;
         updateTransform();
       } else if (e.touches.length === 2 && touchStartDist !== null) {
         e.preventDefault();
-        const dist = Math.hypot(
-          e.touches[0].clientX - e.touches[1].clientX,
-          e.touches[0].clientY - e.touches[1].clientY
-        );
+        const dist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
         const delta = (dist - touchStartDist) * 0.01;
         scale = Math.min(5, Math.max(0.8, scale + delta));
         touchStartDist = dist;
