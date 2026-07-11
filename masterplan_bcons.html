@@ -23,35 +23,37 @@
   body::-webkit-scrollbar { display: none; }
   body { -ms-overflow-style: none; scrollbar-width: none; }
 
-  /* Bảng điều khiển tích hợp góc dưới bên trái, đồng nhất kích cỡ chữ */
+  /* KHUNG ĐIỀU KHIỂN CHUYỂN SANG BÊN PHẢI THEO YÊU CẦU */
   .bottom-controls-container {
     position: fixed;
     bottom: 8px;
-    left: 8px;
+    right: 8px;
     display: flex;
-    align-items: center;
+    flex-direction: column;
+    align-items: flex-end;
     gap: 6px;
     z-index: 500;
   }
 
   .main-map-controls {
-    background: rgba(255,255,255,0.85);
-    padding: 3px 10px;
-    border-radius: 4px;
+    background: rgba(255,255,255,0.9);
+    padding: 4px 12px;
+    border-radius: 20px;
     display: flex;
     align-items: center;
     gap: 8px;
     user-select: none;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
   }
   .main-map-controls span {
-    font-size: 10px;
+    font-size: 11px;
     font-family: Arial, sans-serif;
-    color: rgba(0,0,0,0.55);
+    color: #333;
+    font-weight: bold;
   }
   .main-map-controls input[type="range"] {
-    width: 90px;
-    height: 3px;
+    width: 95px;
+    height: 4px;
     accent-color: #ff9900;
     cursor: pointer;
     outline: none;
@@ -62,9 +64,9 @@
   .brand-label {
     font-size: 10px;
     font-family: Arial, sans-serif;
-    color: rgba(0,0,0,0.28);
-    background: rgba(255,255,255,0.55);
-    padding: 3px 7px;
+    color: rgba(0,0,0,0.35);
+    background: rgba(255,255,255,0.6);
+    padding: 3px 8px;
     border-radius: 4px;
     pointer-events: none;
     user-select: none;
@@ -91,7 +93,7 @@
   .map-container img.masterplan.can-drag { cursor: grab; }
   .map-container img.masterplan.dragging { cursor: grabbing; }
 
-  /* GIAO DIỆN MOBILE CHUẨN: Ảnh lấp đầy, không khoảng trống */
+  /* GIAO DIỆN MOBILE CHUẨN KHÔNG KHOẢNG TRỐNG */
   @media (max-width: 700px) {
     html, body {
       height: 100%;
@@ -106,10 +108,10 @@
       top: 0;
       left: 0;
       width: auto;
-      height: 100%;
+      height: 100%; /* Đảm bảo phủ kín chiều cao mặc định */
     }
     .main-map-controls input[type="range"] {
-      width: 70px;
+      width: 75px;
     }
   }
 
@@ -135,7 +137,7 @@
     stroke: rgba(255, 102, 0, 0.9);
   }
 
-  /* ===== MODAL POPUP CHI TIẾT GỐC GIỮ NGUYÊN ===== */
+  /* ===== MODAL POPUP CHI TIẾT ===== */
   .popup-overlay {
     display: none;
     position: fixed;
@@ -280,19 +282,19 @@
     let startX = 0, startY = 0;
     let startPanX = 0, startPanY = 0;
 
-    // Tính kích thước hiển thị thực tế của ảnh dựa trên cấu trúc CSS từng nền tảng
+    // Tính toán kích thước hiển thị chính xác của ảnh trên từng viewport
     function getActualDimensions() {
       const cw = container.clientWidth;
       const ch = container.clientHeight;
       if (mobileQuery.matches) {
-        // Trên Mobile: height cố định 100% bằng ch, width tỷ lệ thuận
+        // Trên Mobile: height bám theo khung ch, width co giãn tự do theo tỷ lệ gốc
         const baseScale = ch / img.naturalHeight;
         return {
           w: img.naturalWidth * baseScale * mapZoomScale,
           h: ch * mapZoomScale
         };
       } else {
-        // Trên Desktop: width cố định 100% bằng cw, height tỷ lệ thuận
+        // Trên Desktop: width bám theo khung cw
         const baseScale = cw / img.naturalWidth;
         return {
           w: cw * mapZoomScale,
@@ -306,20 +308,19 @@
       const ch = container.clientHeight;
       const dim = getActualDimensions();
 
-      // THUẬT TOÁN ĐỊNH VỊ BIÊN TUYỆT ĐỐI: Không bao giờ được lộ viền trắng
       if (mobileQuery.matches || mapZoomScale > 1) {
         img.classList.add('can-drag');
         
-        // Tính toán khoảng cách tối đa có thể di chuyển tính từ tâm transform-origin
-        const limitX = Math.max(0, (dim.w - cw) / 2);
-        const limitY = Math.max(0, (dim.h - ch) / 2);
+        // GIỚI HẠN BIÊN TUYỆT ĐỐI CHỐNG LỘ KHUNG TRẮNG KHÔNG PHỤ THUỘC TÂM TRỤC
+        // Khi ảnh lớn hơn khung, giới hạn mép kéo không bao giờ vượt quá viền container
+        const maxMoveX = Math.max(0, (dim.w - cw) / 2);
+        const maxMoveY = Math.max(0, (dim.h - ch) / 2);
 
-        if (panX < -limitX) panX = -limitX;
-        if (panX > limitX) panX = limitX;
-        if (panY < -limitY) panY = -limitY;
-        if (panY > limitY) panY = limitY;
+        if (panX < -maxMoveX) panX = -maxMoveX;
+        if (panX > maxMoveX) panX = maxMoveX;
+        if (panY < -maxMoveY) panY = -maxMoveY;
+        if (panY > maxMoveY) panY = maxMoveY;
       } else {
-        // Mặc định Desktop scale=1 thì khóa cuộn kéo
         mapZoomScale = 1;
         panX = 0;
         panY = 0;
@@ -334,11 +335,11 @@
     function positionSVG() {
       if (!img.naturalWidth) return;
       
-      // Đồng bộ kích thước SVG khít hoàn toàn theo kích thước hiển thị CSS của ảnh thẻ img
+      // Đồng bộ kích thước SVG khít hoàn toàn theo ảnh
       svg.style.width = img.clientWidth + 'px';
       svg.style.height = img.clientHeight + 'px';
       
-      // Khởi tạo trạng thái ban đầu nằm ngay ngắn ở trung tâm màn hình
+      // Khởi tạo căn giữa ban đầu
       panX = 0;
       panY = 0;
       applyMapTransform();
@@ -372,14 +373,14 @@
       refresh();
     });
 
-    // Lắng nghe thanh Zoom trượt
+    // Thanh Zoom điều khiển tỷ lệ
     zoomSlider.addEventListener('input', (e) => {
       mapZoomScale = parseFloat(e.target.value);
       if (mapZoomScale < 1) mapZoomScale = 1;
       applyMapTransform();
     });
 
-    // Sự kiện kéo bằng chuột trên máy tính
+    // Xử lý kéo chuột trên Desktop mô phỏng
     container.addEventListener('mousedown', (e) => {
       if (!mobileQuery.matches && mapZoomScale <= 1) return; 
       isMapDragging = true;
@@ -407,7 +408,7 @@
       setTimeout(() => { isMapMoving = false; }, 50);
     });
 
-    // Sự kiện vuốt chạm kéo (Pan) bằng 1 ngón tay trên điện thoại Mobile
+    // Xử lý vuốt màn hình kéo mượt trên Mobile (Sử dụng tỷ lệ 1:1)
     container.addEventListener('touchstart', (e) => {
       if (e.touches.length !== 1) return; 
       isMapDragging = true;
@@ -425,7 +426,7 @@
 
       if (Math.hypot(dx, dy) > 4) isMapMoving = true;
       
-      e.preventDefault(); // Chặn hành vi cuộn mặc định của web, dành quyền vuốt để lướt xem ảnh
+      e.preventDefault(); 
       panX = startPanX + dx;
       panY = startPanY + dy;
       applyMapTransform();
@@ -437,7 +438,7 @@
     }, { passive: true });
 
 
-    // ===== MODAL POPUP CHI TIẾT GIỮ NGUYÊN BẢN GỐC =====
+    // ===== CODE MODAL POPUP CHI TIẾT GIỮ NGUYÊN =====
     let scale = 1, translateX = 0, translateY = 0;
     let isDragging = false, pStartX = 0, pStartY = 0;
 
