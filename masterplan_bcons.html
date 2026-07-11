@@ -23,27 +23,28 @@
   body::-webkit-scrollbar { display: none; }
   body { -ms-overflow-style: none; scrollbar-width: none; }
 
-  /* KHUNG ĐIỀU KHIỂN CHUYỂN SANG BÊN PHẢI THEO YÊU CẦU */
+  /* KHUNG CHỨA ĐIỀU KHIỂN NẰM NGANG NHAU (KHÔNG XẾP CHỒNG) */
   .bottom-controls-container {
     position: fixed;
-    bottom: 8px;
-    right: 8px;
+    bottom: 12px;
+    right: 12px; /* Mặc định bên phải trên Desktop */
     display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 6px;
+    flex-direction: row; /* Nằm ngang hàng nhau */
+    align-items: center;
+    gap: 8px; /* Khoảng cách giữa thanh zoom và label */
     z-index: 500;
+    background: rgba(255, 255, 255, 0.85);
+    padding: 4px 10px;
+    border-radius: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
   }
 
+  /* Thanh zoom thu gọn tinh tế */
   .main-map-controls {
-    background: rgba(255,255,255,0.9);
-    padding: 4px 12px;
-    border-radius: 20px;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 5px;
     user-select: none;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
   }
   .main-map-controls span {
     font-size: 11px;
@@ -52,8 +53,8 @@
     font-weight: bold;
   }
   .main-map-controls input[type="range"] {
-    width: 95px;
-    height: 4px;
+    width: 70px;
+    height: 3px;
     accent-color: #ff9900;
     cursor: pointer;
     outline: none;
@@ -61,16 +62,15 @@
     background: rgba(0,0,0,0.15);
   }
 
+  /* Chữ nhãn thương hiệu nằm kế bên thanh zoom */
   .brand-label {
-    font-size: 10px;
+    font-size: 11px;
     font-family: Arial, sans-serif;
-    color: rgba(0,0,0,0.35);
-    background: rgba(255,255,255,0.6);
-    padding: 3px 8px;
-    border-radius: 4px;
+    color: rgba(0, 0, 0, 0.5);
+    border-left: 1px solid rgba(0, 0, 0, 0.15); /* Vạch ngăn cách nhỏ ở giữa */
+    padding-left: 8px;
     pointer-events: none;
     user-select: none;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
   }
 
   /* Khung chứa bản đồ chính */
@@ -93,7 +93,7 @@
   .map-container img.masterplan.can-drag { cursor: grab; }
   .map-container img.masterplan.dragging { cursor: grabbing; }
 
-  /* GIAO DIỆN MOBILE CHUẨN KHÔNG KHOẢNG TRỐNG */
+  /* CẤU HÌNH RIÊNG CHO MOBILE (DƯỚI 700PX) */
   @media (max-width: 700px) {
     html, body {
       height: 100%;
@@ -108,10 +108,14 @@
       top: 0;
       left: 0;
       width: auto;
-      height: 100%; /* Đảm bảo phủ kín chiều cao mặc định */
+      height: 100%;
     }
-    .main-map-controls input[type="range"] {
-      width: 75px;
+
+    /* Đưa khung điều khiển ra CHÍNH GIỮA PHÍA DƯỚI khi ở giao diện Mobile */
+    .bottom-controls-container {
+      right: 50%;
+      transform: translateX(50%); /* Căn giữa tuyệt đối */
+      bottom: 16px;
     }
   }
 
@@ -225,9 +229,9 @@
 
   <div class="bottom-controls-container">
     <div class="main-map-controls">
-      <span>Thu nhỏ</span>
+      <span>-</span>
       <input type="range" id="mapZoomSlider" min="1" max="3" step="0.02" value="1" title="Kéo để phóng to bản đồ">
-      <span>Phóng to</span>
+      <span>+</span>
     </div>
     <div class="brand-label">dulieunhapho.com</div>
   </div>
@@ -282,19 +286,16 @@
     let startX = 0, startY = 0;
     let startPanX = 0, startPanY = 0;
 
-    // Tính toán kích thước hiển thị chính xác của ảnh trên từng viewport
     function getActualDimensions() {
       const cw = container.clientWidth;
       const ch = container.clientHeight;
       if (mobileQuery.matches) {
-        // Trên Mobile: height bám theo khung ch, width co giãn tự do theo tỷ lệ gốc
         const baseScale = ch / img.naturalHeight;
         return {
           w: img.naturalWidth * baseScale * mapZoomScale,
           h: ch * mapZoomScale
         };
       } else {
-        // Trên Desktop: width bám theo khung cw
         const baseScale = cw / img.naturalWidth;
         return {
           w: cw * mapZoomScale,
@@ -311,8 +312,6 @@
       if (mobileQuery.matches || mapZoomScale > 1) {
         img.classList.add('can-drag');
         
-        // GIỚI HẠN BIÊN TUYỆT ĐỐI CHỐNG LỘ KHUNG TRẮNG KHÔNG PHỤ THUỘC TÂM TRỤC
-        // Khi ảnh lớn hơn khung, giới hạn mép kéo không bao giờ vượt quá viền container
         const maxMoveX = Math.max(0, (dim.w - cw) / 2);
         const maxMoveY = Math.max(0, (dim.h - ch) / 2);
 
@@ -334,12 +333,8 @@
 
     function positionSVG() {
       if (!img.naturalWidth) return;
-      
-      // Đồng bộ kích thước SVG khít hoàn toàn theo ảnh
       svg.style.width = img.clientWidth + 'px';
       svg.style.height = img.clientHeight + 'px';
-      
-      // Khởi tạo căn giữa ban đầu
       panX = 0;
       panY = 0;
       applyMapTransform();
@@ -373,14 +368,12 @@
       refresh();
     });
 
-    // Thanh Zoom điều khiển tỷ lệ
     zoomSlider.addEventListener('input', (e) => {
       mapZoomScale = parseFloat(e.target.value);
       if (mapZoomScale < 1) mapZoomScale = 1;
       applyMapTransform();
     });
 
-    // Xử lý kéo chuột trên Desktop mô phỏng
     container.addEventListener('mousedown', (e) => {
       if (!mobileQuery.matches && mapZoomScale <= 1) return; 
       isMapDragging = true;
@@ -408,7 +401,6 @@
       setTimeout(() => { isMapMoving = false; }, 50);
     });
 
-    // Xử lý vuốt màn hình kéo mượt trên Mobile (Sử dụng tỷ lệ 1:1)
     container.addEventListener('touchstart', (e) => {
       if (e.touches.length !== 1) return; 
       isMapDragging = true;
@@ -437,8 +429,7 @@
       setTimeout(() => { isMapMoving = false; }, 50);
     }, { passive: true });
 
-
-    // ===== CODE MODAL POPUP CHI TIẾT GIỮ NGUYÊN =====
+    // ===== MODAL POPUP CHI TIẾT =====
     let scale = 1, translateX = 0, translateY = 0;
     let isDragging = false, pStartX = 0, pStartY = 0;
 
