@@ -9,31 +9,23 @@
 
   html, body {
     width: 100%;
-    height: 100%;
     background: #ffffff;
-    overflow: hidden;
     font-family: Arial, sans-serif;
+    /* Cho phép cuộn bên trong khung nếu ảnh cao hơn chiều cao Notion cấp cho
+       (ưu tiên hiện ảnh TO đúng theo chiều rộng, thay vì ép co nhỏ vừa khung) */
+    overflow-y: auto;
+    overflow-x: hidden;
   }
 
-  /* ⚠️ CỐT LÕI: container luôn lấp đầy đúng 100% khung Notion cấp cho (dù Notion đặt
-     chiều cao bao nhiêu), ảnh dùng object-fit:contain để tự co giãn vừa khít bên trong,
-     không tràn, không dư khoảng trống — không cần chỉnh tay theo desktop/mobile nữa. */
   .map-container {
     position: relative;
     width: 100%;
-    height: 100vh;
-    background: #ffffff;
-    overflow: hidden;
   }
 
   .map-container img.masterplan {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
     display: block;
+    width: 100%;
+    height: auto;
     user-select: none;
     -webkit-user-drag: none;
   }
