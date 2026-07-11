@@ -264,12 +264,11 @@
     let renderW = 0, renderH = 0; 
     let minX = 0, maxX = 0, minY = 0, maxY = 0; 
     
-    // Thêm các biến quản lý trạng thái Zoom động trên Bản đồ chính
+    // Tỉ lệ zoom động của bản đồ gốc (1 = Mặc định ban đầu, chỉ tăng lên, không giảm xuống dưới 1)
     let mapZoomScale = 1;
 
     function clamp(v, lo, hi) { return Math.min(hi, Math.max(lo, v)); }
 
-    // Cập nhật ma trận Transform bao gồm cả di chuyển động (pan) và mức phóng to (zoom)
     function applyMobileTransform() {
       img.style.width = renderW + 'px';
       img.style.height = renderH + 'px';
@@ -294,7 +293,7 @@
         renderW = nw * scale;
         renderH = nh * scale;
 
-        // Cập nhật lại giới hạn kéo linh hoạt tính theo tỷ lệ zoom hiện tại
+        // Cập nhật lại biên giới hạn kéo dựa trên độ phóng to hiện tại
         minX = cw - (renderW * mapZoomScale); maxX = 0;
         minY = ch - (renderH * mapZoomScale); maxY = 0;
 
@@ -306,7 +305,7 @@
         img.style.position = 'absolute';
         applyMobileTransform();
       } else {
-        // Desktop giữ nguyên cơ chế hiển thị 100% chiều rộng cũ
+        // Desktop giữ nguyên cấu trúc co giãn width: 100% gốc tự nhiên
         img.style.width = '';
         img.style.height = '';
         img.style.transform = 'scale(' + mapZoomScale + ') translate(' + panX + 'px,' + panY + 'px)';
@@ -346,11 +345,11 @@
     window.addEventListener('resize', positionSVG);
     mobileQuery.addEventListener('change', refresh);
 
-    // ===== THÊM ĐIỀU KHIỂN ZOOM / PAN TRÊN BẢN ĐỒ CHÍNH KHÔNG LÀM LỆCH KHUNG =====
+    // ===== THÊM ĐIỀU KHIỂN ZOOM / PAN (Không cho thu nhỏ dưới kích thước ban đầu) =====
     let mapDragging = false, mapStartX = 0, mapStartY = 0, mapStartPanX = 0, mapStartPanY = 0;
     let mapTouchStartDist = null;
 
-    // Hỗ trợ cuộn chuột lăn để phóng to/thu nhỏ trên cả Desktop lẫn Mobile
+    // Lăn chuột phóng to/thu nhỏ
     container.addEventListener('wheel', (e) => {
       e.preventDefault();
       const factor = 1.1;
@@ -359,9 +358,9 @@
       } else {
         if (mapZoomScale > 1) mapZoomScale /= factor;
       }
+      // KHÓA: Giới hạn dưới luôn là 1 (Không thu nhỏ hơn kích thước ban đầu)
       if (mapZoomScale < 1) mapZoomScale = 1;
       
-      // Khóa lại vị trí kéo trong biên sau khi zoom
       if (mobileQuery.matches) {
         minX = container.clientWidth - (renderW * mapZoomScale);
         minY = container.clientHeight - (renderH * mapZoomScale);
@@ -369,7 +368,7 @@
         panY = clamp(panY, minY, maxY);
         applyMobileTransform();
       } else {
-        panX = 0; panY = 0; // Desktop khóa tâm co giãn tự nhiên theo chiều ngang
+        panX = 0; panY = 0; // Desktop cố định trục ngang tự nhiên
         positionSVG();
       }
     }, { passive: false });
@@ -403,7 +402,7 @@
           e.touches[0].clientY - e.touches[1].clientY
         );
         const delta = (dist - mapTouchStartDist) * 0.01;
-        mapZoomScale = Math.min(4, Math.max(1, mapZoomScale + delta));
+        mapZoomScale = Math.min(4, Math.max(1, mapZoomScale + delta)); // Giới hạn dưới luôn là 1
         mapTouchStartDist = dist;
 
         if (mobileQuery.matches) {
@@ -426,9 +425,9 @@
       }
     }, { passive: true });
 
-    // Hỗ trợ drag chuột kéo đi trên Mobile/Desktop giả lập
+    // Hỗ trợ drag chuột kéo đi trên thiết bị Mobile/Giả lập
     container.addEventListener('mousedown', (e) => {
-      if (!mobileQuery.matches) return; // Desktop co giãn tự nhiên nên không cần drag kéo thủ công
+      if (!mobileQuery.matches) return;
       mapDragging = true;
       img.classList.add('dragging');
       mapStartX = e.clientX;
