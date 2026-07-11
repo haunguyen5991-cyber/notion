@@ -16,31 +16,35 @@
     width: 100%;
     background: #ffffff;
     font-family: Arial, sans-serif;
-    /* Chỉ BODY cuộn (không phải cả html lẫn body) -> tránh hiện 2 thanh cuộn chồng nhau */
     overflow-y: auto;
     overflow-x: hidden;
-    max-height: 100vh;
   }
 
-  /* Ẩn thanh cuộn nhưng VẪN giữ chức năng cuộn được bình thường */
-  body::-webkit-scrollbar {
-    display: none;
+  /* Tối ưu thanh cuộn trình duyệt */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
   }
-  body {
-    -ms-overflow-style: none;  /* Edge/IE cũ */
-    scrollbar-width: none;     /* Firefox */
+  ::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.03);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.4);
   }
 
-  /* Watermark nhỏ, tinh tế, cố định ở góc dưới màn hình — không che nội dung,
-     không cản thao tác bấm/kéo bên dưới nó */
+  /* Watermark cố định ở góc dưới màn hình */
   .brand-label {
     position: fixed;
     bottom: 6px;
-    right: 8px;
+    right: 12px;
     font-size: 10px;
     font-family: Arial, sans-serif;
-    color: rgba(0,0,0,0.28);
-    background: rgba(255,255,255,0.55);
+    color: rgba(0,0,0,0.35);
+    background: rgba(255,255,255,0.7);
     padding: 2px 7px;
     border-radius: 4px;
     pointer-events: none;
@@ -48,9 +52,39 @@
     user-select: none;
   }
 
+  /* Thanh kéo Zoom tinh tế cho Bản đồ chính nằm phía trên brand-label */
+  .main-map-controls {
+    position: fixed;
+    bottom: 34px;
+    right: 12px;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 6px 10px;
+    border-radius: 6px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.12);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    z-index: 500;
+    border: 1px solid rgba(0,0,0,0.08);
+    user-select: none;
+  }
+  .main-map-controls span {
+    font-size: 11px;
+    color: #555;
+    font-weight: bold;
+  }
+  .main-map-controls input[type="range"] {
+    width: 100px;
+    height: 4px;
+    accent-color: #ff9900;
+    cursor: pointer;
+    outline: none;
+  }
+
   .map-container {
     position: relative;
     width: 100%;
+    overflow: hidden;
   }
 
   .map-container img.masterplan {
@@ -59,44 +93,30 @@
     height: auto;
     user-select: none;
     -webkit-user-drag: none;
-    transform-origin: 0 0; /* Giúp zoom mượt từ gốc toạ độ */
+    transform-origin: 0 0;
+    will-change: transform;
+  }
+  .map-container img.masterplan.can-drag {
+    cursor: grab;
+  }
+  .map-container img.masterplan.dragging {
+    cursor: grabbing;
   }
 
-  /* ⚠️ RIÊNG CHO MOBILE: ảnh được PHÓNG TO lấp đầy khung (không còn khoảng trắng),
-     và có thể KÉO DI CHUYỂN để xem các phần bị che khuất do phóng to.
-     Kích thước/vị trí thực tế do JS điều khiển (biến số dưới đây chỉ là mặc định ban đầu).
-     Desktop giữ nguyên hoàn toàn như cũ (width:100%, height:auto), không đổi gì. */
   @media (max-width: 700px) {
-    html, body {
-      height: 100%;
-      overflow: hidden;
-    }
     .map-container {
-      height: 100vh;
-      overflow: hidden;
-      touch-action: none; /* để JS tự xử lý kéo, tránh trình duyệt cuộn trang khi kéo ảnh */
-    }
-    .map-container img.masterplan {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: auto;
+      width: 100%;
       height: auto;
-      max-width: none;
-      cursor: grab;
-      will-change: transform;
-    }
-    .map-container img.masterplan.dragging {
-      cursor: grabbing;
     }
   }
 
-  /* SVG chứa các vùng polygon click — được JS định vị chính xác khớp với vùng ảnh
-     thực tế đang hiển thị (sau khi object-fit:contain co giãn/letterbox) */
+  /* SVG chứa các vùng polygon click */
   .hotspot-svg {
     position: absolute;
     pointer-events: none;
-    transform-origin: 0 0; /* Khớp toạ độ scale với ảnh */
+    transform-origin: 0 0;
+    top: 0;
+    left: 0;
   }
   .hotspot-svg polygon {
     fill: rgba(255, 153, 0, 0);
@@ -112,7 +132,7 @@
     stroke: rgba(255, 102, 0, 0.9);
   }
 
-  /* ===== MODAL POPUP ===== */
+  /* ===== MODAL POPUP CHI TIẾT ===== */
   .popup-overlay {
     display: none;
     position: fixed;
@@ -213,6 +233,12 @@
     <svg class="hotspot-svg" id="hotspotSvg"></svg>
   </div>
 
+  <div class="main-map-controls">
+    <span>Thu nhỏ</span>
+    <input type="range" id="mapZoomSlider" min="1" max="3" step="0.05" value="1" title="Kéo để phóng to bản đồ">
+    <span>Phóng to</span>
+  </div>
+
   <div class="brand-label">dulieunhapho.com</div>
 
   <div class="popup-overlay" id="popupOverlay">
@@ -231,7 +257,6 @@
   </div>
 
   <script>
-    // ⚠️ Toạ độ polygon giữ NGUYÊN theo pixel gốc của ảnh masterplan (không đổi gì so với bản cũ)
     const zones = [
       { title: 'Layout 1', image: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783683857/be680720-1432-463e-b7ea-85e082c5a861.png', points: '767,1682 794,1594 1077,1704 1050,1782 918,1736' },
       { title: 'Layout 1', image: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783683857/be680720-1432-463e-b7ea-85e082c5a861.png', points: '953,1466 984,1386 1172,1457 1141,1536' },
@@ -257,68 +282,33 @@
     const img = document.getElementById('masterplanImg');
     const svg = document.getElementById('hotspotSvg');
     const container = document.getElementById('mapContainer');
+    const zoomSlider = document.getElementById('mapZoomSlider');
 
-    const mobileQuery = window.matchMedia('(max-width: 700px)');
-
-    let panX = 0, panY = 0;       
-    let renderW = 0, renderH = 0; 
-    let minX = 0, maxX = 0, minY = 0, maxY = 0; 
-    
-    // Tỉ lệ zoom động của bản đồ gốc (1 = Mặc định ban đầu, chỉ tăng lên, không giảm xuống dưới 1)
     let mapZoomScale = 1;
+    let panX = 0, panY = 0;
+    let isMapDragging = false, isMapMoving = false;
+    let startX = 0, startY = 0;
+    let startPanX = 0, startPanY = 0;
 
-    function clamp(v, lo, hi) { return Math.min(hi, Math.max(lo, v)); }
-
-    function applyMobileTransform() {
-      img.style.width = renderW + 'px';
-      img.style.height = renderH + 'px';
-      img.style.transform = 'translate(' + panX + 'px,' + panY + 'px) scale(' + mapZoomScale + ')';
-      
-      svg.style.width = renderW + 'px';
-      svg.style.height = renderH + 'px';
-      svg.style.left = '0px';
-      svg.style.top = '0px';
-      svg.style.transform = 'translate(' + panX + 'px,' + panY + 'px) scale(' + mapZoomScale + ')';
+    function applyMapTransform() {
+      // Khi scale trở về 1, đưa tọa độ kéo về 0 để tránh lệch khung hình mặc định
+      if (mapZoomScale <= 1) {
+        mapZoomScale = 1;
+        panX = 0;
+        panY = 0;
+        img.classList.remove('can-drag');
+      } else {
+        img.classList.add('can-drag');
+      }
+      const transformStr = 'translate(' + panX + 'px, ' + panY + 'px) scale(' + mapZoomScale + ')';
+      img.style.transform = transformStr;
+      svg.style.transform = transformStr;
     }
 
     function positionSVG() {
-      const cw = container.clientWidth;
-      const ch = container.clientHeight;
-      const nw = img.naturalWidth;
-      const nh = img.naturalHeight;
-      if (!nw || !nh || !cw || !ch) return;
-
-      if (mobileQuery.matches) {
-        const scale = Math.max(cw / nw, ch / nh);
-        renderW = nw * scale;
-        renderH = nh * scale;
-
-        // Cập nhật lại biên giới hạn kéo dựa trên độ phóng to hiện tại
-        minX = cw - (renderW * mapZoomScale); maxX = 0;
-        minY = ch - (renderH * mapZoomScale); maxY = 0;
-
-        if (panX === 0 && panY === 0) {
-          panX = clamp((cw - renderW) / 2, minX, maxX);
-          panY = clamp((ch - renderH) / 2, minY, maxY);
-        }
-
-        img.style.position = 'absolute';
-        applyMobileTransform();
-      } else {
-        // Desktop giữ nguyên cấu trúc co giãn width: 100% gốc tự nhiên
-        img.style.width = '';
-        img.style.height = '';
-        img.style.transform = 'scale(' + mapZoomScale + ') translate(' + panX + 'px,' + panY + 'px)';
-        const rect = img.getBoundingClientRect();
-        renderW = rect.width / mapZoomScale;
-        renderH = rect.height / mapZoomScale;
-        
-        svg.style.left = '0px';
-        svg.style.top = '0px';
-        svg.style.width = renderW + 'px';
-        svg.style.height = renderH + 'px';
-        svg.style.transform = 'scale(' + mapZoomScale + ') translate(' + panX + 'px,' + panY + 'px)';
-      }
+      if (!img.naturalWidth) return;
+      svg.style.width = img.clientWidth + 'px';
+      svg.style.height = img.clientHeight + 'px';
     }
 
     function buildSVG() {
@@ -327,7 +317,9 @@
       zones.forEach(zone => {
         const poly = document.createElementNS(SVG_NS, 'polygon');
         poly.setAttribute('points', zone.points);
-        poly.addEventListener('click', () => openPopup(zone.title, zone.image));
+        poly.addEventListener('click', () => {
+          if (!isMapMoving) openPopup(zone.title, zone.image);
+        });
         svg.appendChild(poly);
       });
     }
@@ -335,120 +327,101 @@
     function refresh() {
       buildSVG();
       positionSVG();
+      applyMapTransform();
     }
 
-    if (img.complete && img.naturalWidth) {
-      refresh();
-    } else {
-      img.addEventListener('load', refresh);
-    }
+    if (img.complete && img.naturalWidth) { refresh(); } 
+    else { img.addEventListener('load', refresh); }
     window.addEventListener('resize', positionSVG);
-    mobileQuery.addEventListener('change', refresh);
 
-    // ===== THÊM ĐIỀU KHIỂN ZOOM / PAN (Không cho thu nhỏ dưới kích thước ban đầu) =====
-    let mapDragging = false, mapStartX = 0, mapStartY = 0, mapStartPanX = 0, mapStartPanY = 0;
-    let mapTouchStartDist = null;
-
-    // Lăn chuột phóng to/thu nhỏ
-    container.addEventListener('wheel', (e) => {
-      e.preventDefault();
-      const factor = 1.1;
-      if (e.deltaY < 0) {
-        if (mapZoomScale < 4) mapZoomScale *= factor;
-      } else {
-        if (mapZoomScale > 1) mapZoomScale /= factor;
-      }
-      // KHÓA: Giới hạn dưới luôn là 1 (Không thu nhỏ hơn kích thước ban đầu)
-      if (mapZoomScale < 1) mapZoomScale = 1;
+    // Sự kiện thanh slider điều khiển Zoom bản đồ chính
+    zoomSlider.addEventListener('input', (e) => {
+      mapZoomScale = parseFloat(e.target.value);
+      // Giới hạn dưới an toàn
+      if (mapZoomScale < 1) mapZoomScale = 1; 
       
-      if (mobileQuery.matches) {
-        minX = container.clientWidth - (renderW * mapZoomScale);
-        minY = container.clientHeight - (renderH * mapZoomScale);
-        panX = clamp(panX, minX, maxX);
-        panY = clamp(panY, minY, maxY);
-        applyMobileTransform();
+      // Khi thu nhỏ về 1, tự động giới hạn kéo biên dịch chuyển về vị trí gốc
+      if (mapZoomScale === 1) {
+        panX = 0;
+        panY = 0;
       } else {
-        panX = 0; panY = 0; // Desktop cố định trục ngang tự nhiên
-        positionSVG();
+        // Giới hạn vùng kéo không bị đẩy đi quá xa khỏi màn hình
+        const maxPanX = img.clientWidth * (mapZoomScale - 1);
+        const maxPanY = img.clientHeight * (mapZoomScale - 1);
+        if (Math.abs(panX) > maxPanX) panX = panX > 0 ? maxPanX : -maxPanX;
+        if (Math.abs(panY) > maxPanY) panY = panY > 0 ? maxPanY : -maxPanY;
       }
-    }, { passive: false });
+      applyMapTransform();
+    });
 
-    container.addEventListener('touchstart', (e) => {
-      if (e.touches.length === 1) {
-        mapDragging = true;
-        img.classList.add('dragging');
-        mapStartX = e.touches[0].clientX;
-        mapStartY = e.touches[0].clientY;
-        mapStartPanX = panX;
-        mapStartPanY = panY;
-      } else if (e.touches.length === 2) {
-        mapTouchStartDist = Math.hypot(
-          e.touches[0].clientX - e.touches[1].clientX,
-          e.touches[0].clientY - e.touches[1].clientY
-        );
+    // Xử lý kéo bản đồ bằng MOUSE (Chỉ hoạt động khi mapZoomScale > 1)
+    container.addEventListener('mousedown', (e) => {
+      if (mapZoomScale <= 1) return; // Khóa di chuyển hoàn toàn khi ở kích thước ban đầu -> Cuộn trang mượt mà
+      isMapDragging = true;
+      isMapMoving = false;
+      img.classList.add('dragging');
+      startX = e.clientX;
+      startY = e.clientY;
+      startPanX = panX;
+      startPanY = panY;
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      if (!isMapDragging) return;
+      const dx = e.clientX - startX;
+      const dy = e.clientY - startY;
+      
+      if (Math.hypot(dx, dy) > 3) {
+        isMapMoving = true; // Đang dịch chuyển thực sự, chặn click hotspot nhầm
       }
+      
+      panX = startPanX + dx;
+      panY = startPanY + dy;
+      applyMapTransform();
+    });
+
+    window.addEventListener('mouseup', () => {
+      isMapDragging = false;
+      img.classList.remove('dragging');
+      setTimeout(() => { isMapMoving = false; }, 50);
+    });
+
+    // Xử lý dịch chuyển bằng TOUCH trên Mobile (Chỉ hoạt động khi mapZoomScale > 1)
+    container.addEventListener('touchstart', (e) => {
+      if (mapZoomScale <= 1 || e.touches.length !== 1) return; 
+      isMapDragging = true;
+      isMapMoving = false;
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+      startPanX = panX;
+      startPanY = panY;
     }, { passive: true });
 
     container.addEventListener('touchmove', (e) => {
-      if (e.touches.length === 1 && mapDragging && mobileQuery.matches) {
-        e.preventDefault();
-        panX = clamp(mapStartPanX + (e.touches[0].clientX - mapStartX), minX, maxX);
-        panY = clamp(mapStartPanY + (e.touches[0].clientY - mapStartY), minY, maxY);
-        applyMobileTransform();
-      } else if (e.touches.length === 2 && mapTouchStartDist !== null) {
-        e.preventDefault();
-        const dist = Math.hypot(
-          e.touches[0].clientX - e.touches[1].clientX,
-          e.touches[0].clientY - e.touches[1].clientY
-        );
-        const delta = (dist - mapTouchStartDist) * 0.01;
-        mapZoomScale = Math.min(4, Math.max(1, mapZoomScale + delta)); // Giới hạn dưới luôn là 1
-        mapTouchStartDist = dist;
+      if (!isMapDragging) return;
+      const dx = e.touches[0].clientX - startX;
+      const dy = e.touches[0].clientY - startY;
 
-        if (mobileQuery.matches) {
-          minX = container.clientWidth - (renderW * mapZoomScale);
-          minY = container.clientHeight - (renderH * mapZoomScale);
-          panX = clamp(panX, minX, maxX);
-          panY = clamp(panY, minY, maxY);
-          applyMobileTransform();
-        } else {
-          positionSVG();
-        }
+      if (Math.hypot(dx, dy) > 5) {
+        isMapMoving = true;
       }
+      
+      // Ngăn hành vi cuộn mặc định của trình duyệt CHỈ khi ảnh đã được phóng to và đang di chuyển chi tiết
+      e.preventDefault(); 
+      panX = startPanX + dx;
+      panY = startPanY + dy;
+      applyMapTransform();
     }, { passive: false });
 
-    container.addEventListener('touchend', (e) => {
-      if (e.touches.length < 2) mapTouchStartDist = null;
-      if (e.touches.length === 0) {
-        mapDragging = false;
-        img.classList.remove('dragging');
-      }
+    container.addEventListener('touchend', () => {
+      isMapDragging = false;
+      setTimeout(() => { isMapMoving = false; }, 50);
     }, { passive: true });
 
-    // Hỗ trợ drag chuột kéo đi trên thiết bị Mobile/Giả lập
-    container.addEventListener('mousedown', (e) => {
-      if (!mobileQuery.matches) return;
-      mapDragging = true;
-      img.classList.add('dragging');
-      mapStartX = e.clientX;
-      mapStartY = e.clientY;
-      mapStartPanX = panX;
-      mapStartPanY = panY;
-    });
-    window.addEventListener('mousemove', (e) => {
-      if (!mapDragging || !mobileQuery.matches) return;
-      panX = clamp(mapStartPanX + (e.clientX - mapStartX), minX, maxX);
-      panY = clamp(mapStartPanY + (e.clientY - mapStartY), minY, maxY);
-      applyMobileTransform();
-    });
-    window.addEventListener('mouseup', () => {
-      mapDragging = false;
-      img.classList.remove('dragging');
-    });
 
-    // ===== MODAL: zoom / pan (Giữ nguyên cấu trúc gốc) =====
+    // ===== MODAL POPUP: CHI TIẾT MẶT BẰNG (Giữ nguyên gốc) =====
     let scale = 1, translateX = 0, translateY = 0;
-    let isDragging = false, startX = 0, startY = 0;
+    let isDragging = false, pStartX = 0, pStartY = 0;
 
     const popupOverlay = document.getElementById('popupOverlay');
     const popupTitle = document.getElementById('popupTitle');
@@ -478,12 +451,8 @@
     }
 
     closeBtn.onclick = closePopup;
-    popupOverlay.addEventListener('click', (e) => {
-      if (e.target === popupOverlay) closePopup();
-    });
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') closePopup();
-    });
+    popupOverlay.addEventListener('click', (e) => { if (e.target === popupOverlay) closePopup(); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closePopup(); });
 
     viewport.addEventListener('wheel', (e) => {
       e.preventDefault();
@@ -501,13 +470,13 @@
       e.preventDefault();
       isDragging = true;
       popupImg.classList.add('dragging');
-      startX = e.clientX - translateX;
-      startY = e.clientY - translateY;
+      pStartX = e.clientX - translateX;
+      pStartY = e.clientY - translateY;
     });
     window.addEventListener('mousemove', (e) => {
       if (!isDragging) return;
-      translateX = e.clientX - startX;
-      translateY = e.clientY - startY;
+      translateX = e.clientX - pStartX;
+      translateY = e.clientY - pStartY;
       updateTransform();
     });
     window.addEventListener('mouseup', () => {
@@ -519,8 +488,8 @@
     popupImg.addEventListener('touchstart', (e) => {
       if (e.touches.length === 1) {
         isDragging = true;
-        startX = e.touches[0].clientX - translateX;
-        startY = e.touches[0].clientY - translateY;
+        pStartX = e.touches[0].clientX - translateX;
+        pStartY = e.touches[0].clientY - translateY;
       } else if (e.touches.length === 2) {
         touchStartDist = Math.hypot(
           e.touches[0].clientX - e.touches[1].clientX,
@@ -531,8 +500,8 @@
     popupImg.addEventListener('touchmove', (e) => {
       if (e.touches.length === 1 && isDragging) {
         e.preventDefault();
-        translateX = e.touches[0].clientX - startX;
-        translateY = e.touches[0].clientY - startY;
+        translateX = e.touches[0].clientX - pStartX;
+        translateY = e.touches[0].clientY - pStartY;
         updateTransform();
       } else if (e.touches.length === 2 && touchStartDist !== null) {
         e.preventDefault();
