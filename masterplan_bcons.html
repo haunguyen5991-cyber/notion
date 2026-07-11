@@ -16,19 +16,18 @@
     width: 100%;
     background: #ffffff;
     font-family: Arial, sans-serif;
-    /* Chỉ BODY cuộn (không phải cả html lẫn body) -> tránh hiện 2 thanh cuộn chồng nhau */
     overflow-y: auto;
     overflow-x: hidden;
     max-height: 100vh;
   }
 
-  /* Ẩn thanh cuộn nhưng VẪN giữ chức năng cuộn được bình thường */
+  /* Ẩn thanh cuộn trình duyệt */
   body::-webkit-scrollbar {
     display: none;
   }
   body {
-    -ms-overflow-style: none;  /* Edge/IE cũ */
-    scrollbar-width: none;     /* Firefox */
+    -ms-overflow-style: none;
+    scrollbar-width: none;
   }
 
   /* KHUNG CHỨA WATERMARK VÀ THANH ZOOM ĐỒNG NHẤT (Góc dưới bên phải) */
@@ -42,7 +41,7 @@
     z-index: 500;
   }
 
-  /* Đồng bộ hóa giao diện thanh kéo zoom tinh tế theo style của watermark */
+  /* Thanh kéo zoom tinh tế */
   .main-map-controls {
     background: rgba(255,255,255,0.85);
     padding: 3px 10px;
@@ -57,7 +56,6 @@
     font-size: 10px;
     font-family: Arial, sans-serif;
     color: rgba(0,0,0,0.55);
-    font-weight: normal;
   }
   .main-map-controls input[type="range"] {
     width: 90px;
@@ -69,7 +67,7 @@
     background: rgba(0,0,0,0.15);
   }
 
-  /* Giữ nguyên class nhãn thương hiệu cũ của bạn */
+  /* Nhãn thương hiệu nhúng kèm */
   .brand-label {
     font-size: 10px;
     font-family: Arial, sans-serif;
@@ -94,7 +92,7 @@
     height: auto;
     user-select: none;
     -webkit-user-drag: none;
-    transform-origin: center center; /* Zoom từ tâm giúp giao diện cân đối khi cuộn slider */
+    transform-origin: center center;
     will-change: transform;
   }
   .map-container img.masterplan.can-drag {
@@ -104,14 +102,14 @@
     cursor: grabbing;
   }
 
-  /* Đảm bảo hoạt động mượt mà trên giao diện Mobile */
+  /* TỐI ƯU HOÀN TOÀN CHO MOBILE: Ảnh tự zoom lấp đầy khung hình che kín khoảng trống */
   @media (max-width: 700px) {
     html, body {
       height: 100%;
       overflow: hidden;
     }
     .map-container {
-      height: 100vh;
+      height: 100vh; /* Chiều cao tràn toàn bộ màn hình mobile */
       overflow: hidden;
     }
     .map-container img.masterplan {
@@ -120,7 +118,7 @@
       left: 0;
       width: 100%;
       height: 100%;
-      object-fit: contain;
+      object-fit: cover; /* QUAN TRỌNG: Phóng to lấp đầy, không để lộ khoảng trống viền trắng */
     }
     .bottom-controls-container {
       bottom: 6px;
@@ -154,7 +152,7 @@
     stroke: rgba(255, 102, 0, 0.9);
   }
 
-  /* ===== MODAL POPUP VẪN GIỮ NGUYÊN GỐC VÀ CHỈNH TỶ LỆ THANH CUỘN ===== */
+  /* ===== MODAL POPUP CHI TIẾT ===== */
   .popup-overlay {
     display: none;
     position: fixed;
@@ -306,6 +304,7 @@
     const svg = document.getElementById('hotspotSvg');
     const container = document.getElementById('mapContainer');
     const zoomSlider = document.getElementById('mapZoomSlider');
+    const mobileQuery = window.matchMedia('(max-width: 700px)');
 
     let mapZoomScale = 1;
     let panX = 0, panY = 0;
@@ -314,7 +313,8 @@
     let startPanX = 0, startPanY = 0;
 
     function applyMapTransform() {
-      if (mapZoomScale <= 1) {
+      // Trên desktop, nếu scale = 1 thì khóa tính năng kéo pan để cuộn trang mượt
+      if (!mobileQuery.matches && mapZoomScale <= 1) {
         mapZoomScale = 1;
         panX = 0;
         panY = 0;
@@ -322,6 +322,37 @@
       } else {
         img.classList.add('can-drag');
       }
+
+      // Xử lý giới hạn biên kéo để ảnh cover/zoom không bị đẩy lộ khoảng trắng
+      if (mobileQuery.matches) {
+        // Trạng thái cơ bản lúc khởi động trên Mobile (object-fit: cover)
+        const cw = container.clientWidth;
+        const ch = container.clientHeight;
+        const nw = img.naturalWidth;
+        const nh = img.naturalHeight;
+        if (nw && nh && cw && ch) {
+          const baseScale = Math.max(cw / nw, ch / nh);
+          const currentW = nw * baseScale * mapZoomScale;
+          const currentH = nh * baseScale * mapZoomScale;
+          
+          const minX = cw - currentW;
+          const minY = ch - currentH;
+          
+          if (panX < minX) panX = minX;
+          if (panX > 0) panX = 0;
+          if (panY < minY) panY = minY;
+          if (panY > 0) panY = 0;
+        }
+      } else {
+        // Giới hạn biên trên Desktop khi zoom lớn hơn 1
+        if (mapZoomScale > 1) {
+          const maxPanX = img.clientWidth * (mapZoomScale - 1) / 2;
+          const maxPanY = img.clientHeight * (mapZoomScale - 1) / 2;
+          if (Math.abs(panX) > maxPanX) panX = panX > 0 ? maxPanX : -maxPanX;
+          if (Math.abs(panY) > maxPanY) panY = panY > 0 ? maxPanY : -maxPanY;
+        }
+      }
+
       const transformStr = 'translate(' + panX + 'px, ' + panY + 'px) scale(' + mapZoomScale + ')';
       img.style.transform = transformStr;
       svg.style.transform = transformStr;
@@ -331,6 +362,15 @@
       if (!img.naturalWidth) return;
       svg.style.width = img.clientWidth + 'px';
       svg.style.height = img.clientHeight + 'px';
+      
+      // Khi tải hoặc xoay màn hình mobile, tự căn giữa mặc định không lộ khoảng trống
+      if (mobileQuery.matches) {
+        const cw = container.clientWidth;
+        const ch = container.clientHeight;
+        const baseScale = Math.max(cw / img.naturalWidth, ch / img.naturalHeight);
+        panX = (cw - img.naturalWidth * baseScale) / 2;
+        panY = (ch - img.naturalHeight * baseScale) / 2;
+      }
     }
 
     function buildSVG() {
@@ -355,27 +395,22 @@
     if (img.complete && img.naturalWidth) { refresh(); } 
     else { img.addEventListener('load', refresh); }
     window.addEventListener('resize', positionSVG);
+    mobileQuery.addEventListener('change', () => {
+      mapZoomScale = 1;
+      zoomSlider.value = 1;
+      refresh();
+    });
 
-    // Bắt sự kiện slider hoạt động mượt mà
+    // Lắng nghe thanh Zoom Slider
     zoomSlider.addEventListener('input', (e) => {
       mapZoomScale = parseFloat(e.target.value);
-      if (mapZoomScale < 1) mapZoomScale = 1; 
-      
-      if (mapZoomScale === 1) {
-        panX = 0;
-        panY = 0;
-      } else {
-        const maxPanX = img.clientWidth * (mapZoomScale - 1) / 2;
-        const maxPanY = img.clientHeight * (mapZoomScale - 1) / 2;
-        if (Math.abs(panX) > maxPanX) panX = panX > 0 ? maxPanX : -maxPanX;
-        if (Math.abs(panY) > maxPanY) panY = panY > 0 ? maxPanY : -maxPanY;
-      }
+      if (mapZoomScale < 1) mapZoomScale = 1;
       applyMapTransform();
     });
 
-    // Kéo bằng chuột (Chỉ bật khi mapZoomScale > 1)
+    // Sự kiện Kéo bằng chuột
     container.addEventListener('mousedown', (e) => {
-      if (mapZoomScale <= 1) return; 
+      if (!mobileQuery.matches && mapZoomScale <= 1) return; 
       isMapDragging = true;
       isMapMoving = false;
       img.classList.add('dragging');
@@ -389,11 +424,7 @@
       if (!isMapDragging) return;
       const dx = e.clientX - startX;
       const dy = e.clientY - startY;
-      
-      if (Math.hypot(dx, dy) > 3) {
-        isMapMoving = true; 
-      }
-      
+      if (Math.hypot(dx, dy) > 3) isMapMoving = true; 
       panX = startPanX + dx;
       panY = startPanY + dy;
       applyMapTransform();
@@ -405,9 +436,9 @@
       setTimeout(() => { isMapMoving = false; }, 50);
     });
 
-    // Kéo bằng Touch trên mobile (Chỉ hoạt động khi mapZoomScale > 1)
+    // Sự kiện Kéo bằng Touch trên mobile 
     container.addEventListener('touchstart', (e) => {
-      if (mapZoomScale <= 1 || e.touches.length !== 1) return; 
+      if (e.touches.length !== 1) return; 
       isMapDragging = true;
       isMapMoving = false;
       startX = e.touches[0].clientX;
@@ -421,9 +452,7 @@
       const dx = e.touches[0].clientX - startX;
       const dy = e.touches[0].clientY - startY;
 
-      if (Math.hypot(dx, dy) > 5) {
-        isMapMoving = true;
-      }
+      if (Math.hypot(dx, dy) > 5) isMapMoving = true;
       
       e.preventDefault(); 
       panX = startPanX + dx;
@@ -437,7 +466,7 @@
     }, { passive: true });
 
 
-    // ===== MODAL POPUP CHI TIẾT GỐC MÀ KHÔNG CÓ THAY ĐỔI GÌ =====
+    // ===== MODAL POPUP CHI TIẾT GỐC VÀ DỊCH CHUYỂN =====
     let scale = 1, translateX = 0, translateY = 0;
     let isDragging = false, pStartX = 0, pStartY = 0;
 
