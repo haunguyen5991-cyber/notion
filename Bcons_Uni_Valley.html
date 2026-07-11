@@ -10,7 +10,7 @@
   html, body {
     width: 100%;
     height: 100%;
-    background: #fff; /* Đổi nền tổng sang màu trắng */
+    background: #fff;
     font-family: Arial, sans-serif;
     overflow: hidden;
   }
@@ -20,19 +20,19 @@
     height: 100vh;
     display: flex;
     flex-direction: column;
-    background: #fff; /* Đổi sang màu trắng */
+    background: #fff;
   }
 
   /* MAIN VIEW VỚI KHOẢNG TRẮNG NGĂN CÁCH PHÍA DƯỚI */
   .main-view {
     flex: 1;
     position: relative;
-    background: #fff; /* Đổi nền vùng chứa ảnh/video sang trắng */
+    background: #fff;
     display: flex;
     align-items: center;
     justify-content: center;
     overflow: hidden;
-    margin-bottom: 12px; /* Khoảng trống màu trắng giữa main view và thumbnail */
+    margin-bottom: 12px;
   }
 
   .counter {
@@ -73,15 +73,15 @@
     bottom: 4px;
     right: 6px;
     font-size: 10px;
-    color: rgba(0,0,0,0.3); /* Chỉnh màu chữ mờ trên nền trắng */
+    color: rgba(0,0,0,0.3);
     font-weight: 500;
     pointer-events: none;
   }
 
-  /* THANH CHỨA THUMBNAIL CHUYỂN SANG MÀU XÁM VÀ CO GIÃN THÔNG MINH */
+  /* THANH CHỨA THUMBNAIL MÀU XÁM */
   .thumb-rail {
     height: 110px;
-    background: #e4e4e4; /* Chuyển nền thanh thumbnail sang màu xám */
+    background: #e4e4e4;
     border-top: 1px solid #ccc;
     border-bottom: 1px solid #ccc;
     display: flex;
@@ -98,7 +98,7 @@
   .thumb-rail::-webkit-scrollbar { display: none; }
   .thumb-rail { -ms-overflow-style: none; scrollbar-width: none; }
 
-  /* ĐỊNH DẠNG Ô THUMBNAIL & CĂN GIỮA TRÁNH LỖI PHÂN RÃ KHUNG */
+  /* ĐỊNH DẠNG Ô THUMBNAIL */
   .thumb {
     width: 88px;
     height: 88px;
@@ -114,7 +114,6 @@
     border-radius: 2px;
   }
 
-  /* Căn giữa thông minh bằng margin auto ở hai đầu */
   .thumb:first-child {
     margin-left: auto;
   }
@@ -136,7 +135,7 @@
     pointer-events: none;
   }
 
-  .thumb.active { border-color: #000; } /* Khung viền đen nổi bật cho ảnh đang active trên nền xám */
+  .thumb.active { border-color: #000; }
   .thumb:hover { border-color: #666; }
 
   /* ===== ZOOM TRỰC TIẾP ===== */
@@ -165,7 +164,7 @@
 <body>
   <div class="gallery">
     <div class="main-view" id="mainView">
-      <div class="counter" id="counter">1 / 6</div>
+      <div class="counter" id="counter">1 / 10</div>
       <div class="zoom-hint" id="zoomHint">Cuộn để phóng to • Kéo để xem từng phần</div>
       <div id="mainMediaWrap"></div>
       <div class="brand-label">dulieunhapho.com</div>
@@ -181,9 +180,9 @@
       { url: 'https://res.cloudinary.com/oy7u6ywg/video/upload/v1783707304/1783707169575_1912694273111558205_7085495023723622370_udvczq.mp4', type: 'video' },
       { url: 'https://res.cloudinary.com/oy7u6ywg/video/upload/v1783707299/1783707169545_1912694273111558205_7085495023723622370_sjdmmb.mp4', type: 'video' },
       { url: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783674828/2a370a16-7f56-42c9-b2b9-0fa18e00e67e.png', type: 'image' },
-      { url: 'https://datxanh.homes/wp-content/uploads/2025/01/mat-bang-tong-nha-pho-bcons-uni.jpg', type: 'image' },
+      { url: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783753742/1_xzxzh1.jpg', type: 'image' },
       { url: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783675502/d47af77e-10a3-4b5b-b67c-5f2d735dce34.png', type: 'image' },
-      { url: 'https://nhadatxanhmienbac.com/wp-content/uploads/2025/02/Bcons-Uni-Valley-Flycam-0602-01.jpg', type: 'image' },
+      { url: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783753742/1_xzxzh1.jpg', type: 'image' },
       { url: 'https://res.cloudinary.com/oy7u6ywg/video/upload/v1783708714/1783708638214_1912694273111558205_7085495023723622370_ouc2r5.mp4', type: 'video' }
     ];
 
@@ -210,13 +209,11 @@
         videoEl.src = getPlayableVideoUrl(item.url);
         videoEl.controls = true;
         videoEl.playsInline = true;
-        wrap.appendChild(videoEl);
         
-        if (!isInitialLoad) {
-          videoEl.play().catch(err => {
-            console.log("Tự động phát có âm thanh bị chặn:", err);
-          });
-        }
+        // THAY ĐỔI: Tắt tự động phát (no autoplay) và lấy ảnh thumb gán làm poster đại diện
+        videoEl.poster = getVideoThumbUrl(item.url);
+        
+        wrap.appendChild(videoEl);
       } else {
         wrap.innerHTML = '<img src="' + item.url + '" loading="lazy" class="zoomable">';
       }
