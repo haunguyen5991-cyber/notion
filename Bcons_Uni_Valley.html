@@ -54,6 +54,7 @@
     align-items: center;
     justify-content: center;
     background: #fff;
+    position: relative;
   }
 
   #mainMediaWrap img, #mainMediaWrap video {
@@ -76,6 +77,7 @@
     color: rgba(0,0,0,0.3);
     font-weight: 500;
     pointer-events: none;
+    z-index: 10;
   }
 
   /* THANH CHỨA THUMBNAIL MÀU XÁM */
@@ -94,11 +96,9 @@
     -webkit-overflow-scrolling: touch;
   }
 
-  /* Ẩn thanh cuộn */
   .thumb-rail::-webkit-scrollbar { display: none; }
   .thumb-rail { -ms-overflow-style: none; scrollbar-width: none; }
 
-  /* ĐỊNH DẠNG Ô THUMBNAIL */
   .thumb {
     width: 88px;
     height: 88px;
@@ -114,14 +114,10 @@
     border-radius: 2px;
   }
 
-  .thumb:first-child {
-    margin-left: auto;
-  }
-  .thumb:last-child {
-    margin-right: auto;
-  }
+  .thumb:first-child { margin-left: auto; }
+  .thumb:last-child { margin-right: auto; }
 
-  .thumb img, .thumb video {
+  .thumb img {
     width: 100%;
     height: 100%;
     object-fit: cover;
@@ -133,6 +129,7 @@
     width: 22px;
     height: 22px;
     pointer-events: none;
+    z-index: 2;
   }
 
   .thumb.active { border-color: #000; }
@@ -199,7 +196,8 @@
       return videoUrl.replace(/\.mov(\?.*)?$/i, '.mp4$1');
     }
 
-    function updateMain() {
+    // Hàm cập nhật Main View và tự động phát video nếu là click từ người dùng
+    function updateMain(shouldAutoplay = false) {
       const item = items[currentIndex];
       const wrap = document.getElementById('mainMediaWrap');
       wrap.innerHTML = '';
@@ -209,11 +207,21 @@
         videoEl.src = getPlayableVideoUrl(item.url);
         videoEl.controls = true;
         videoEl.playsInline = true;
+        videoEl.setAttribute('preload', 'auto');
         
-        // THAY ĐỔI: Tắt tự động phát (no autoplay) và lấy ảnh thumb gán làm poster đại diện
-        videoEl.poster = getVideoThumbUrl(item.url);
+        // Vẫn gán poster phòng trường hợp khi tải trang đầu tiên chưa click
+        videoEl.poster = getVideoThumbUrl(item.url); 
         
         wrap.appendChild(videoEl);
+
+        // NẾU LÀ CLICK TỪ THUMBNAIL: Kích hoạt chạy trực tiếp ngay lập tức
+        if (shouldAutoplay) {
+          videoEl.play().catch(err => {
+            console.log("Trình duyệt chặn autoplay có tiếng, thử chạy chế độ tắt tiếng:", err);
+            videoEl.muted = true;
+            videoEl.play().catch(e => console.log("Không thể tự động phát:", e));
+          });
+        }
       } else {
         wrap.innerHTML = '<img src="' + item.url + '" loading="lazy" class="zoomable">';
       }
@@ -252,15 +260,21 @@
       items.forEach((item, idx) => {
         const t = document.createElement('div');
         t.className = 'thumb' + (idx === 0 ? ' active' : '');
+        const thumbImg = item.type === 'video' ? getVideoThumbUrl(item.url) : item.url;
+        
         if (item.type === 'video') {
-          const thumbImg = getVideoThumbUrl(item.url);
           t.innerHTML =
             '<img src="' + thumbImg + '" loading="lazy">' +
             '<svg class="play-icon" viewBox="0 0 24 24" fill="white" style="filter:drop-shadow(0 0 2px rgba(0,0,0,0.8))"><path d="M8 5v14l11-7z"/></svg>';
         } else {
-          t.innerHTML = '<img src="' + item.url + '" loading="lazy">';
+          t.innerHTML = '<img src="' + thumbImg + '" loading="lazy">';
         }
-        t.onclick = () => { currentIndex = idx; updateMain(); };
+
+        // KHI NGƯỜI DÙNG CLICK VÀO THUMBNAIL: Gửi tham số `true` để kích hoạt phát luôn
+        t.onclick = () => { 
+          currentIndex = idx; 
+          updateMain(true); 
+        };
         rail.appendChild(t);
       });
     }
@@ -269,10 +283,10 @@
       if (e.key === 'ArrowLeft') currentIndex = (currentIndex - 1 + items.length) % items.length;
       if (e.key === 'ArrowRight') currentIndex = (currentIndex + 1) % items.length;
       else return;
-      updateMain();
+      updateMain(true); // Nhấn phím mũi tên cũng tự chạy
     });
 
-    // ===== TRÌNH QUẢN LÝ ZOOM =====
+    // ===== TRÌNH QUẢN LÝ ZOOM VÀ KÉO ẢNH =====
     let zScale = 1, zPanX = 0, zPanY = 0;
     let zDragging = false, zStartX = 0, zStartY = 0, zStartPanX = 0, zStartPanY = 0;
     const Z_MIN = 1, Z_MAX = 6;
@@ -396,7 +410,7 @@
     })();
 
     initThumbs();
-    updateMain();
+    updateMain(false); // Lần đầu tải trang chỉ hiển thị ảnh đại diện và nút điều khiển sẵn sàng, không tự phát gây ồn.
   </script>
 </body>
 </html>
