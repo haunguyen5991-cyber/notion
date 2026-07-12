@@ -17,9 +17,10 @@
 
   /* KHUNG CHỨA CỐ ĐỊNH THEO CHIỀU CAO MÀN HÌNH */
   .gallery-container {
+    position: relative;
     width: 100%;
     height: 100vh;
-    padding: 15px;
+    padding: 15px 15px 35px 15px; /* Chừa khoảng trống bên dưới cho logo */
     display: flex;
     flex-direction: column;
   }
@@ -40,10 +41,17 @@
     color: #111;
   }
 
-  .brand-logo {
+  /* LOGO GÓC DƯỚI PHẢI KHUNG CHÍNH (ÍT NỔI BẬT) */
+  .main-brand-logo {
+    position: absolute;
+    bottom: 10px;
+    right: 15px;
     font-size: 11px;
-    color: rgba(0,0,0,0.4);
-    font-weight: bold;
+    color: rgba(0, 0, 0, 0.35); /* Làm mờ ít nổi bật */
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    pointer-events: none;
+    user-select: none;
   }
 
   /* LƯỚI Ô GẠCH TỰ ĐỘNG CO GIÃN THEO CHIỀU DỌC - KHÔNG BỊ TRÀN */
@@ -93,7 +101,7 @@
 
   /* ĐẢM BẢO TRÊN TABLET / MOBILE CŨNG KHÔNG BỊ CUỘN */
   @media (max-width: 768px) {
-    .gallery-container { padding: 10px; }
+    .gallery-container { padding: 10px 10px 30px 10px; }
     .metro-grid {
       grid-template-columns: repeat(2, 1fr);
       grid-template-rows: repeat(4, 1fr); /* 4 hàng trên mobile */
@@ -140,27 +148,34 @@
     transform-origin: center center;
     will-change: transform;
     cursor: zoom-in;
+    z-index: 2001; /* Để ảnh nằm trên lớp nền nhưng dưới nút close */
   }
 
   #mainMediaWrap img.zoomed { cursor: grab; }
   #mainMediaWrap img.zoomed.dragging { cursor: grabbing; }
 
+  /* NÚT ĐÓNG ĐÃ ĐƯỢC DI CHUYỂN XUỐNG DƯỚI ĐỂ TRÁNH BỊ CHE KHUẤT */
   .close-btn {
     position: absolute;
-    top: 15px;
-    right: 15px;
-    width: 35px;
-    height: 35px;
-    background: rgba(0, 0, 0, 0.05);
+    top: 75px; /* Đẩy xuống hẳn phía dưới tránh nút embed của hệ thống */
+    right: 20px;
+    width: 44px; /* Tăng kích thước vùng bấm */
+    height: 44px;
+    background: rgba(0, 0, 0, 0.08);
     border: none;
     border-radius: 50%;
-    color: #333;
-    font-size: 22px;
+    color: #111;
+    font-size: 26px;
     font-weight: 300;
-    line-height: 35px;
+    line-height: 42px;
     text-align: center;
     cursor: pointer;
-    z-index: 2100;
+    z-index: 2200; /* Luôn ưu tiên hiển thị cao nhất */
+    transition: background 0.2s;
+  }
+
+  .close-btn:hover {
+    background: rgba(0, 0, 0, 0.15);
   }
 
   .bottom-controls-container {
@@ -211,6 +226,7 @@
   }
 
   @media (max-width: 700px) {
+    .close-btn { top: 80px; right: 15px; } /* Đảm bảo an toàn trên cả mobile */
     .bottom-controls-container { right: 50%; transform: translateX(50%); bottom: 20px; }
   }
 </style>
@@ -219,8 +235,7 @@
 
   <div class="gallery-container">
     <div class="gallery-header">
-      <div class="gallery-title">Tiện ích</div>
-      <div class="brand-logo">dulieunhapho.com</div>
+      <div class="gallery-title">Hình ảnh dự án</div>
     </div>
     
     <div class="metro-grid" id="metroGrid">
@@ -246,6 +261,8 @@
         <img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783709102/2b16175c-d755-47fd-8317-f57fef41db6b.png" loading="lazy">
       </div>
     </div>
+
+    <div class="main-brand-logo">dulieunhapho.com</div>
   </div>
 
   <div class="lightbox-overlay" id="lightboxOverlay">
@@ -292,8 +309,20 @@
       mainMediaWrap.innerHTML = '';
     }
 
-    closeBtn.onclick = closeLightbox;
+    // Đóng khi click trực tiếp vào nút X
+    closeBtn.onclick = (e) => {
+      e.stopPropagation();
+      closeLightbox();
+    };
     
+    // Đóng khi click ra vùng ngoài khung hình (Lớp nền Overlay)
+    lightboxOverlay.onclick = function(e) {
+      // Nếu click trúng vào lớp nền hoặc wrapper mà không phải hình ảnh đang tương tác thì đóng
+      if (e.target === lightboxOverlay || e.target === mainMediaWrap) {
+        closeLightbox();
+      }
+    };
+
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') closeLightbox();
     });
@@ -356,6 +385,14 @@
 
     function initZoomEvents() {
       const wrap = document.getElementById('mainMediaWrap');
+      const img = document.getElementById('zoomableImg');
+
+      if (!img) return;
+
+      // Chặn hiện tượng đóng khi click trực tiếp trên ảnh
+      img.onclick = (e) => {
+        e.stopPropagation();
+      };
 
       wrap.onwheel = function(e) {
         e.preventDefault();
@@ -365,7 +402,7 @@
       wrap.onmousedown = function(e) {
         if (zScale <= Z_MIN) return;
         zDragging = true;
-        document.getElementById('zoomableImg').classList.add('dragging');
+        img.classList.add('dragging');
         zStartX = e.clientX; zStartY = e.clientY;
         zStartPanX = zPanX; zStartPanY = zPanY;
       };
@@ -381,7 +418,6 @@
       window.onmouseup = function() {
         if (!zDragging) return;
         zDragging = false;
-        const img = document.getElementById('zoomableImg');
         if (img) img.classList.remove('dragging');
       };
 
