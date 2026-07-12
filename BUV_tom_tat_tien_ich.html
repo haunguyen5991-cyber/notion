@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Windows 8 Metro Gallery</title>
+<title>Metro Gallery - Bcons & BUV</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -12,55 +12,79 @@
     height: 100%;
     background: #fff;
     font-family: 'Segoe UI', Arial, sans-serif;
-    overflow-x: auto; /* Cho phép cuộn ngang chuẩn Windows 8 */
-    overflow-y: hidden;
+    overflow: hidden; /* Khóa hoàn toàn, không kéo qua lại */
   }
 
-  /* KHUNG CHỨA PHONG CÁCH WINDOWS 8 CUỘN NGANG */
-  .metro-gallery {
+  /* KHUNG CHỨA TOÀN BỘ TRÊN MỘT MÀN HÌNH CHÍNH */
+  .gallery-container {
+    width: 100%;
     height: 100vh;
-    padding: 40px;
-    display: inline-flex;
+    padding: 20px;
+    display: flex;
     flex-direction: column;
-    justify-content: center;
-    background: #fff;
-    min-width: 100vw;
+    justify-content: flex-start;
   }
 
-  .metro-title {
-    font-size: 28px;
+  .gallery-header {
+    margin-bottom: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(0,0,0,0.08);
+    padding-bottom: 8px;
+  }
+
+  .gallery-title {
+    font-size: 22px;
     font-weight: 300;
-    color: #000;
-    margin-bottom: 20px;
-    padding-left: 5px;
-    text-transform: lowercase;
-  }
-  .metro-title::first-letter {
-    text-transform: uppercase;
+    color: #111;
   }
 
-  /* KHUNG LƯỚI Ô GẠCH (METRO GRID) */
+  .brand-logo {
+    font-size: 11px;
+    color: rgba(0,0,0,0.4);
+    font-weight: bold;
+  }
+
+  /* LƯỚI Ô GẠCH CO GIÃN TỰ ĐỘNG CHẢY THEO CHIỀU DỌC */
   .metro-grid {
+    flex: 1;
     display: grid;
-    grid-template-rows: repeat(2, 220px); /* Chia làm 2 hàng cố định */
-    grid-auto-flow: column; /* Tự động tràn ô gạch theo chiều ngang */
-    grid-auto-columns: 220px; /* Chiều rộng mặc định của một ô vuông */
-    gap: 15px;
+    /* Thiết lập 4 cột cố định cho desktop */
+    grid-template-columns: repeat(4, 1fr);
+    /* Tự động tính toán chiều cao các hàng dựa trên không gian còn lại */
+    grid-auto-rows: minmax(10px, 1fr); 
+    gap: 10px;
+    overflow-y: auto; /* Nếu quá nhiều ảnh trên màn hình nhỏ có thể cuộn dọc nhẹ */
+    padding-right: 4px;
   }
 
-  /* ĐỊNH DẠNG Ô GẠCH TRONG WINDOWS 8 (TILES) */
+  /* Định dạng thanh cuộn dọc mỏng nhẹ bên trong Grid nếu cần */
+  .metro-grid::-webkit-scrollbar {
+    width: 5px;
+  }
+  .metro-grid::-webkit-scrollbar-thumb {
+    background: rgba(0,0,0,0.15);
+    border-radius: 4px;
+  }
+
+  /* Ô GẠCH TILES */
   .tile {
     position: relative;
-    background: #f0f0f0;
+    background: #f4f4f4;
+    border-radius: 4px;
     overflow: hidden;
     cursor: pointer;
-    box-shadow: 0 0 0 0 transparent;
-    transition: transform 0.1s ease, box-shadow 0.2s ease;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
   }
 
-  /* Hiệu ứng nhấn lún nhẹ đặc trưng của ô gạch Windows 8 khi click */
+  .tile:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  }
+
   .tile:active {
-    transform: scale(0.97);
+    transform: scale(0.98);
   }
 
   .tile img {
@@ -70,37 +94,40 @@
     display: block;
   }
 
-  /* CÁC KÍCH THƯỚC Ô GẠCH ĐAN XEN NHAU */
-  .tile.square-large {
+  /* ĐỊNH NGHĨA KÍCH THƯỚC Ô GẠCH LINH HOẠT THEO CHIỀU DỌC */
+  .tile.tall {
     grid-row: span 2;
-    grid-column: span 2;
   }
   .tile.wide {
     grid-column: span 2;
   }
-  .tile.normal {
-    grid-row: span 1;
-    grid-column: span 1;
+  .tile.big {
+    grid-column: span 2;
+    grid-row: span 2;
   }
 
-  /* CẤU HÌNH RESPONSIVE CHO MOBILE (CHUYỂN SANG CUỘN DỌC ĐỂ DỄ XEM) */
+  /* CẤU HÌNH TRÊN THIẾT BỊ DI ĐỘNG */
   @media (max-width: 768px) {
-    html, body { overflow-y: auto; overflow-x: hidden; }
-    .metro-gallery { height: auto; display: block; padding: 20px; width: 100%; }
-    .metro-title { font-size: 22px; margin-bottom: 15px; }
-    .metro-grid {
-      grid-template-rows: auto;
-      grid-template-columns: repeat(2, 1fr);
-      grid-auto-flow: row;
-      gap: 10px;
+    .gallery-container {
+      padding: 12px;
     }
-    .tile.square-large { grid-row: span 2; grid-column: span 2; }
-    .tile.wide { grid-column: span 2; }
-    .tile.normal { grid-row: span 1; grid-column: span 1; }
-    .metro-grid { grid-auto-columns: auto; }
+    .gallery-title {
+      font-size: 18px;
+    }
+    .metro-grid {
+      grid-template-columns: repeat(2, 1fr); /* Thu về 2 cột trên mobile */
+      gap: 6px;
+    }
+    .tile.big {
+      grid-column: span 2;
+      grid-row: span 2;
+    }
+    .tile.wide {
+      grid-column: span 2;
+    }
   }
 
-  /* ===== CHẾ ĐỘ PHÓNG TO ẢNH (LIGHTBOX OVERLAY) ===== */
+  /* ===== LIGHTBOX OVERLAY PHÓNG TO XEM CHI TIẾT ===== */
   .lightbox-overlay {
     position: fixed;
     top: 0;
@@ -108,7 +135,7 @@
     width: 100%;
     height: 100%;
     background: rgba(255, 255, 255, 0.98);
-    z-index: 1000;
+    z-index: 2000;
     display: none;
     align-items: center;
     justify-content: center;
@@ -152,12 +179,12 @@
     line-height: 40px;
     text-align: center;
     cursor: pointer;
-    z-index: 1100;
+    z-index: 2100;
     transition: background 0.2s;
   }
   .close-btn:hover { background: rgba(0, 0, 0, 0.1); }
 
-  /* BỘ ĐIỀU KHIỂN ZOOM MỎNG TINH TẾ TỰ ĐỘNG CĂN GIỮA */
+  /* BỘ ĐIỀU KHIỂN ZOOM SLIDER */
   .bottom-controls-container {
     position: absolute;
     bottom: 20px;
@@ -166,21 +193,21 @@
     flex-direction: row;
     align-items: center;
     gap: 8px;
-    z-index: 1050;
-    background: rgba(255, 255, 255, 0.85);
-    padding: 4px 10px;
+    z-index: 2050;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 5px 12px;
     border-radius: 20px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
   }
 
   .main-map-controls {
     display: flex;
     align-items: center;
-    gap: 5px;
+    gap: 6px;
     user-select: none;
   }
   .main-map-controls span {
-    font-size: 11px;
+    font-size: 12px;
     color: #333;
     font-weight: bold;
   }
@@ -188,7 +215,7 @@
   .main-map-controls input[type="range"] {
     -webkit-appearance: none;
     appearance: none;
-    width: 70px;
+    width: 80px;
     height: 3px;
     background: rgba(0,0,0,0.15);
     outline: none;
@@ -204,9 +231,9 @@
     cursor: pointer;
   }
 
-  .brand-label {
+  .brand-inner-label {
     font-size: 11px;
-    color: rgba(0, 0, 0, 0.5);
+    color: rgba(0, 0, 0, 0.4);
     border-left: 1px solid rgba(0, 0, 0, 0.15);
     padding-left: 8px;
     pointer-events: none;
@@ -223,31 +250,52 @@
 </head>
 <body>
 
-  <div class="metro-gallery">
-    <div class="metro-title">Hình ảnh dự án</div>
+  <div class="gallery-container">
+    <div class="gallery-header">
+      <div class="gallery-title">Bộ Sưu Tập Tiện Ích</div>
+      <div class="brand-logo">dulieunhapho.com</div>
+    </div>
     
     <div class="metro-grid" id="metroGrid">
-      <div class="tile square-large" onclick="openLightbox(0)">
-        <img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783709033/28073e86-c66a-41ca-9ec8-b27f78539729.png" loading="lazy">
+      <div class="tile big" onclick="openLightbox(0)">
+        <img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783672545/z8024276505103_b04259f9580ef2e982ca4ddb0213a49f_mksqn3.jpg" loading="lazy">
       </div>
-      <div class="tile wide" onclick="openLightbox(1)">
-        <img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783709045/de8e500c-60f8-4a48-a53a-e7ebab07ed2a.png" loading="lazy">
+      <div class="tile tall" onclick="openLightbox(1)">
+        <img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783673080/1783673037485_1912694273111558205_7085495023723622370_9da1836acc9f937aac313f3c91b634f5_j1agbn.jpg" loading="lazy">
       </div>
       <div class="tile normal" onclick="openLightbox(2)">
-        <img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783709055/d9b325e9-e692-45c9-bad9-79c5eb6a99a9.png" loading="lazy">
+        <img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783710809/z8018839891735_2f212a8b4286ebf15e911ecc2745bccf_rnjsqs.jpg" loading="lazy">
       </div>
       <div class="tile normal" onclick="openLightbox(3)">
-        <img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783709065/ecc0e40a-e90c-4cc9-8d8a-17f43e9b561b.png" loading="lazy">
+        <img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783710818/z8018839899891_72dfb8b98fd9230d713b2ae612010889_bsd3ev.jpg" loading="lazy">
       </div>
       <div class="tile wide" onclick="openLightbox(4)">
-        <img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783709078/79554724-4135-404a-a00c-bf50786e1122.png" loading="lazy">
+        <img src="https://bcons.vn/wp-content/uploads/2025/10/anh-thuc-te-bcons-city-3.jpg" loading="lazy">
       </div>
       <div class="tile normal" onclick="openLightbox(5)">
-        <img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783709092/f6763012-8d3c-4854-a34f-55ae93672295.png" loading="lazy">
+        <img src="https://bcons.vn/wp-content/uploads/2025/10/anh-thuc-te-bcons-city-2.jpg" loading="lazy">
       </div>
-      <div class="tile normal" onclick="openLightbox(6)">
-        <img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783709102/2b16175c-d755-47fd-8317-f57fef41db6b.png" loading="lazy">
-          </div>
+      <div class="tile tall" onclick="openLightbox(6)">
+        <img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783673081/1783673037505_1912694273111558205_7085495023723622370_be82048aeb56b28083b1554438003e56_fkchz5.jpg" loading="lazy">
+      </div>
+      <div class="tile wide" onclick="openLightbox(7)">
+        <img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783699190/5fbedabc-24e8-4340-952c-520926f217d0.png" loading="lazy">
+      </div>
+      <div class="tile normal" onclick="openLightbox(8)">
+        <img src="https://bcons.vn/wp-content/uploads/2025/10/anh-thuc-te-bcons-city-1.jpg" loading="lazy">
+      </div>
+      <div class="tile normal" onclick="openLightbox(9)">
+        <img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783672537/Bcons-Uni-Valley_sxf8qp.png" loading="lazy">
+      </div>
+      <div class="tile wide" onclick="openLightbox(10)">
+        <img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783699244/d634af0c-465a-474e-a7c3-900543d9efa2.png" loading="lazy">
+      </div>
+      <div class="tile normal" onclick="openLightbox(11)">
+        <img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783672542/Truong_hoc_ykkxkk.jpg" loading="lazy">
+      </div>
+      <div class="tile normal" onclick="openLightbox(12)">
+        <img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783703660/2fc71894-b09b-4f80-be68-bcc4911957c7.png" loading="lazy">
+      </div>
     </div>
   </div>
 
@@ -258,22 +306,28 @@
     <div class="bottom-controls-container" id="controlsContainer">
       <div class="main-map-controls">
         <span>-</span>
-        <input type="range" id="mediaZoomSlider" min="1" max="5" step="0.05" value="1">
+        <input type="range" id="mediaZoomSlider" min="1" max="6" step="0.05" value="1">
         <span>+</span>
       </div>
-      <div class="brand-label">dulieunhapho.com</div>
+      <div class="brand-inner-label">dulieunhapho.com</div>
     </div>
   </div>
 
   <script>
     const imageUrls = [
-      'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783709033/28073e86-c66a-41ca-9ec8-b27f78539729.png',
-      'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783709045/de8e500c-60f8-4a48-a53a-e7ebab07ed2a.png',
-      'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783709055/d9b325e9-e692-45c9-bad9-79c5eb6a99a9.png',
-      'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783709065/ecc0e40a-e90c-4cc9-8d8a-17f43e9b561b.png',
-      'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783709078/79554724-4135-404a-a00c-bf50786e1122.png',
-      'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783709092/f6763012-8d3c-4854-a34f-55ae93672295.png',
-      'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783709102/2b16175c-d755-47fd-8317-f57fef41db6b.png',
+      'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783672545/z8024276505103_b04259f9580ef2e982ca4ddb0213a49f_mksqn3.jpg',
+      'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783673080/1783673037485_1912694273111558205_7085495023723622370_9da1836acc9f937aac313f3c91b634f5_j1agbn.jpg',
+      'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783710809/z8018839891735_2f212a8b4286ebf15e911ecc2745bccf_rnjsqs.jpg',
+      'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783710818/z8018839899891_72dfb8b98fd9230d713b2ae612010889_bsd3ev.jpg',
+      'https://bcons.vn/wp-content/uploads/2025/10/anh-thuc-te-bcons-city-3.jpg',
+      'https://bcons.vn/wp-content/uploads/2025/10/anh-thuc-te-bcons-city-2.jpg',
+      'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783673081/1783673037505_1912694273111558205_7085495023723622370_be82048aeb56b28083b1554438003e56_fkchz5.jpg',
+      'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783699190/5fbedabc-24e8-4340-952c-520926f217d0.png',
+      'https://bcons.vn/wp-content/uploads/2025/10/anh-thuc-te-bcons-city-1.jpg',
+      'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783672537/Bcons-Uni-Valley_sxf8qp.png',
+      'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783699244/d634af0c-465a-474e-a7c3-900543d9efa2.png',
+      'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783672542/Truong_hoc_ykkxkk.jpg',
+      'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783703660/2fc71894-b09b-4f80-be68-bcc4911957c7.png'
     ];
 
     const lightboxOverlay = document.getElementById('lightboxOverlay');
@@ -300,10 +354,10 @@
       if (e.key === 'Escape') closeLightbox();
     });
 
-    // ===== TRÌNH ĐIỀU KHIỂN ZOOM CHO ẢNH PHÓNG TO =====
+    // ===== BỘ ĐIỀU KHIỂN ZOOM MẠNH MẼ CHO LIGHTBOX =====
     let zScale = 1, zPanX = 0, zPanY = 0;
     let zDragging = false, zStartX = 0, zStartY = 0, zStartPanX = 0, zStartPanY = 0;
-    const Z_MIN = 1, Z_MAX = 5;
+    const Z_MIN = 1, Z_MAX = 6;
 
     function applyZoomTransform() {
       const img = document.getElementById('zoomableImg');
@@ -361,7 +415,7 @@
 
       wrap.onwheel = function(e) {
         e.preventDefault();
-        zoomAtPoint(e.deltaY < 0 ? 0.25 : -0.25, e.clientX, e.clientY, wrap);
+        zoomAtPoint(e.deltaY < 0 ? 0.3 : -0.3, e.clientX, e.clientY, wrap);
       };
 
       wrap.onmousedown = function(e) {
@@ -389,7 +443,7 @@
 
       wrap.ondblclick = function(e) {
         if (zScale > Z_MIN) resetZoom();
-        else zoomAtPoint(1.5, e.clientX, e.clientY, wrap);
+        else zoomAtPoint(1.8, e.clientX, e.clientY, wrap);
       };
 
       // Cảm ứng Mobile (Pinch to zoom & Drag)
@@ -410,7 +464,7 @@
           const dist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
           const midX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
           const midY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
-          zoomAtPoint((dist - zLastTouchDist) * 0.01, midX, midY, wrap);
+          zoomAtPoint((dist - zLastTouchDist) * 0.015, midX, midY, wrap);
           zLastTouchDist = dist;
         } else if (e.touches.length === 1 && zDragging) {
           e.preventDefault();
