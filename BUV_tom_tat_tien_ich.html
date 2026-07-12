@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Bộ Sưu Tập Hình Ảnh</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    width: 100%;
+    height: 100%;
+    background: #fff;
+    font-family: Arial, sans-serif;
+  }
+
+  /* KHÔNG GIAN LƯỚI HIỂN THỊ 8 HÌNH ẢNH ĐẸP MẮT */
+  .gallery-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 30px 20px;
+  }
+
+  .gallery-title {
+    font-size: 24px;
+    font-weight: bold;
+    color: #222;
+    margin-bottom: 25px;
+    text-align: center;
+  }
+
+  .image-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1br);
+    gap: 20px;
+  }
+
+  /* Định hình từng ô lưới ảnh dạng Responsive */
+  @media (max-width: 992px) {
+    .image-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+  @media (max-width: 768px) {
+    .image-grid { grid-template-columns: repeat(2, 1fr); }
+    .gallery-title { font-size: 20px; margin-bottom: 15px; }
+  }
+  @media (max-width: 480px) {
+    .image-grid { grid-template-columns: repeat(1, 1fr); gap: 15px; }
+  }
+
+  .grid-item {
+    position: relative;
+    border-radius: 8px;
+    overflow: hidden;
+    aspect-ratio: 4 / 3;
+    background: #f5f5f5;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    cursor: pointer;
+    transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.3s ease;
+  }
+
+  .grid-item:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.12);
+  }
+
+  .grid-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+  }
+
+  .grid-item:hover img {
+    transform: scale(1.04);
+  }
+
+  /* KHUNG XEM TOÀN MÀN HÌNH (LIGHTBOX OVERLAY) */
+  .lightbox-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.98);
+    z-index: 1000;
+    display: none; /* Mặc định ẩn, hiện lên khi click ảnh */
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  #mainMediaWrap {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+
+  #mainMediaWrap img {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    transform-origin: center center;
+    will-change: transform;
+    cursor: zoom-in;
+  }
+
+  #mainMediaWrap img.zoomed { cursor: grab; }
+  #mainMediaWrap img.zoomed.dragging { cursor: grabbing; }
+
+  /* NÚT ĐÓNG KHUNG PHÓNG TO */
+  .close-btn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 40px;
+    height: 40px;
+    background: rgba(0, 0, 0, 0.05);
+    border: none;
+    border-radius: 50%;
+    color: #333;
+    font-size: 24px;
+    font-weight: 300;
+    line-height: 40px;
+    text-align: center;
+    cursor: pointer;
+    z-index: 1100;
+    transition: background 0.2s, transform 0.2s;
+  }
+  .close-btn:hover {
+    background: rgba(0, 0, 0, 0.1);
+    transform: scale(1.05);
+  }
+
+  /* BỘ ĐIỀU KHIỂN ĐÃ ĐƯỢC THU MỎNG LẠI GIỐNG MASTERPLAN */
+  .bottom-controls-container {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    z-index: 1050;
+    background: rgba(255, 255, 255, 0.85);
+    padding: 4px 10px;
+    border-radius: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+    transition: all 0.2s ease;
+  }
+
+  .main-map-controls {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    user-select: none;
+  }
+  .main-map-controls span {
+    font-size: 11px;
+    font-family: Arial, sans-serif;
+    color: #333;
+    font-weight: bold;
+  }
+  
+  .main-map-controls input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 70px;
+    height: 3px;
+    background: rgba(0,0,0,0.15);
+    outline: none;
+    border: none;
+    cursor: pointer;
+  }
+
+  .main-map-controls input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 12px;
+    height: 12px;
+    background: #ff9900;
+    border-radius: 50%;
+    cursor: pointer;
+  }
+
+  .main-map-controls input[type="range"]::-moz-range-thumb {
+    width: 12px;
+    height: 12px;
+    background: #ff9900;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+  }
+
+  .brand-label {
+    font-size: 11px;
+    font-family: Arial, sans-serif;
+    color: rgba(0, 0, 0, 0.5);
+    border-left: 1px solid rgba(0, 0, 0, 0.15);
+    padding-left: 8px;
+    pointer-events: none;
+    user-select: none;
+  }
+
+  /* TỰ ĐỘNG CĂN GIỮA THANH ZOOM TRÊN MOBILE */
+  @media (max-width: 700px) {
+    .bottom-controls-container {
+      right: 50%;
+      transform: translateX(50%);
+      bottom: 25px;
+    }
+  }
+  
+  .zoom-hint {
+    position: absolute;
+    bottom: 65px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.6);
+    color: rgba(255,255,255,0.9);
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 12px;
+    pointer-events: none;
+    z-index: 1050;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .lightbox-overlay:hover .zoom-hint { opacity: 1; }
+</style>
+</head>
+<body>
+
+  <div class="gallery-container">
+    <div class="gallery-title">Thư Viện Hình Ảnh Dự Án</div>
+    <div class="image-grid" id="imageGrid"></div>
+  </div>
+
+  <div class="lightbox-overlay" id="lightboxOverlay">
+    <button class="close-btn" id="closeBtn" title="Đóng (Esc)">&times;</button>
+    <div class="zoom-hint">Cuộn chuột hoặc kéo thanh trượt để phóng to • Rê chuột để dịch chuyển</div>
+    <div id="mainMediaWrap"></div>
+    
+    <div class="bottom-controls-container" id="controlsContainer">
+      <div class="main-map-controls">
+        <span>-</span>
+        <input type="range" id="mediaZoomSlider" min="1" max="5" step="0.05" value="1" title="Kéo để phóng to ảnh">
+        <span>+</span>
+      </div>
+      <div class="brand-label">dulieunhapho.com</div>
+    </div>
+  </div>
+
+  <script>
+    // DANH SÁCH CHÍNH XÁC CÁC LINK ẢNH ĐÃ ĐƯỢC TẬP HỢP SẮP XẾP VÀO FILE
+    const imageUrls = [
+      'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783709033/28073e86-c66a-41ca-9ec8-b27f78539729.png',
+      'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783709045/de8e500c-60f8-4a48-a53a-e7ebab07ed2a.png',
+      'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783709055/d9b325e9-e692-45c9-bad9-79c5eb6a99a9.png',
+      'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783709065/ecc0e40a-e90c-4cc9-8d8a-17f43e9b561b.png',
+      'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783709078/79554724-4135-404a-a00c-bf50786e1122.png',
+      'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783709092/f6763012-8d3c-4854-a34f-55ae93672295.png',
+      'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783709102/2b16175c-d755-47fd-8317-f57fef41db6b.png',
+      'https://bcons.vn/wp-content/uploads/2025/10/anh-thuc-te-bcons-city-3.jpg' // Tấm thứ 8 bổ sung từ kho lưu trữ trước của bạn để lấp đầy khung lưới đẹp mắt
+    ];
+
+    const imageGrid = document.getElementById('imageGrid');
+    const lightboxOverlay = document.getElementById('lightboxOverlay');
+    const mainMediaWrap = document.getElementById('mainMediaWrap');
+    const closeBtn = document.getElementById('closeBtn');
+    const zoomSlider = document.getElementById('mediaZoomSlider');
+
+    // 1. KHỞI TẠO GRID HÌNH ẢNH BAN ĐẦU
+    imageUrls.forEach((url, idx) => {
+      const item = document.createElement('div');
+      item.className = 'grid-item';
+      item.innerHTML = `<img src="${url}" alt="Hình ảnh ${idx + 1}" loading="lazy">`;
+      item.onclick = () => openLightbox(url);
+      imageGrid.appendChild(item);
+    });
+
+    // 2. LOGIC MỞ / ĐÓNG LIGHTBOX
+    function openLightbox(url) {
+      mainMediaWrap.innerHTML = `<img src="${url}" id="zoomableImg" alt="Phóng to">`;
+      lightboxOverlay.style.display = 'flex';
+      resetZoom();
+      initZoomEvents();
+    }
+
+    function closeLightbox() {
+      lightboxOverlay.style.display = 'none';
+      mainMediaWrap.innerHTML = '';
+    }
+
+    closeBtn.onclick = closeLightbox;
+    
+    // Đóng bằng phím ESC
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && lightboxOverlay.style.display === 'flex') {
+        closeLightbox();
+      }
+    });
+
+    // 3. QUẢN LÝ ZOOM & KÉO ẢNH TRONG CHẾ ĐỘ XEM CHI TIẾT
+    let zScale = 1, zPanX = 0, zPanY = 0;
+    let zDragging = false, zStartX = 0, zStartY = 0, zStartPanX = 0, zStartPanY = 0;
+    const Z_MIN = 1, Z_MAX = 5;
+
+    function applyZoomTransform() {
+      const img = document.getElementById('zoomableImg');
+      if (!img) return;
+      img.style.transform = `translate(${zPanX}px, ${zPanY}px) scale(${zScale})`;
+      img.classList.toggle('zoomed', zScale > Z_MIN);
+      zoomSlider.value = zScale;
+    }
+
+    function resetZoom() {
+      zScale = 1; zPanX = 0; zPanY = 0;
+      applyZoomTransform();
+    }
+
+    function clampZoomPan() {
+      const wrap = document.getElementById('mainMediaWrap');
+      const maxPanX = (wrap.clientWidth * (zScale - 1)) / 2;
+      const maxPanY = (wrap.clientHeight * (zScale - 1)) / 2;
+      
+      zPanX = Math.max(-maxPanX, Math.min(maxPanX, zPanX));
+      zPanY = Math.max(-maxPanY, Math.min(maxPanY, zPanY));
+    }
+
+    function zoomAtPoint(delta, clientX, clientY, refEl) {
+      const rect = refEl.getBoundingClientRect();
+      const cx = clientX - rect.left - rect.width / 2;
+      const cy = clientY - rect.top - rect.height / 2;
+
+      const prevScale = zScale;
+      zScale = Math.min(Z_MAX, Math.max(Z_MIN, zScale + delta));
+      if (zScale === prevScale) return;
+
+      const ratio = zScale / prevScale;
+      zPanX = (zPanX - cx) * ratio + cx;
+      zPanY = (zPanY - cy) * ratio + cy;
+
+      if (zScale <= Z_MIN) { zPanX = 0; zPanY = 0; }
+      clampZoomPan();
+      applyZoomTransform();
+    }
+
+    zoomSlider.addEventListener('input', function(e) {
+      const nextScale = parseFloat(e.target.value);
+      const prevScale = zScale;
+      zScale = nextScale;
+      
+      const ratio = zScale / prevScale;
+      zPanX = zPanX * ratio;
+      zPanY = zPanY * ratio;
+      
+      if (zScale <= Z_MIN) { zPanX = 0; zPanY = 0; }
+      clampZoomPan();
+      applyZoomTransform();
+    });
+
+    function initZoomEvents() {
+      const wrap = document.getElementById('mainMediaWrap');
+
+      // Zoom bằng cuộn chuột
+      wrap.onwheel = function(e) {
+        e.preventDefault();
+        const delta = e.deltaY < 0 ? 0.25 : -0.25;
+        zoomAtPoint(delta, e.clientX, e.clientY, wrap);
+      };
+
+      // Kéo rê ảnh (Chuột chuột máy tính)
+      wrap.onmousedown = function(e) {
+        if (zScale <= Z_MIN) return;
+        zDragging = true;
+        const img = document.getElementById('zoomableImg');
+        if (img) img.classList.add('dragging');
+        zStartX = e.clientX; zStartY = e.clientY;
+        zStartPanX = zPanX; zStartPanY = zPanY;
+      };
+      
+      window.onmousemove = function(e) {
+        if (!zDragging) return;
+        zPanX = zStartPanX + (e.clientX - zStartX);
+        zPanY = zStartPanY + (e.clientY - zStartY);
+        clampZoomPan();
+        applyZoomTransform();
+      };
+      
+      window.onmouseup = function() {
+        if (!zDragging) return;
+        zDragging = false;
+        const img = document.getElementById('zoomableImg');
+        if (img) img.classList.remove('dragging');
+      };
+
+      // Click đúp để reset Zoom nhanh
+      wrap.ondblclick = function(e) {
+        if (zScale > Z_MIN) {
+          resetZoom();
+        } else {
+          zoomAtPoint(1.5, e.clientX, e.clientY, wrap);
+        }
+      };
+
+      // Thao tác Zoom đa điểm & Kéo trên màn hình cảm ứng Mobile
+      let zLastTouchDist = null;
+      wrap.ontouchstart = function(e) {
+        if (e.touches.length === 2) {
+          zLastTouchDist = Math.hypot(
+            e.touches[0].clientX - e.touches[1].clientX,
+            e.touches[0].clientY - e.touches[1].clientY
+          );
+        } else if (e.touches.length === 1 && zScale > Z_MIN) {
+          zDragging = true;
+          zStartX = e.touches[0].clientX; zStartY = e.touches[0].clientY;
+          zStartPanX = zPanX; zStartPanY = zPanY;
+        }
+      };
+
+      wrap.ontouchmove = function(e) {
+        if (e.touches.length === 2 && zLastTouchDist !== null) {
+          e.preventDefault();
+          const dist = Math.hypot(
+            e.touches[0].clientX - e.touches[1].clientX,
+            e.touches[0].clientY - e.touches[1].clientY
+          );
+          const midX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+          const midY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+          const delta = (dist - zLastTouchDist) * 0.01;
+          zoomAtPoint(delta, midX, midY, wrap);
+          zLastTouchDist = dist;
+        } else if (e.touches.length === 1 && zDragging) {
+          e.preventDefault();
+          zPanX = zStartPanX + (e.touches[0].clientX - zStartX);
+          zPanY = zStartPanY + (e.touches[0].clientY - zStartY);
+          clampZoomPan();
+          applyZoomTransform();
+        }
+      };
+
+      wrap.ontouchend = function(e) {
+        if (e.touches.length < 2) zLastTouchDist = null;
+        if (e.touches.length === 0) zDragging = false;
+      };
+    }
+  </script>
+</body>
+</html>
