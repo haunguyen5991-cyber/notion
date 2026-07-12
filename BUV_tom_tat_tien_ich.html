@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Metro Gallery - Bcons & BUV</title>
+<title>Thư Viện Ảnh Dự Án</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -12,17 +12,16 @@
     height: 100%;
     background: #fff;
     font-family: 'Segoe UI', Arial, sans-serif;
-    overflow: hidden; /* Khóa hoàn toàn, không kéo qua lại */
+    overflow: hidden; /* Khóa cứng toàn màn hình, không kéo qua lại */
   }
 
-  /* KHUNG CHỨA TOÀN BỘ TRÊN MỘT MÀN HÌNH CHÍNH */
+  /* KHUNG CHỨA CHÍNH VỪA VẶN MÀN HÌNH */
   .gallery-container {
     width: 100%;
     height: 100vh;
     padding: 20px;
     display: flex;
     flex-direction: column;
-    justify-content: flex-start;
   }
 
   .gallery-header {
@@ -30,12 +29,12 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 1px solid rgba(0,0,0,0.08);
+    border-bottom: 1px solid rgba(0,0,0,0.06);
     padding-bottom: 8px;
   }
 
   .gallery-title {
-    font-size: 22px;
+    font-size: 20px;
     font-weight: 300;
     color: #111;
   }
@@ -46,32 +45,19 @@
     font-weight: bold;
   }
 
-  /* LƯỚI Ô GẠCH CO GIÃN TỰ ĐỘNG CHẢY THEO CHIỀU DỌC */
+  /* LƯỚI Ô GẠCH CO GIÃN THEO CHIỀU DỌC KHÔNG TRÀN */
   .metro-grid {
     flex: 1;
     display: grid;
-    /* Thiết lập 4 cột cố định cho desktop */
-    grid-template-columns: repeat(4, 1fr);
-    /* Tự động tính toán chiều cao các hàng dựa trên không gian còn lại */
-    grid-auto-rows: minmax(10px, 1fr); 
+    grid-template-columns: repeat(4, 1fr); /* 4 cột cố định trên PC */
+    grid-auto-rows: minmax(10px, 1fr); /* Chiều cao tự chia đều không gian dọc còn lại */
     gap: 10px;
-    overflow-y: auto; /* Nếu quá nhiều ảnh trên màn hình nhỏ có thể cuộn dọc nhẹ */
-    padding-right: 4px;
   }
 
-  /* Định dạng thanh cuộn dọc mỏng nhẹ bên trong Grid nếu cần */
-  .metro-grid::-webkit-scrollbar {
-    width: 5px;
-  }
-  .metro-grid::-webkit-scrollbar-thumb {
-    background: rgba(0,0,0,0.15);
-    border-radius: 4px;
-  }
-
-  /* Ô GẠCH TILES */
+  /* ĐỊNH DẠNG TỪNG Ô GẠCH */
   .tile {
     position: relative;
-    background: #f4f4f4;
+    background: #f7f7f7;
     border-radius: 4px;
     overflow: hidden;
     cursor: pointer;
@@ -80,7 +66,7 @@
 
   .tile:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
   }
 
   .tile:active {
@@ -94,40 +80,35 @@
     display: block;
   }
 
-  /* ĐỊNH NGHĨA KÍCH THƯỚC Ô GẠCH LINH HOẠT THEO CHIỀU DỌC */
-  .tile.tall {
-    grid-row: span 2;
-  }
-  .tile.wide {
-    grid-column: span 2;
-  }
-  .tile.big {
-    grid-column: span 2;
-    grid-row: span 2;
-  }
+  /* BỐ CỤC ĐAN XEN CHUYỂN DÒNG MƯỢT MÀ CHO 7 TẤM ẢNH */
+  .tile.item-1 { grid-column: span 2; grid-row: span 2; } /* Ảnh chính lớn */
+  .tile.item-2 { grid-column: span 1; grid-row: span 1; }
+  .tile.item-3 { grid-column: span 1; grid-row: span 1; }
+  .tile.item-4 { grid-column: span 2; grid-row: span 1; }
+  .tile.item-5 { grid-column: span 1; grid-row: span 1; }
+  .tile.item-6 { grid-column: span 1; grid-row: span 2; } /* Ảnh đứng */
+  .tile.item-7 { grid-column: span 2; grid-row: span 1; }
 
-  /* CẤU HÌNH TRÊN THIẾT BỊ DI ĐỘNG */
+  /* TỰ ĐỘNG ĐIỀU CHỈNH TRÊN MOBILE ĐỂ KHÔNG BỊ TRÀN NGANG */
   @media (max-width: 768px) {
-    .gallery-container {
-      padding: 12px;
-    }
-    .gallery-title {
-      font-size: 18px;
-    }
+    html, body { overflow-y: auto; } /* Mobile cho phép cuộn dọc nếu màn hình quá ngắn */
+    .gallery-container { height: auto; padding: 12px; }
     .metro-grid {
-      grid-template-columns: repeat(2, 1fr); /* Thu về 2 cột trên mobile */
+      grid-template-columns: repeat(2, 1fr);
+      grid-auto-rows: 140px; /* Cố định chiều cao ô gạch trên mobile để dễ nhìn */
       gap: 6px;
     }
-    .tile.big {
-      grid-column: span 2;
-      grid-row: span 2;
-    }
-    .tile.wide {
-      grid-column: span 2;
-    }
+    /* Đưa về bố cục 2 cột gọn gàng trên mobile */
+    .tile.item-1 { grid-column: span 2; grid-row: span 2; }
+    .tile.item-2 { grid-column: span 1; grid-row: span 1; }
+    .tile.item-3 { grid-column: span 1; grid-row: span 1; }
+    .tile.item-4 { grid-column: span 2; grid-row: span 1; }
+    .tile.item-5 { grid-column: span 1; grid-row: span 1; }
+    .tile.item-6 { grid-column: span 1; grid-row: span 1; }
+    .tile.item-7 { grid-column: span 2; grid-row: span 1; }
   }
 
-  /* ===== LIGHTBOX OVERLAY PHÓNG TO XEM CHI TIẾT ===== */
+  /* ===== CHẾ ĐỘ LIGHTBOX OVERLAY XEM PHÓNG TO ===== */
   .lightbox-overlay {
     position: fixed;
     top: 0;
@@ -184,7 +165,7 @@
   }
   .close-btn:hover { background: rgba(0, 0, 0, 0.1); }
 
-  /* BỘ ĐIỀU KHIỂN ZOOM SLIDER */
+  /* THANH ZOOM SLIDER */
   .bottom-controls-container {
     position: absolute;
     bottom: 20px;
@@ -197,7 +178,7 @@
     background: rgba(255, 255, 255, 0.9);
     padding: 5px 12px;
     border-radius: 20px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.06);
   }
 
   .main-map-controls {
@@ -252,49 +233,31 @@
 
   <div class="gallery-container">
     <div class="gallery-header">
-      <div class="gallery-title">Bộ Sưu Tập Tiện Ích</div>
+      <div class="gallery-title">Hình ảnh dự án</div>
       <div class="brand-logo">dulieunhapho.com</div>
     </div>
     
     <div class="metro-grid" id="metroGrid">
-      <div class="tile big" onclick="openLightbox(0)">
-        <img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783672545/z8024276505103_b04259f9580ef2e982ca4ddb0213a49f_mksqn3.jpg" loading="lazy">
+      <div class="tile item-1" onclick="openLightbox(0)">
+        <img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783709033/28073e86-c66a-41ca-9ec8-b27f78539729.png" loading="lazy">
       </div>
-      <div class="tile tall" onclick="openLightbox(1)">
-        <img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783673080/1783673037485_1912694273111558205_7085495023723622370_9da1836acc9f937aac313f3c91b634f5_j1agbn.jpg" loading="lazy">
+      <div class="tile item-2" onclick="openLightbox(1)">
+        <img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783709045/de8e500c-60f8-4a48-a53a-e7ebab07ed2a.png" loading="lazy">
       </div>
-      <div class="tile normal" onclick="openLightbox(2)">
-        <img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783710809/z8018839891735_2f212a8b4286ebf15e911ecc2745bccf_rnjsqs.jpg" loading="lazy">
+      <div class="tile item-3" onclick="openLightbox(2)">
+        <img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783709055/d9b325e9-e692-45c9-bad9-79c5eb6a99a9.png" loading="lazy">
       </div>
-      <div class="tile normal" onclick="openLightbox(3)">
-        <img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783710818/z8018839899891_72dfb8b98fd9230d713b2ae612010889_bsd3ev.jpg" loading="lazy">
+      <div class="tile item-4" onclick="openLightbox(3)">
+        <img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783709065/ecc0e40a-e90c-4cc9-8d8a-17f43e9b561b.png" loading="lazy">
       </div>
-      <div class="tile wide" onclick="openLightbox(4)">
-        <img src="https://bcons.vn/wp-content/uploads/2025/10/anh-thuc-te-bcons-city-3.jpg" loading="lazy">
+      <div class="tile item-5" onclick="openLightbox(4)">
+        <img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783709078/79554724-4135-404a-a00c-bf50786e1122.png" loading="lazy">
       </div>
-      <div class="tile normal" onclick="openLightbox(5)">
-        <img src="https://bcons.vn/wp-content/uploads/2025/10/anh-thuc-te-bcons-city-2.jpg" loading="lazy">
+      <div class="tile item-6" onclick="openLightbox(5)">
+        <img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783709092/f6763012-8d3c-4854-a34f-55ae93672295.png" loading="lazy">
       </div>
-      <div class="tile tall" onclick="openLightbox(6)">
-        <img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783673081/1783673037505_1912694273111558205_7085495023723622370_be82048aeb56b28083b1554438003e56_fkchz5.jpg" loading="lazy">
-      </div>
-      <div class="tile wide" onclick="openLightbox(7)">
-        <img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783699190/5fbedabc-24e8-4340-952c-520926f217d0.png" loading="lazy">
-      </div>
-      <div class="tile normal" onclick="openLightbox(8)">
-        <img src="https://bcons.vn/wp-content/uploads/2025/10/anh-thuc-te-bcons-city-1.jpg" loading="lazy">
-      </div>
-      <div class="tile normal" onclick="openLightbox(9)">
-        <img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783672537/Bcons-Uni-Valley_sxf8qp.png" loading="lazy">
-      </div>
-      <div class="tile wide" onclick="openLightbox(10)">
-        <img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783699244/d634af0c-465a-474e-a7c3-900543d9efa2.png" loading="lazy">
-      </div>
-      <div class="tile normal" onclick="openLightbox(11)">
-        <img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783672542/Truong_hoc_ykkxkk.jpg" loading="lazy">
-      </div>
-      <div class="tile normal" onclick="openLightbox(12)">
-        <img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783703660/2fc71894-b09b-4f80-be68-bcc4911957c7.png" loading="lazy">
+      <div class="tile item-7" onclick="openLightbox(6)">
+        <img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783709102/2b16175c-d755-47fd-8317-f57fef41db6b.png" loading="lazy">
       </div>
     </div>
   </div>
@@ -314,20 +277,15 @@
   </div>
 
   <script>
+    // Mảng chỉ chứa duy nhất 7 link ảnh yêu cầu
     const imageUrls = [
-      'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783672545/z8024276505103_b04259f9580ef2e982ca4ddb0213a49f_mksqn3.jpg',
-      'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783673080/1783673037485_1912694273111558205_7085495023723622370_9da1836acc9f937aac313f3c91b634f5_j1agbn.jpg',
-      'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783710809/z8018839891735_2f212a8b4286ebf15e911ecc2745bccf_rnjsqs.jpg',
-      'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783710818/z8018839899891_72dfb8b98fd9230d713b2ae612010889_bsd3ev.jpg',
-      'https://bcons.vn/wp-content/uploads/2025/10/anh-thuc-te-bcons-city-3.jpg',
-      'https://bcons.vn/wp-content/uploads/2025/10/anh-thuc-te-bcons-city-2.jpg',
-      'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783673081/1783673037505_1912694273111558205_7085495023723622370_be82048aeb56b28083b1554438003e56_fkchz5.jpg',
-      'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783699190/5fbedabc-24e8-4340-952c-520926f217d0.png',
-      'https://bcons.vn/wp-content/uploads/2025/10/anh-thuc-te-bcons-city-1.jpg',
-      'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783672537/Bcons-Uni-Valley_sxf8qp.png',
-      'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783699244/d634af0c-465a-474e-a7c3-900543d9efa2.png',
-      'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783672542/Truong_hoc_ykkxkk.jpg',
-      'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783703660/2fc71894-b09b-4f80-be68-bcc4911957c7.png'
+      'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783709033/28073e86-c66a-41ca-9ec8-b27f78539729.png',
+      'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783709045/de8e500c-60f8-4a48-a53a-e7ebab07ed2a.png',
+      'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783709055/d9b325e9-e692-45c9-bad9-79c5eb6a99a9.png',
+      'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783709065/ecc0e40a-e90c-4cc9-8d8a-17f43e9b561b.png',
+      'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783709078/79554724-4135-404a-a00c-bf50786e1122.png',
+      'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783709092/f6763012-8d3c-4854-a34f-55ae93672295.png',
+      'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783709102/2b16175c-d755-47fd-8317-f57fef41db6b.png'
     ];
 
     const lightboxOverlay = document.getElementById('lightboxOverlay');
@@ -354,7 +312,7 @@
       if (e.key === 'Escape') closeLightbox();
     });
 
-    // ===== BỘ ĐIỀU KHIỂN ZOOM MẠNH MẼ CHO LIGHTBOX =====
+    // ===== TRÌNH ĐIỀU KHIỂN THU PHÓNG ẢNH TRƠN TRU =====
     let zScale = 1, zPanX = 0, zPanY = 0;
     let zDragging = false, zStartX = 0, zStartY = 0, zStartPanX = 0, zStartPanY = 0;
     const Z_MIN = 1, Z_MAX = 6;
@@ -446,7 +404,7 @@
         else zoomAtPoint(1.8, e.clientX, e.clientY, wrap);
       };
 
-      // Cảm ứng Mobile (Pinch to zoom & Drag)
+      // Thao tác mượt trên thiết bị cảm ứng di động
       let zLastTouchDist = null;
       wrap.ontouchstart = function(e) {
         if (e.touches.length === 2) {
