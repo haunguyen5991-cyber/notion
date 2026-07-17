@@ -3,117 +3,81 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Thư Viện Ảnh Gọn Gàng</title>
+<title>Thư Viện Ảnh Bố Trí Dọc</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
-  html, body {
-    width: 100%;
-    height: 100%;
+  body {
     background: #fff;
     font-family: 'Segoe UI', Arial, sans-serif;
-    overflow: hidden; /* Khóa hoàn toàn, không cho phép cuộn hay kéo qua lại */
+    color: #111;
+    /* Cho phép cuộn trang tự do theo chiều dọc để xem hết ảnh */
+    overflow-y: auto;
+    overflow-x: hidden;
   }
 
-  /* KHUNG CHỨA CỐ ĐỊNH THEO CHIỀU CAO MÀN HÌNH */
+  /* KHUNG CHỨA BỐ TRÍ DỌC */
   .gallery-container {
+    max-width: 800px; /* Giới hạn độ rộng vừa mắt trên PC, mobile tự co giãn */
+    margin: 0 auto;
+    padding: 20px 15px 80px 15px; /* Chừa khoảng trống bên dưới cho logo */
     position: relative;
-    width: 100%;
-    height: 100vh;
-    padding: 15px 15px 35px 15px; /* Chừa khoảng trống bên dưới cho logo */
-    display: flex;
-    flex-direction: column;
   }
 
   .gallery-header {
-    flex: 0 0 auto;
-    margin-bottom: 10px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    margin-bottom: 20px;
     border-bottom: 1px solid rgba(0,0,0,0.06);
-    padding-bottom: 5px;
+    padding-bottom: 10px;
   }
 
   .gallery-title {
-    font-size: 18px;
-    font-weight: 400;
+    font-size: 20px;
+    font-weight: 500;
     color: #111;
   }
 
-  /* LOGO GÓC DƯỚI PHẢI KHUNG CHÍNH (ÍT NỔI BẬT) */
-  .main-brand-logo {
-    position: absolute;
-    bottom: 10px;
-    right: 15px;
-    font-size: 11px;
-    color: rgba(0, 0, 0, 0.35); /* Làm mờ ít nổi bật */
-    font-weight: 500;
-    letter-spacing: 0.5px;
-    pointer-events: none;
-    user-select: none;
+  /* DANH SÁCH ẢNH DỌC - XẢ RẢ TẤT CẢ HÌNH */
+  .vertical-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px; /* Khoảng cách giữa các ảnh */
   }
 
-  /* LƯỚI Ô GẠCH TỰ ĐỘNG CO GIÃN THEO CHIỀU DỌC - KHÔNG BỊ TRÀN */
-  .metro-grid {
-    flex: 1 1 auto;
-    display: grid;
-    grid-template-columns: repeat(4, 1fr); /* 4 cột trên PC */
-    grid-template-rows: repeat(3, 1fr);    /* Chia thành 3 hàng bằng nhau vừa khít khung nhìn */
-    gap: 8px;
-    height: 100%;
-  }
-
-  /* ĐỊNH DẠNG TỪNG Ô GẠCH KHÔNG QUÁ LỚN */
+  /* ĐỊNH DẠNG TỪNG Ô ẢNH RÕ RÀNG */
   .tile {
-    position: relative;
+    width: 100%;
     background: #f7f7f7;
-    border-radius: 4px;
+    border-radius: 6px;
     overflow: hidden;
     cursor: pointer;
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
   }
 
   .tile:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(0,0,0,0.08);
   }
 
   .tile:active {
-    transform: scale(0.98);
+    transform: scale(0.99);
   }
 
   .tile img {
     width: 100%;
-    height: 100%;
-    object-fit: cover;
+    height: auto; /* Giữ nguyên tỷ lệ gốc của ảnh để xem rõ ràng không bị cắt méo */
     display: block;
   }
 
-  /* PHÂN BỔ BỐ CỤC 7 ẢNH VỪA KHÍT 3 HÀNG x 4 CỘT */
-  .tile.item-1 { grid-column: span 2; grid-row: span 2; } /* Ảnh chính */
-  .tile.item-2 { grid-column: span 1; grid-row: span 1; }
-  .tile.item-3 { grid-column: span 1; grid-row: span 1; }
-  .tile.item-4 { grid-column: span 1; grid-row: span 1; }
-  .tile.item-5 { grid-column: span 1; grid-row: span 2; } /* Ảnh đứng vừa vặn */
-  .tile.item-6 { grid-column: span 2; grid-row: span 1; }
-  .tile.item-7 { grid-column: span 1; grid-row: span 1; }
-
-  /* ĐẢM BẢO TRÊN TABLET / MOBILE CŨNG KHÔNG BỊ CUỘN */
-  @media (max-width: 768px) {
-    .gallery-container { padding: 10px 10px 30px 10px; }
-    .metro-grid {
-      grid-template-columns: repeat(2, 1fr);
-      grid-template-rows: repeat(4, 1fr); /* 4 hàng trên mobile */
-      gap: 5px;
-    }
-    .tile.item-1 { grid-column: span 2; grid-row: span 2; }
-    .tile.item-2 { grid-column: span 1; grid-row: span 1; }
-    .tile.item-3 { grid-column: span 1; grid-row: span 1; }
-    .tile.item-4 { grid-column: span 1; grid-row: span 1; }
-    .tile.item-5 { grid-column: span 1; grid-row: span 1; }
-    .tile.item-6 { grid-column: span 2; grid-row: span 1; }
-    .tile.item-7 { display: none; } /* Tự động ẩn bớt 1 ảnh nhỏ nếu màn hình điện thoại quá bé để tránh tràn */
+  /* LOGO GÓC DƯỚI ĐÁY TRANG */
+  .main-brand-logo {
+    text-align: center;
+    margin-top: 40px;
+    font-size: 12px;
+    color: rgba(0, 0, 0, 0.35);
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    user-select: none;
   }
 
   /* ===== LIGHTBOX OVERLAY XEM PHÓNG TO ===== */
@@ -148,18 +112,17 @@
     transform-origin: center center;
     will-change: transform;
     cursor: zoom-in;
-    z-index: 2001; /* Để ảnh nằm trên lớp nền nhưng dưới nút close */
+    z-index: 2001;
   }
 
   #mainMediaWrap img.zoomed { cursor: grab; }
   #mainMediaWrap img.zoomed.dragging { cursor: grabbing; }
 
-  /* NÚT ĐÓNG ĐÃ ĐƯỢC DI CHUYỂN XUỐNG DƯỚI ĐỂ TRÁNH BỊ CHE KHUẤT */
   .close-btn {
     position: absolute;
-    top: 75px; /* Đẩy xuống hẳn phía dưới tránh nút embed của hệ thống */
+    top: 30px; 
     right: 20px;
-    width: 44px; /* Tăng kích thước vùng bấm */
+    width: 44px;
     height: 44px;
     background: rgba(0, 0, 0, 0.08);
     border: none;
@@ -170,7 +133,7 @@
     line-height: 42px;
     text-align: center;
     cursor: pointer;
-    z-index: 2200; /* Luôn ưu tiên hiển thị cao nhất */
+    z-index: 2200;
     transition: background 0.2s;
   }
 
@@ -226,7 +189,7 @@
   }
 
   @media (max-width: 700px) {
-    .close-btn { top: 80px; right: 15px; } /* Đảm bảo an toàn trên cả mobile */
+    .close-btn { top: 30px; right: 15px; }
     .bottom-controls-container { right: 50%; transform: translateX(50%); bottom: 20px; }
   }
 </style>
@@ -238,26 +201,27 @@
       <div class="gallery-title">Hình ảnh dự án</div>
     </div>
     
-    <div class="metro-grid" id="metroGrid">
-      <div class="tile item-1" onclick="openLightbox(0)">
+    <!-- Đổi từ ô gạch (grid) sang danh sách dọc (flex) hiển thị toàn bộ 7 ảnh -->
+    <div class="vertical-list" id="verticalList">
+      <div class="tile" onclick="openLightbox(0)">
         <img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783709033/28073e86-c66a-41ca-9ec8-b27f78539729.png" loading="lazy">
       </div>
-      <div class="tile item-2" onclick="openLightbox(1)">
+      <div class="tile" onclick="openLightbox(1)">
         <img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783709045/de8e500c-60f8-4a48-a53a-e7ebab07ed2a.png" loading="lazy">
       </div>
-      <div class="tile item-3" onclick="openLightbox(2)">
+      <div class="tile" onclick="openLightbox(2)">
         <img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783709055/d9b325e9-e692-45c9-bad9-79c5eb6a99a9.png" loading="lazy">
       </div>
-      <div class="tile item-4" onclick="openLightbox(3)">
+      <div class="tile" onclick="openLightbox(3)">
         <img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783709065/ecc0e40a-e90c-4cc9-8d8a-17f43e9b561b.png" loading="lazy">
       </div>
-      <div class="tile item-5" onclick="openLightbox(4)">
+      <div class="tile" onclick="openLightbox(4)">
         <img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783709078/79554724-4135-404a-a00c-bf50786e1122.png" loading="lazy">
       </div>
-      <div class="tile item-6" onclick="openLightbox(5)">
+      <div class="tile" onclick="openLightbox(5)">
         <img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783709092/f6763012-8d3c-4854-a34f-55ae93672295.png" loading="lazy">
       </div>
-      <div class="tile item-7" onclick="openLightbox(6)">
+      <div class="tile" onclick="openLightbox(6)">
         <img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1783709102/2b16175c-d755-47fd-8317-f57fef41db6b.png" loading="lazy">
       </div>
     </div>
@@ -309,15 +273,12 @@
       mainMediaWrap.innerHTML = '';
     }
 
-    // Đóng khi click trực tiếp vào nút X
     closeBtn.onclick = (e) => {
       e.stopPropagation();
       closeLightbox();
     };
     
-    // Đóng khi click ra vùng ngoài khung hình (Lớp nền Overlay)
     lightboxOverlay.onclick = function(e) {
-      // Nếu click trúng vào lớp nền hoặc wrapper mà không phải hình ảnh đang tương tác thì đóng
       if (e.target === lightboxOverlay || e.target === mainMediaWrap) {
         closeLightbox();
       }
@@ -327,7 +288,6 @@
       if (e.key === 'Escape') closeLightbox();
     });
 
-    // ===== BỘ ĐIỀU KHIỂN ZOOM MƯỢT MÀ CHO ẢNH PHÓNG TO =====
     let zScale = 1, zPanX = 0, zPanY = 0;
     let zDragging = false, zStartX = 0, zStartY = 0, zStartPanX = 0, zStartPanY = 0;
     const Z_MIN = 1, Z_MAX = 5;
@@ -389,7 +349,6 @@
 
       if (!img) return;
 
-      // Chặn hiện tượng đóng khi click trực tiếp trên ảnh
       img.onclick = (e) => {
         e.stopPropagation();
       };
@@ -426,7 +385,6 @@
         else zoomAtPoint(1.5, e.clientX, e.clientY, wrap);
       };
 
-      // Cảm ứng thiết bị di động
       let zLastTouchDist = null;
       wrap.ontouchstart = function(e) {
         if (e.touches.length === 2) {
