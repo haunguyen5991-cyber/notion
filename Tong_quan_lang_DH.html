@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Gallery</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -55,107 +55,32 @@
     justify-content: center;
     background: #fff;
     position: relative;
-    overflow: hidden;
   }
 
-  /* ĐẢM BẢO ẢNH FULL MAIN VIEW CẢ DESKTOP & MOBILE */
-  #mainMediaWrap img {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transform-origin: center center;
-    will-change: transform;
-  }
-  
-  #mainMediaWrap video {
+  #mainMediaWrap img, #mainMediaWrap video {
     width: 100%;
     height: 100%;
     max-width: 100%;
     max-height: 100%;
+    min-width: 0;
+    min-height: 0;
     object-fit: contain;
-  }
-
-  /* BỘ ĐIỀU KHIỂN HỢP NHẤT HÀNG NGANG PHÍA DƯỚI GÓC PHẢI (MẶC ĐỊNH DESKTOP) */
-  .bottom-controls-container {
-    position: absolute;
-    bottom: 12px;
-    right: 12px;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 8px;
-    z-index: 500;
-    background: rgba(255, 255, 255, 0.85);
-    padding: 4px 10px;
-    border-radius: 20px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
-    transition: all 0.2s ease;
-  }
-
-  .main-map-controls {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    user-select: none;
-  }
-  .main-map-controls span {
-    font-size: 11px;
-    font-family: Arial, sans-serif;
-    color: #333;
-    font-weight: bold;
-  }
-  
-  .main-map-controls input[type="range"] {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 70px;
-    height: 3px;
-    background: rgba(0,0,0,0.15);
-    outline: none;
-    border: none;
-    cursor: pointer;
-  }
-
-  .main-map-controls input[type="range"]::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 12px;
-    height: 12px;
-    background: #ff9900;
-    border-radius: 50%;
-    cursor: pointer;
-  }
-
-  .main-map-controls input[type="range"]::-moz-range-thumb {
-    width: 12px;
-    height: 12px;
-    background: #ff9900;
-    border: none;
-    border-radius: 50%;
-    cursor: pointer;
+    transform-origin: center center;
+    will-change: transform;
   }
 
   .brand-label {
-    font-size: 11px;
-    font-family: Arial, sans-serif;
-    color: rgba(0, 0, 0, 0.5);
-    border-left: 1px solid rgba(0, 0, 0, 0.15);
-    padding-left: 8px;
+    position: absolute;
+    bottom: 4px;
+    right: 6px;
+    font-size: 10px;
+    color: rgba(0,0,0,0.3);
+    font-weight: 500;
     pointer-events: none;
-    user-select: none;
+    z-index: 10;
   }
 
-  /* CẤU HÌNH RIÊNG CHO MOBILE: CĂN GIỮA TUYỆT ĐỐI */
-  @media (max-width: 700px) {
-    .bottom-controls-container {
-      right: 50%;
-      transform: translateX(50%); /* Căn giữa chính xác theo chiều ngang */
-      bottom: 16px;
-    }
-  }
-
-  /* THANH CHỨA THUMBNAIL */
+  /* THANH CHỨA THUMBNAIL MÀU XÁM */
   .thumb-rail {
     height: 110px;
     background: #e4e4e4;
@@ -192,16 +117,25 @@
   .thumb:first-child { margin-left: auto; }
   .thumb:last-child { margin-right: auto; }
 
-  .thumb img, .thumb video {
+  .thumb img {
     width: 100%;
     height: 100%;
     object-fit: cover;
     pointer-events: none;
   }
 
+  .thumb .play-icon {
+    position: absolute;
+    width: 22px;
+    height: 22px;
+    pointer-events: none;
+    z-index: 2;
+  }
+
   .thumb.active { border-color: #000; }
   .thumb:hover { border-color: #666; }
 
+  /* ===== ZOOM TRỰC TIẾP ===== */
   #mainMediaWrap img.zoomable { cursor: zoom-in; }
   #mainMediaWrap img.zoomable.zoomed { cursor: grab; }
   #mainMediaWrap img.zoomable.zoomed.dragging { cursor: grabbing; }
@@ -227,18 +161,10 @@
 <body>
   <div class="gallery">
     <div class="main-view" id="mainView">
-      <div class="counter" id="counter">1 / 11</div>
-      <div class="zoom-hint" id="zoomHint">Kéo thanh trượt hoặc cuộn để phóng to • Kéo rê để xem chi tiết</div>
+      <div class="counter" id="counter">1 / 10</div>
+      <div class="zoom-hint" id="zoomHint">Cuộn để phóng to • Kéo để xem từng phần</div>
       <div id="mainMediaWrap"></div>
-      
-      <div class="bottom-controls-container" id="controlsContainer">
-        <div class="main-map-controls">
-          <span>-</span>
-          <input type="range" id="mediaZoomSlider" min="1" max="5" step="0.05" value="1" title="Kéo để phóng to ảnh">
-          <span>+</span>
-        </div>
-        <div class="brand-label">dulieunhapho.com</div>
-      </div>
+      <div class="brand-label">dulieunhapho.com</div>
     </div>
     <div class="thumb-rail" id="thumbRail"></div>
   </div>
@@ -253,32 +179,45 @@
 
     let currentIndex = 0;
     let isInitialLoad = true;
-    const zoomSlider = document.getElementById('mediaZoomSlider');
-    const controlsContainer = document.getElementById('controlsContainer');
 
-    function updateMain() {
+    function getVideoThumbUrl(videoUrl) {
+      return videoUrl
+        .replace('/video/upload/', '/video/upload/so_0/')
+        .replace(/\.(mov|mp4)(\?.*)?$/i, '.jpg$2');
+    }
+
+    function getPlayableVideoUrl(videoUrl) {
+      return videoUrl.replace(/\.mov(\?.*)?$/i, '.mp4$1');
+    }
+
+    // Hàm cập nhật Main View và tự động phát video nếu là click từ người dùng
+    function updateMain(shouldAutoplay = false) {
       const item = items[currentIndex];
       const wrap = document.getElementById('mainMediaWrap');
       wrap.innerHTML = '';
 
       if (item.type === 'video') {
         const videoEl = document.createElement('video');
-        videoEl.src = item.url;
+        videoEl.src = getPlayableVideoUrl(item.url);
         videoEl.controls = true;
         videoEl.playsInline = true;
-        wrap.appendChild(videoEl);
-        controlsContainer.style.display = 'none';
+        videoEl.setAttribute('preload', 'auto');
         
-        if (!isInitialLoad) {
-          videoEl.play().catch(err => console.log(err));
+        // Vẫn gán poster phòng trường hợp khi tải trang đầu tiên chưa click
+        videoEl.poster = getVideoThumbUrl(item.url); 
+        
+        wrap.appendChild(videoEl);
+
+        // NẾU LÀ CLICK TỪ THUMBNAIL: Kích hoạt chạy trực tiếp ngay lập tức
+        if (shouldAutoplay) {
+          videoEl.play().catch(err => {
+            console.log("Trình duyệt chặn autoplay có tiếng, thử chạy chế độ tắt tiếng:", err);
+            videoEl.muted = true;
+            videoEl.play().catch(e => console.log("Không thể tự động phát:", e));
+          });
         }
       } else {
-        const imgEl = document.createElement('img');
-        imgEl.src = item.url;
-        imgEl.loading = 'lazy';
-        imgEl.className = 'zoomable';
-        wrap.appendChild(imgEl);
-        controlsContainer.style.display = 'flex';
+        wrap.innerHTML = '<img src="' + item.url + '" loading="lazy" class="zoomable">';
       }
 
       document.getElementById('counter').textContent = (currentIndex + 1) + ' / ' + items.length;
@@ -315,8 +254,21 @@
       items.forEach((item, idx) => {
         const t = document.createElement('div');
         t.className = 'thumb' + (idx === 0 ? ' active' : '');
-        t.innerHTML = '<img src="' + item.url + '" loading="lazy">';
-        t.onclick = () => { currentIndex = idx; updateMain(); };
+        const thumbImg = item.type === 'video' ? getVideoThumbUrl(item.url) : item.url;
+        
+        if (item.type === 'video') {
+          t.innerHTML =
+            '<img src="' + thumbImg + '" loading="lazy">' +
+            '<svg class="play-icon" viewBox="0 0 24 24" fill="white" style="filter:drop-shadow(0 0 2px rgba(0,0,0,0.8))"><path d="M8 5v14l11-7z"/></svg>';
+        } else {
+          t.innerHTML = '<img src="' + thumbImg + '" loading="lazy">';
+        }
+
+        // KHI NGƯỜI DÙNG CLICK VÀO THUMBNAIL: Gửi tham số `true` để kích hoạt phát luôn
+        t.onclick = () => { 
+          currentIndex = idx; 
+          updateMain(true); 
+        };
         rail.appendChild(t);
       });
     }
@@ -325,20 +277,19 @@
       if (e.key === 'ArrowLeft') currentIndex = (currentIndex - 1 + items.length) % items.length;
       if (e.key === 'ArrowRight') currentIndex = (currentIndex + 1) % items.length;
       else return;
-      updateMain();
+      updateMain(true); // Nhấn phím mũi tên cũng tự chạy
     });
 
-    // ===== TRÌNH QUẢN LÝ ZOOM ĐỒNG BỘ SLIDER =====
+    // ===== TRÌNH QUẢN LÝ ZOOM VÀ KÉO ẢNH =====
     let zScale = 1, zPanX = 0, zPanY = 0;
     let zDragging = false, zStartX = 0, zStartY = 0, zStartPanX = 0, zStartPanY = 0;
-    const Z_MIN = 1, Z_MAX = 5;
+    const Z_MIN = 1, Z_MAX = 6;
 
     function applyZoomTransform() {
       const img = document.querySelector('#mainMediaWrap img.zoomable');
       if (!img) return;
       img.style.transform = 'translate(' + zPanX + 'px,' + zPanY + 'px) scale(' + zScale + ')';
       img.classList.toggle('zoomed', zScale > Z_MIN);
-      zoomSlider.value = zScale;
     }
 
     function resetZoom() {
@@ -347,12 +298,9 @@
     }
 
     function clampZoomPan() {
-      const wrap = document.getElementById('mainMediaWrap');
-      const maxPanX = (wrap.clientWidth * (zScale - 1)) / 2;
-      const maxPanY = (wrap.clientHeight * (zScale - 1)) / 2;
-      
-      zPanX = Math.max(-maxPanX, Math.min(maxPanX, zPanX));
-      zPanY = Math.max(-maxPanY, Math.min(maxPanY, zPanY));
+      const maxPan = 3000;
+      zPanX = Math.max(-maxPan, Math.min(maxPan, zPanX));
+      zPanY = Math.max(-maxPan, Math.min(maxPan, zPanY));
     }
 
     function zoomAtPoint(delta, clientX, clientY, refEl) {
@@ -373,20 +321,6 @@
       applyZoomTransform();
     }
 
-    zoomSlider.addEventListener('input', function(e) {
-      const nextScale = parseFloat(e.target.value);
-      const prevScale = zScale;
-      zScale = nextScale;
-      
-      const ratio = zScale / prevScale;
-      zPanX = zPanX * ratio;
-      zPanY = zPanY * ratio;
-      
-      if (zScale <= Z_MIN) { zPanX = 0; zPanY = 0; }
-      clampZoomPan();
-      applyZoomTransform();
-    });
-
     (function() {
       const wrap = document.getElementById('mainMediaWrap');
 
@@ -394,7 +328,7 @@
         const img = wrap.querySelector('img.zoomable');
         if (!img) return;
         e.preventDefault();
-        const delta = e.deltaY < 0 ? 0.25 : -0.25;
+        const delta = e.deltaY < 0 ? 0.3 : -0.3;
         zoomAtPoint(delta, e.clientX, e.clientY, wrap);
       }, { passive: false });
 
@@ -406,7 +340,6 @@
         zStartX = e.clientX; zStartY = e.clientY;
         zStartPanX = zPanX; zStartPanY = zPanY;
       });
-      
       window.addEventListener('mousemove', function(e) {
         if (!zDragging) return;
         zPanX = zStartPanX + (e.clientX - zStartX);
@@ -414,7 +347,6 @@
         clampZoomPan();
         applyZoomTransform();
       });
-      
       window.addEventListener('mouseup', function() {
         if (!zDragging) return;
         zDragging = false;
@@ -422,14 +354,8 @@
         if (img) img.classList.remove('dragging');
       });
 
-      wrap.addEventListener('dblclick', function(e) {
-        const img = wrap.querySelector('img.zoomable');
-        if (!img) return;
-        if (zScale > Z_MIN) {
-          resetZoom();
-        } else {
-          zoomAtPoint(1.5, e.clientX, e.clientY, wrap);
-        }
+      wrap.addEventListener('dblclick', function() {
+        if (wrap.querySelector('img.zoomable')) resetZoom();
       });
 
       let zLastTouchDist = null;
@@ -478,7 +404,7 @@
     })();
 
     initThumbs();
-    updateMain();
+    updateMain(false); // Lần đầu tải trang chỉ hiển thị ảnh đại diện và nút điều khiển sẵn sàng, không tự phát gây ồn.
   </script>
 </body>
 </html>
