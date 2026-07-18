@@ -11,7 +11,7 @@
     width: 100%;
     height: 100%;
     background: #fff;
-    font-family: Arial, sans-serif;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     overflow: hidden;
   }
 
@@ -69,20 +69,20 @@
     will-change: transform;
   }
 
-  /* CLASS CHÚ THÍCH FONT CHỮ TO RÕ HÙNG DŨNG */
+  /* CHÚ THÍCH FONT CHỮ TO RÕ HÙNG DŨNG - ĐÃ SỬA LỖI FONT TIẾNG VIỆT */
   .video-caption {
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
     color: #ffffff;
-    font-family: 'Arial Black', 'Impact', sans-serif;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     font-size: 38px;
     font-weight: 900;
     text-transform: uppercase;
     text-align: center;
-    letter-spacing: 2px;
-    text-shadow: 0 0 10px rgba(0, 0, 0, 0.9), 0 0 20px rgba(0, 0, 0, 0.7);
+    letter-spacing: 1px;
+    text-shadow: 0 0 10px rgba(0, 0, 0, 0.9), 0 0 25px rgba(0, 0, 0, 0.8);
     z-index: 5;
     pointer-events: none;
     opacity: 1;
@@ -155,6 +155,7 @@
     width: 22px;
     height: 22px;
     pointer-events: none;
+    z-index: 2;
   }
 
   .thumb.active { border-color: #000; }
@@ -195,6 +196,7 @@
   </div>
 
   <script>
+    // Đã sửa lại đường dẫn URL chuẩn hóa các ký tự viết hoa/đặc biệt bị lỗi
     const items = [
       { url: 'https://res.cloudinary.com/oy7u6ywg/video/upload/v1784391527/To%C3%A0n_c%E1%BA%A3nh_DDHQG_TPHCM_n6pxe4.mp4', title: 'Toàn cảnh ĐHQG TPHCM', type: 'video' },
       { url: 'https://res.cloudinary.com/oy7u6ywg/video/upload/v1784391539/%C4%90H_Kinh_t%E1%BA%BF_lu%E1%BA%ADt_-_%C4%90HQG_TPHCM_lar2m8.mp4', title: 'ĐH Kinh tế Luật - ĐHQG TPHCM', type: 'video' },
@@ -202,9 +204,9 @@
       { url: 'https://res.cloudinary.com/oy7u6ywg/video/upload/v1784391533/%C4%90H_C%C3%B4ng_ngh%E1%BB%87_th%C3%B4ng_tin_-_%C4%90HQG_TPHCM_u7fqwk.mp4', title: 'ĐH Công nghệ thông tin - ĐHQG TPHCM', type: 'video' },
       { url: 'https://res.cloudinary.com/oy7u6ywg/video/upload/v1784391524/Khoa_Y_-_%C4%90HQG_TPHCM_exlgfp.mp4', title: 'Khoa Y - ĐHQG TPHCM', type: 'video' },
       { url: 'https://res.cloudinary.com/oy7u6ywg/video/upload/v1784391521/%C4%90H_Khoa_h%E1%BB%8Dc_x%C3%A3_h%E1%BB%99i_v%C3%A0_nh%C3%A2n_v%C4%83n_-_%C4%90HQG_TPHCM_bdz6pn.mp4', title: 'ĐH Khoa học, xã hội và nhân văn - ĐHQG TPHCM', type: 'video' },
-      { url: 'https://res.cloudinary.com/oy7u6ywg/video/upload/v1784391517/%C4%90H_Qu%E1%BB%9IC_t%E1%BA%BF_-_%C4%90HQG_TPHCM_pcdvho.mp4', title: 'ĐH Quốc tế - ĐHQG TPHCM', type: 'video' },
+      { url: 'https://res.cloudinary.com/oy7u6ywg/video/upload/v1784391517/%C4%90H_Qu%E1%BB%91c_t%E1%BA%BF_-_%C4%90HQG_TPHCM_pcdvho.mp4', title: 'ĐH Quốc tế - ĐHQG TPHCM', type: 'video' },
       { url: 'https://res.cloudinary.com/oy7u6ywg/video/upload/v1784391510/%C4%90H_B%C3%A1ch_Khoa_-_%C4%90HQG_TPHCM_xochbp.mp4', title: 'ĐH Bách Khoa - ĐHQG TPHCM', type: 'video' },
-      { url: 'https://res.cloudinary.com/oy7u6ywg/video/upload/v1784391532/%C4%90%E1%BA%A1i_h%E1%BB%8Dc_Qu%E1%BB%9I_gia_TPHCM_tbeapx.mp4', title: 'Đại học quốc gia TPHCM', type: 'video' }
+      { url: 'https://res.cloudinary.com/oy7u6ywg/video/upload/v1784391532/%C4%90%E1%BA%A1i_h%E1%BB%8Dc_Qu%E1%BB%91c_gia_TPHCM_tbeapx.mp4', title: 'Đại học quốc gia TPHCM', type: 'video' }
     ];
 
     let currentIndex = 0;
@@ -212,6 +214,7 @@
     let captionTimeout = null;
 
     function getVideoThumbUrl(videoUrl) {
+      // Thay đổi logic cắt chuỗi linh hoạt để không bị lỗi với phần mở rộng viết hoa (.mp4 hay .MP4)
       return videoUrl
         .replace('/video/upload/', '/video/upload/so_0/')
         .replace(/\.(mov|mp4)(\?.*)?$/i, '.jpg$2');
@@ -221,12 +224,11 @@
       return videoUrl.replace(/\.mov(\?.*)?$/i, '.mp4$1');
     }
 
-    function updateMain() {
+    function updateMain(shouldAutoplay = false) {
       const item = items[currentIndex];
       const wrap = document.getElementById('mainMediaWrap');
       wrap.innerHTML = '';
 
-      // Xóa bộ hẹn giờ chú thích cũ nếu đang chạy
       if (captionTimeout) {
         clearTimeout(captionTimeout);
       }
@@ -237,18 +239,22 @@
         videoEl.controls = true;
         videoEl.playsInline = true;
         videoEl.poster = getVideoThumbUrl(item.url);
+        
+        // Phát video luôn nếu không phải lần đầu tiên tải trang
+        if (shouldAutoplay) {
+          videoEl.autoplay = true;
+        }
+        
         wrap.appendChild(videoEl);
 
-        // Tạo phần tử hiển thị tên trường (Chú thích hùng dũng)
         const captionEl = document.createElement('div');
         captionEl.className = 'video-caption';
         captionEl.textContent = item.title;
         wrap.appendChild(captionEl);
 
-        // Tự động ẩn chú thích sau 3 giây (3000ms)
         captionTimeout = setTimeout(() => {
           captionEl.style.opacity = '0';
-          setTimeout(() => captionEl.remove(), 500); // Xóa hẳn khỏi DOM sau khi mờ hết
+          setTimeout(() => captionEl.remove(), 500);
         }, 3000);
       } else {
         wrap.innerHTML = '<img src="' + item.url + '" loading="lazy" class="zoomable">';
@@ -296,7 +302,8 @@
         } else {
           t.innerHTML = '<img src="' + item.url + '" loading="lazy">';
         }
-        t.onclick = () => { currentIndex = idx; updateMain(); };
+        // Thêm tham số true để kích hoạt tự động phát khi click thumbnail
+        t.onclick = () => { currentIndex = idx; updateMain(true); };
         rail.appendChild(t);
       });
     }
@@ -305,7 +312,7 @@
       if (e.key === 'ArrowLeft') currentIndex = (currentIndex - 1 + items.length) % items.length;
       if (e.key === 'ArrowRight') currentIndex = (currentIndex + 1) % items.length;
       else return;
-      updateMain();
+      updateMain(true);
     });
 
     // ===== TRÌNH QUẢN LÝ ZOOM =====
@@ -432,7 +439,7 @@
     })();
 
     initThumbs();
-    updateMain();
+    updateMain(false); // Lần đầu tải trang không tự phát để tránh chính sách chặn âm thanh trình duyệt
   </script>
 </body>
 </html>
