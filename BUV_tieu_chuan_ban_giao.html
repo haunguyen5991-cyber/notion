@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Gallery</title>
+<title>Gallery Tiện Ích</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -11,7 +11,7 @@
     width: 100%;
     height: 100%;
     background: #fff;
-    font-family: Arial, sans-serif;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     overflow: hidden;
   }
 
@@ -227,7 +227,7 @@
 <body>
   <div class="gallery">
     <div class="main-view" id="mainView">
-      <div class="counter" id="counter">1 / 6</div>
+      <div class="counter" id="counter">1 / 10</div>
       <div class="zoom-hint" id="zoomHint">Kéo thanh trượt hoặc cuộn để phóng to • Kéo rê để xem chi tiết</div>
       <div id="mainMediaWrap"></div>
       
@@ -244,7 +244,6 @@
   </div>
 
   <script>
-    // DANH SÁCH LINK ẢNH MỚI ĐÃ CẬP NHẬT TRỰC TIẾP
     const items = [
       { url: 'https://bcons.vn/wp-content/uploads/2025/10/bcons-uni-valley-2.jpg', type: 'image' },
       { url: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1784480318/d4973c98-8f80-46ac-8dc0-2099b1f22966.png', type: 'image' },
@@ -263,7 +262,7 @@
     const zoomSlider = document.getElementById('mediaZoomSlider');
     const controlsContainer = document.getElementById('controlsContainer');
 
-    function updateMain() {
+    function updateMain(shouldAutoplay = false) {
       const item = items[currentIndex];
       const wrap = document.getElementById('mainMediaWrap');
       wrap.innerHTML = '';
@@ -276,7 +275,8 @@
         wrap.appendChild(videoEl);
         controlsContainer.style.display = 'none';
         
-        if (!isInitialLoad) {
+        if (shouldAutoplay) {
+          videoEl.autoplay = true;
           videoEl.play().catch(err => console.log(err));
         }
       } else {
@@ -289,6 +289,7 @@
       }
 
       document.getElementById('counter').textContent = (currentIndex + 1) + ' / ' + items.length;
+      document.getElementById('counter').style.zIndex = "10";
       document.getElementById('zoomHint').style.display = (item.type === 'video') ? 'none' : 'block';
       
       updateThumbs();
@@ -323,16 +324,20 @@
         const t = document.createElement('div');
         t.className = 'thumb' + (idx === 0 ? ' active' : '');
         t.innerHTML = '<img src="' + item.url + '" loading="lazy">';
-        t.onclick = () => { currentIndex = idx; updateMain(); };
+        t.onclick = () => { currentIndex = idx; updateMain(true); };
         rail.appendChild(t);
       });
     }
 
+    // Đã sửa lại logic phím điều hướng để nhận diện mượt cả 2 nút trái và phải
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'ArrowLeft') currentIndex = (currentIndex - 1 + items.length) % items.length;
-      if (e.key === 'ArrowRight') currentIndex = (currentIndex + 1) % items.length;
-      else return;
-      updateMain();
+      if (e.key === 'ArrowLeft') {
+        currentIndex = (currentIndex - 1 + items.length) % items.length;
+        updateMain(true);
+      } else if (e.key === 'ArrowRight') {
+        currentIndex = (currentIndex + 1) % items.length;
+        updateMain(true);
+      }
     });
 
     // ===== TRÌNH QUẢN LÝ ZOOM ĐỒNG BỘ SLIDER =====
@@ -485,7 +490,7 @@
     })();
 
     initThumbs();
-    updateMain();
+    updateMain(false); // Lần đầu tải trang không tự phát ngẫu nhiên
   </script>
 </body>
 </html>
