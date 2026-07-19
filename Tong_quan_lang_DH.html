@@ -201,7 +201,6 @@
   </div>
 
   <script>
-    // Cập nhật đúng số lượng 5 phần tử và bổ sung tiêu đề rõ ràng
     const items = [
       { url: 'https://res.cloudinary.com/oy7u6ywg/video/upload/v1784437569/Cung_%C4%91%C6%B0%E1%BB%9Dng_4_rsdjml.mp4', title: 'Cung đường đẹp của làng Đại Học', type: 'video' },
       { url: 'https://res.cloudinary.com/oy7u6ywg/video/upload/v1784389835/Ho%C3%A0ng_h%C3%B4n_l%C3%A0ng_%C4%90H_zrrw5e.mp4', title: 'Hoàng hôn lãng mạn tại làng Đại Học', type: 'video' },
@@ -318,7 +317,6 @@
       });
     }
 
-    // Đã sửa lại để nhận diện mượt mà cả nút ArrowLeft và ArrowRight
     document.addEventListener('keydown', (e) => {
       if (e.key === 'ArrowLeft') {
         currentIndex = (currentIndex - 1 + items.length) % items.length;
