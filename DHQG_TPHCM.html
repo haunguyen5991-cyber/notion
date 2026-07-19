@@ -57,19 +57,29 @@
     position: relative;
   }
 
-  #mainMediaWrap img, #mainMediaWrap video {
+  #mainMediaWrap video {
     width: 100%;
     height: 100%;
     max-width: 100%;
     max-height: 100%;
     min-width: 0;
     min-height: 0;
-    object-fit: contain;
+    object-fit: contain; /* Video vẫn giữ tỉ lệ nguyên bản như cũ */
+  }
+
+  #mainMediaWrap img {
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    max-height: 100%;
+    min-width: 0;
+    min-height: 0;
+    object-fit: cover; /* Hình ảnh fit phủ kín khung hình */
     transform-origin: center center;
     will-change: transform;
   }
 
-  /* CHÚ THÍCH FONT CHỮ TO RÕ HÙNG DŨNG - ĐÃ SỬA LỖI FONT TIẾNG VIỆT */
+  /* CHÚ THÍCH FONT CHỮ TO RÕ HÙNG DŨNG - KHÔNG LỖI FONT TIẾNG VIỆT */
   .video-caption {
     position: absolute;
     top: 50%;
@@ -196,7 +206,6 @@
   </div>
 
   <script>
-    // Đã sửa lại đường dẫn URL chuẩn hóa các ký tự viết hoa/đặc biệt bị lỗi
     const items = [
       { url: 'https://res.cloudinary.com/oy7u6ywg/video/upload/v1784391527/To%C3%A0n_c%E1%BA%A3nh_DDHQG_TPHCM_n6pxe4.mp4', title: 'Toàn cảnh ĐHQG TPHCM', type: 'video' },
       { url: 'https://res.cloudinary.com/oy7u6ywg/video/upload/v1784391539/%C4%90H_Kinh_t%E1%BA%BF_lu%E1%BA%ADt_-_%C4%90HQG_TPHCM_lar2m8.mp4', title: 'ĐH Kinh tế Luật - ĐHQG TPHCM', type: 'video' },
@@ -214,7 +223,6 @@
     let captionTimeout = null;
 
     function getVideoThumbUrl(videoUrl) {
-      // Thay đổi logic cắt chuỗi linh hoạt để không bị lỗi với phần mở rộng viết hoa (.mp4 hay .MP4)
       return videoUrl
         .replace('/video/upload/', '/video/upload/so_0/')
         .replace(/\.(mov|mp4)(\?.*)?$/i, '.jpg$2');
@@ -240,7 +248,6 @@
         videoEl.playsInline = true;
         videoEl.poster = getVideoThumbUrl(item.url);
         
-        // Phát video luôn nếu không phải lần đầu tiên tải trang
         if (shouldAutoplay) {
           videoEl.autoplay = true;
         }
@@ -302,17 +309,20 @@
         } else {
           t.innerHTML = '<img src="' + item.url + '" loading="lazy">';
         }
-        // Thêm tham số true để kích hoạt tự động phát khi click thumbnail
         t.onclick = () => { currentIndex = idx; updateMain(true); };
         rail.appendChild(t);
       });
     }
 
+    // Sửa lại phím điều hướng để hoạt động mượt mà cho cả phím trái và phím phải
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'ArrowLeft') currentIndex = (currentIndex - 1 + items.length) % items.length;
-      if (e.key === 'ArrowRight') currentIndex = (currentIndex + 1) % items.length;
-      else return;
-      updateMain(true);
+      if (e.key === 'ArrowLeft') {
+        currentIndex = (currentIndex - 1 + items.length) % items.length;
+        updateMain(true);
+      } else if (e.key === 'ArrowRight') {
+        currentIndex = (currentIndex + 1) % items.length;
+        updateMain(true);
+      }
     });
 
     // ===== TRÌNH QUẢN LÝ ZOOM =====
@@ -439,7 +449,7 @@
     })();
 
     initThumbs();
-    updateMain(false); // Lần đầu tải trang không tự phát để tránh chính sách chặn âm thanh trình duyệt
+    updateMain(false);
   </script>
 </body>
 </html>
