@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Gallery</title>
+<title>Gallery Đường Thống Nhất</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -11,7 +11,7 @@
     width: 100%;
     height: 100%;
     background: #fff;
-    font-family: Arial, sans-serif;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     overflow: hidden;
   }
 
@@ -57,16 +57,47 @@
     position: relative;
   }
 
-  #mainMediaWrap img, #mainMediaWrap video {
+  #mainMediaWrap video {
     width: 100%;
     height: 100%;
     max-width: 100%;
     max-height: 100%;
     min-width: 0;
     min-height: 0;
-    object-fit: contain;
+    object-fit: contain; /* Video giữ nguyên tỉ lệ nguyên bản */
+  }
+
+  #mainMediaWrap img {
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    max-height: 100%;
+    min-width: 0;
+    min-height: 0;
+    object-fit: cover; /* Hình ảnh fit phủ kín khung hình */
     transform-origin: center center;
     will-change: transform;
+  }
+
+  /* CHÚ THÍCH FONT CHỮ TO RÕ HÙNG DŨNG KHÔNG LỖI TIẾNG VIỆT */
+  .video-caption {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #ffffff;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 38px;
+    font-weight: 900;
+    text-transform: uppercase;
+    text-align: center;
+    letter-spacing: 1px;
+    text-shadow: 0 0 10px rgba(0, 0, 0, 0.9), 0 0 25px rgba(0, 0, 0, 0.8);
+    z-index: 5;
+    pointer-events: none;
+    opacity: 1;
+    transition: opacity 0.5s ease-out;
+    width: 85%;
   }
 
   .brand-label {
@@ -161,7 +192,7 @@
 <body>
   <div class="gallery">
     <div class="main-view" id="mainView">
-      <div class="counter" id="counter">1 / 10</div>
+      <div class="counter" id="counter">1 / 5</div>
       <div class="zoom-hint" id="zoomHint">Cuộn để phóng to • Kéo để xem từng phần</div>
       <div id="mainMediaWrap"></div>
       <div class="brand-label">dulieunhapho.com</div>
@@ -170,16 +201,18 @@
   </div>
 
   <script>
+    // Cập nhật đúng số lượng 5 phần tử và bổ sung tiêu đề rõ ràng
     const items = [
-      { url: 'https://res.cloudinary.com/oy7u6ywg/video/upload/v1784437569/Cung_%C4%91%C6%B0%E1%BB%9Dng_4_rsdjml.mp4', type: 'video' },
-      { url: 'https://res.cloudinary.com/oy7u6ywg/video/upload/v1784389835/Ho%C3%A0ng_h%C3%B4n_l%C3%A0ng_%C4%90H_zrrw5e.mp4', type: 'video' },
-      { url: 'https://res.cloudinary.com/oy7u6ywg/video/upload/v1784389491/Cung_%C4%91%C6%B0%E1%BB%9Dng_%C4%91%E1%BA%B9p_sgao17.mp4', type: 'video' },
-      { url: 'https://res.cloudinary.com/oy7u6ywg/video/upload/v1784389490/1784380959215_1912694273111558205_7085495023723622370_sfztkj.mp4', type: 'video' },
-      { url: 'https://res.cloudinary.com/oy7u6ywg/video/upload/v1784389485/1784380959204_1912694273111558205_7085495023723622370_shzlaj.mp4', type: 'video' },
+      { url: 'https://res.cloudinary.com/oy7u6ywg/video/upload/v1784437569/Cung_%C4%91%C6%B0%E1%BB%9Dng_4_rsdjml.mp4', title: 'Cung đường huyết mạch Thống Nhất', type: 'video' },
+      { url: 'https://res.cloudinary.com/oy7u6ywg/video/upload/v1784389835/Ho%C3%A0ng_h%C3%B4n_l%C3%A0ng_%C4%90H_zrrw5e.mp4', title: 'Hoàng hôn lãng mạn tại làng Đại Học', type: 'video' },
+      { url: 'https://res.cloudinary.com/oy7u6ywg/video/upload/v1784389491/Cung_%C4%91%C6%B0%E1%BB%9Dng_%C4%91%E1%BA%B9p_sgao17.mp4', title: 'Không gian tuyến đại lộ xanh sạch đẹp', type: 'video' },
+      { url: 'https://res.cloudinary.com/oy7u6ywg/video/upload/v1784389490/1784380959215_1912694273111558205_7085495023723622370_sfztkj.mp4', title: 'Giao thông tấp nập sầm uất', type: 'video' },
+      { url: 'https://res.cloudinary.com/oy7u6ywg/video/upload/v1784389485/1784380959204_1912694273111558205_7085495023723622370_shzlaj.mp4', title: 'Góc nhìn hạ tầng từ trên cao', type: 'video' }
     ];
 
     let currentIndex = 0;
     let isInitialLoad = true;
+    let captionTimeout = null;
 
     function getVideoThumbUrl(videoUrl) {
       return videoUrl
@@ -191,11 +224,14 @@
       return videoUrl.replace(/\.mov(\?.*)?$/i, '.mp4$1');
     }
 
-    // Hàm cập nhật Main View và tự động phát video nếu là click từ người dùng
     function updateMain(shouldAutoplay = false) {
       const item = items[currentIndex];
       const wrap = document.getElementById('mainMediaWrap');
       wrap.innerHTML = '';
+
+      if (captionTimeout) {
+        clearTimeout(captionTimeout);
+      }
 
       if (item.type === 'video') {
         const videoEl = document.createElement('video');
@@ -203,20 +239,29 @@
         videoEl.controls = true;
         videoEl.playsInline = true;
         videoEl.setAttribute('preload', 'auto');
-        
-        // Vẫn gán poster phòng trường hợp khi tải trang đầu tiên chưa click
         videoEl.poster = getVideoThumbUrl(item.url); 
         
         wrap.appendChild(videoEl);
 
-        // NẾU LÀ CLICK TỪ THUMBNAIL: Kích hoạt chạy trực tiếp ngay lập tức
         if (shouldAutoplay) {
+          videoEl.autoplay = true;
           videoEl.play().catch(err => {
-            console.log("Trình duyệt chặn autoplay có tiếng, thử chạy chế độ tắt tiếng:", err);
+            console.log("Autoplay blocked:", err);
             videoEl.muted = true;
-            videoEl.play().catch(e => console.log("Không thể tự động phát:", e));
+            videoEl.play().catch(e => console.log("Muted play failed:", e));
           });
         }
+
+        // Tạo hiệu ứng chú thích chữ to rõ hùng dũng
+        const captionEl = document.createElement('div');
+        captionEl.className = 'video-caption';
+        captionEl.textContent = item.title;
+        wrap.appendChild(captionEl);
+
+        captionTimeout = setTimeout(() => {
+          captionEl.style.opacity = '0';
+          setTimeout(() => captionEl.remove(), 500);
+        }, 3000);
       } else {
         wrap.innerHTML = '<img src="' + item.url + '" loading="lazy" class="zoomable">';
       }
@@ -265,7 +310,6 @@
           t.innerHTML = '<img src="' + thumbImg + '" loading="lazy">';
         }
 
-        // KHI NGƯỜI DÙNG CLICK VÀO THUMBNAIL: Gửi tham số `true` để kích hoạt phát luôn
         t.onclick = () => { 
           currentIndex = idx; 
           updateMain(true); 
@@ -274,11 +318,15 @@
       });
     }
 
+    // Đã sửa lại để nhận diện mượt mà cả nút ArrowLeft và ArrowRight
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'ArrowLeft') currentIndex = (currentIndex - 1 + items.length) % items.length;
-      if (e.key === 'ArrowRight') currentIndex = (currentIndex + 1) % items.length;
-      else return;
-      updateMain(true); // Nhấn phím mũi tên cũng tự chạy
+      if (e.key === 'ArrowLeft') {
+        currentIndex = (currentIndex - 1 + items.length) % items.length;
+        updateMain(true);
+      } else if (e.key === 'ArrowRight') {
+        currentIndex = (currentIndex + 1) % items.length;
+        updateMain(true);
+      }
     });
 
     // ===== TRÌNH QUẢN LÝ ZOOM VÀ KÉO ẢNH =====
@@ -405,7 +453,7 @@
     })();
 
     initThumbs();
-    updateMain(false); // Lần đầu tải trang chỉ hiển thị ảnh đại diện và nút điều khiển sẵn sàng, không tự phát gây ồn.
+    updateMain(false);
   </script>
 </body>
 </html>
