@@ -21,9 +21,25 @@
     max-height: 100vh;
   }
 
-  /* Ẩn thanh cuộn nhưng VẪN giữ chức năng cuộn được bình thường */
-  body::-webkit-scrollbar { display: none; }
-  body { -ms-overflow-style: none; scrollbar-width: none; }
+  /* TỐI ƯU THANH CUỘN MỎNG LẠI CHO TOÀN TRANG (CUSTOM THIN SCROLLBAR) */
+  body::-webkit-scrollbar {
+    width: 4px;  /* Độ mỏng cho cuộn dọc */
+    height: 4px; /* Độ mỏng cho cuộn ngang */
+  }
+  body::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  body::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+  }
+  body::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.4);
+  }
+  body {
+    scrollbar-width: thin; /* Chuẩn mới mỏng nhẹ cho Firefox */
+    scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+  }
 
   /* KHUNG CHỨA ĐIỀU KHIỂN NẰM NGANG NHAU (KHÔNG XẾP CHỒNG) */
   .bottom-controls-container {
@@ -125,7 +141,7 @@
     }
   }
 
-  /* SVG Hotspots */
+  /* SVG Hotspots & Marker Icons */
   .hotspot-svg {
     position: absolute;
     pointer-events: none;
@@ -142,6 +158,16 @@
   .hotspot-svg polygon:hover {
     fill: rgba(255, 153, 0, 0.35);
     stroke: rgba(255, 102, 0, 0.9);
+  }
+
+  /* Style cho Icon ghim định vị K11 và B01 */
+  .pin-marker {
+    cursor: pointer;
+    pointer-events: all;
+    transition: transform 0.2s ease;
+  }
+  .pin-marker:hover {
+    transform: scale(1.25);
   }
 
   /* ===== MODAL POPUP CHI TIẾT ===== */
@@ -273,11 +299,23 @@
       { title: 'Layout 5', image: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678533/M5_vtfhxl.jpg', points: '436,943 396,1042 800,1197 840,1091' },
       { title: 'Layout 6', image: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678534/M6_yonyqn.jpg', points: '840,1089 800,1195 1117,1321 1165,1195 1032,1159' },
       { title: 'Layout 6', image: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678534/M6_yonyqn.jpg', points: '1675,1705 1810,1751 1976,1078 1855,1045 1768,1374 1720,1557 1711,1599' },
-      { title: 'Layout 2', image: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M2_us8qsf.jpg', points: '1675,1704 1808,1750 1684,2068 1561,2022' },
-      // ĐIỂM ĐỊNH VỊ CHO CĂN TRƯỚC NHÀ K11
-      { title: 'Căn K11 (Layout 2)', image: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M2_us8qsf.jpg', points: '1443,1150 1515,1176 1485,1258 1413,1232' },
-      // ĐIỂM ĐỊNH VỊ CHO CĂN TRƯỚC NHÀ B01
-      { title: 'Căn B01 (Layout 2)', image: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M2_us8qsf.jpg', points: '748,1605 820,1633 792,1712 720,1684' }
+      { title: 'Layout 2', image: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M2_us8qsf.jpg', points: '1675,1704 1808,1750 1684,2068 1561,2022' }
+    ];
+
+    // DANH SÁCH 2 ICON ĐỊNH VỊ CHO CĂN K11 VÀ B01
+    const customMarkers = [
+      {
+        title: 'Căn K11 (Layout 2)',
+        image: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M2_us8qsf.jpg',
+        x: 1460, y: 1195, // Tọa độ tâm icon trên bản đồ
+        polygonPoints: '1443,1150 1515,1176 1485,1258 1413,1232'
+      },
+      {
+        title: 'Căn B01 (Layout 2)',
+        image: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M2_us8qsf.jpg',
+        x: 770, y: 1650, // Tọa độ tâm icon trên bản đồ
+        polygonPoints: '748,1605 820,1633 792,1712 720,1684'
+      }
     ];
 
     const SVG_NS = 'http://www.w3.org/2000/svg';
@@ -302,13 +340,11 @@
       const ch = container.clientHeight;
 
       if (mobileQuery.matches) {
-        // Áp dụng giới hạn biên chặt chẽ: Không cho lộ vùng trắng
         minX = cw - renderW * mapZoomScale;
         minY = ch - renderH * mapZoomScale;
         maxX = 0;
         maxY = 0;
 
-        // Nếu kích thước ảnh nhỏ hơn container (trường hợp hiếm), khóa ở vị trí 0
         if (minX > 0) minX = 0;
         if (minY > 0) minY = 0;
 
@@ -319,7 +355,6 @@
         img.style.transform = transformStr;
         svg.style.transform = transformStr;
       } else {
-        // Desktop giữ nguyên logic zoom tỉ lệ gốc cũ
         if (mapZoomScale > 1) {
           const baseScaleW = cw;
           const baseScaleH = img.naturalHeight * (cw / img.naturalWidth);
@@ -346,7 +381,6 @@
       if (!nw || !nh || !cw || !ch) return;
 
       if (mobileQuery.matches) {
-        // Phóng to lấp đầy màn hình (cover) chuẩn xác
         const scale = Math.max(cw / nw, ch / nh);
         renderW = nw * scale;
         renderH = nh * scale;
@@ -360,7 +394,6 @@
         svg.style.width = renderW + 'px';
         svg.style.height = renderH + 'px';
 
-        // Khởi tạo vị trí căn giữa chuẩn xác không mất góc rìa
         minX = cw - renderW;
         minY = ch - renderH;
         panX = clamp((cw - renderW) / 2, minX, 0);
@@ -368,7 +401,6 @@
 
         applyMapTransform();
       } else {
-        // Trả lại style mặc định cho Desktop
         img.style.position = '';
         img.style.width = '';
         img.style.height = '';
@@ -386,6 +418,8 @@
     function buildSVG() {
       svg.innerHTML = '';
       svg.setAttribute('viewBox', '0 0 ' + img.naturalWidth + ' ' + img.naturalHeight);
+      
+      // 1. Vẽ các vùng Polygon bình thường
       zones.forEach(zone => {
         const poly = document.createElementNS(SVG_NS, 'polygon');
         poly.setAttribute('points', zone.points);
@@ -393,6 +427,29 @@
           openPopup(zone.title, zone.image);
         });
         svg.appendChild(poly);
+      });
+
+      // 2. Vẽ 2 Icon Ghim Pin đè lên vị trí căn K11 và B01
+      customMarkers.forEach(marker => {
+        const poly = document.createElementNS(SVG_NS, 'polygon');
+        poly.setAttribute('points', marker.polygonPoints);
+        poly.addEventListener('click', () => { openPopup(marker.title, marker.image); });
+        svg.appendChild(poly);
+
+        const g = document.createElementNS(SVG_NS, 'g');
+        g.setAttribute('class', 'pin-marker');
+        g.setAttribute('transform', 'translate(' + (marker.x - 20) + ',' + (marker.y - 50) + ')');
+        g.addEventListener('click', (e) => {
+          e.stopPropagation();
+          openPopup(marker.title, marker.image);
+        });
+
+        g.innerHTML = `
+          <path d="M20 0C8.954 0 0 8.954 0 20c0 14 20 30 20 30s20-16 20-30c0-11.046-8.954-20-20-20z" fill="#ff4d4d" stroke="#ffffff" stroke-width="2"/>
+          <circle cx="20" cy="18" r="12" fill="#ffffff"/>
+          <text x="20" y="22" font-size="10" font-weight="bold" fill="#222222" text-anchor="middle" font-family="Arial">${marker.title.split(' ')[1]}</text>
+        `;
+        svg.appendChild(g);
       });
     }
 
@@ -417,7 +474,6 @@
       applyMapTransform();
     });
 
-    // Sự kiện tương tác chuột và chạm di chuyển
     container.addEventListener('mousedown', (e) => {
       isMapDragging = true;
       img.classList.add('dragging');
@@ -460,7 +516,7 @@
       isMapDragging = false;
     }, { passive: true });
 
-    // ===== MODAL POPUP CHI TIẾT GIỮ NGUYÊN =====
+    // ===== MODAL POPUP CHI TIẾT =====
     let scale = 1, translateX = 0, translateY = 0;
     let isDragging = false, pStartX = 0, pStartY = 0;
 
