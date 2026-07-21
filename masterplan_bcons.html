@@ -41,7 +41,6 @@
     scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
   }
 
-  /* KHUNG CHỨA ĐIỀU KHIỂN NẰM NGANG NHAU */
   .bottom-controls-container {
     position: fixed;
     bottom: 12px;
@@ -57,7 +56,6 @@
     box-shadow: 0 2px 8px rgba(0,0,0,0.12);
   }
 
-  /* Thanh zoom thu gọn */
   .main-map-controls {
     display: flex;
     align-items: center;
@@ -106,7 +104,6 @@
     will-change: transform;
   }
 
-  /* CẤU HÌNH MOBILE */
   @media (max-width: 700px) {
     html, body {
       height: 100%;
@@ -138,7 +135,6 @@
     }
   }
 
-  /* SVG Hotspots & Marker Icons */
   .hotspot-svg {
     position: absolute;
     pointer-events: none;
@@ -166,7 +162,6 @@
     transform: scale(1.25);
   }
 
-  /* MODAL POPUP */
   .popup-overlay {
     display: none;
     position: fixed;
@@ -298,18 +293,18 @@
       { title: 'Layout 2', image: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M2_us8qsf.jpg', points: '1675,1704 1808,1750 1684,2068 1561,2022' }
     ];
 
-    // CẶP TỌA ĐỘ K11 CHUẨN XÁC VÀ B01 DỊCH RA MÉP LỀ ĐƯỜNG N2 TRƯỚC CĂN B01
+    // CĂN B01 ĐƯỢC CHỈNH TỌA ĐỘ VỀ ĐÚNG VỈA HÈ TRƯỚC CĂN B01-76.5M2
     const customMarkers = [
       {
         title: 'Căn K11 (Layout 2)',
         image: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M2_us8qsf.jpg',
-        x: 1560, y: 1180, // Giữ nguyên tọa độ chuẩn đét của K11
+        x: 1560, y: 1180,
         polygonPoints: '1443,1150 1515,1176 1485,1258 1413,1232'
       },
       {
         title: 'Căn B01 (Layout 2)',
         image: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M2_us8qsf.jpg',
-        x: 710, y: 1710, // Dịch chính xác sang mép lề đường N2, ngay trước đầu căn B01-76.5m2
+        x: 650, y: 2020, // Đặt chính xác trên vỉa hè đường N2 ngay trước cửa căn B01-76.5m2
         polygonPoints: '748,1605 820,1633 792,1712 720,1684'
       }
     ];
@@ -432,7 +427,6 @@
 
         const g = document.createElementNS(SVG_NS, 'g');
         g.setAttribute('class', 'pin-marker');
-        // MŨI GHIM ĐỊNH VỊ CHỈ THẲNG VÀO TỌA ĐỘ TÂM (X, Y)
         g.setAttribute('transform', 'translate(' + (marker.x - 20) + ',' + (marker.y - 48) + ')');
         g.addEventListener('click', (e) => {
           e.stopPropagation();
@@ -511,7 +505,6 @@
       isMapDragging = false;
     }, { passive: true });
 
-    // MODAL POPUP
     let scale = 1, translateX = 0, translateY = 0;
     let isDragging = false, pStartX = 0, pStartY = 0;
 
