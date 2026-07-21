@@ -21,10 +21,10 @@
     max-height: 100vh;
   }
 
-  /* TỐI ƯU THANH CUỘN MỎNG LẠI CHO TOÀN TRANG (CUSTOM THIN SCROLLBAR) */
+  /* THANH CUỘN MỎNG TINH TẾ (CUSTOM THIN SCROLLBAR) */
   body::-webkit-scrollbar {
-    width: 4px;  /* Độ mỏng cho cuộn dọc */
-    height: 4px; /* Độ mỏng cho cuộn ngang */
+    width: 4px;
+    height: 4px;
   }
   body::-webkit-scrollbar-track {
     background: transparent;
@@ -37,19 +37,19 @@
     background: rgba(0, 0, 0, 0.4);
   }
   body {
-    scrollbar-width: thin; /* Chuẩn mới mỏng nhẹ cho Firefox */
+    scrollbar-width: thin;
     scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
   }
 
-  /* KHUNG CHỨA ĐIỀU KHIỂN NẰM NGANG NHAU (KHÔNG XẾP CHỒNG) */
+  /* KHUNG CHỨA ĐIỀU KHIỂN NẰM NGANG NHAU */
   .bottom-controls-container {
     position: fixed;
     bottom: 12px;
-    right: 12px; /* Mặc định bên phải trên Desktop */
+    right: 12px;
     display: flex;
-    flex-direction: row; /* Nằm ngang hàng nhau */
+    flex-direction: row;
     align-items: center;
-    gap: 8px; /* Khoảng cách giữa thanh zoom và label */
+    gap: 8px;
     z-index: 500;
     background: rgba(255, 255, 255, 0.85);
     padding: 4px 10px;
@@ -57,7 +57,7 @@
     box-shadow: 0 2px 8px rgba(0,0,0,0.12);
   }
 
-  /* Thanh zoom thu gọn tinh tế */
+  /* Thanh zoom thu gọn */
   .main-map-controls {
     display: flex;
     align-items: center;
@@ -80,18 +80,16 @@
     background: rgba(0,0,0,0.15);
   }
 
-  /* Chữ nhãn thương hiệu nằm kế bên thanh zoom */
   .brand-label {
     font-size: 11px;
     font-family: Arial, sans-serif;
     color: rgba(0, 0, 0, 0.5);
-    border-left: 1px solid rgba(0, 0, 0, 0.15); /* Vạch ngăn cách nhỏ ở giữa */
+    border-left: 1px solid rgba(0, 0, 0, 0.15);
     padding-left: 8px;
     pointer-events: none;
     user-select: none;
   }
 
-  /* Khung chứa bản đồ chính */
   .map-container {
     position: relative;
     width: 100%;
@@ -108,7 +106,7 @@
     will-change: transform;
   }
 
-  /* CẤU HÌNH RIÊNG CHO MOBILE (DƯỚI 700PX) */
+  /* CẤU HÌNH MOBILE */
   @media (max-width: 700px) {
     html, body {
       height: 100%;
@@ -133,10 +131,9 @@
       cursor: grabbing;
     }
 
-    /* Đưa khung điều khiển ra CHÍNH GIỮA PHÍA DƯỚI khi ở giao diện Mobile */
     .bottom-controls-container {
       right: 50%;
-      transform: translateX(50%); /* Căn giữa tuyệt đối */
+      transform: translateX(50%);
       bottom: 16px;
     }
   }
@@ -160,7 +157,6 @@
     stroke: rgba(255, 102, 0, 0.9);
   }
 
-  /* Style cho Icon ghim định vị K11 và B01 */
   .pin-marker {
     cursor: pointer;
     pointer-events: all;
@@ -170,7 +166,7 @@
     transform: scale(1.25);
   }
 
-  /* ===== MODAL POPUP CHI TIẾT ===== */
+  /* MODAL POPUP */
   .popup-overlay {
     display: none;
     position: fixed;
@@ -302,18 +298,18 @@
       { title: 'Layout 2', image: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M2_us8qsf.jpg', points: '1675,1704 1808,1750 1684,2068 1561,2022' }
     ];
 
-    // DANH SÁCH 2 ICON ĐỊNH VỊ CHO CĂN K11 VÀ B01
+    // ĐÃ CHỈNH LẠI TỌA ĐỘ TÂM (X, Y) CHUẨN ĐÚNG Ô K11 VÀ B01
     const customMarkers = [
       {
         title: 'Căn K11 (Layout 2)',
         image: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M2_us8qsf.jpg',
-        x: 1460, y: 1195, // Tọa độ tâm icon trên bản đồ
+        x: 1515, y: 1255, // Dịch xuống dưới & sang phải nhẹ để rọi đúng ô K11-84.2m2
         polygonPoints: '1443,1150 1515,1176 1485,1258 1413,1232'
       },
       {
         title: 'Căn B01 (Layout 2)',
         image: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M2_us8qsf.jpg',
-        x: 770, y: 1650, // Tọa độ tâm icon trên bản đồ
+        x: 382, y: 2010, // Dịch xuống dốc bên dưới đúng ô B01-76.5m2
         polygonPoints: '748,1605 820,1633 792,1712 720,1684'
       }
     ];
@@ -419,7 +415,6 @@
       svg.innerHTML = '';
       svg.setAttribute('viewBox', '0 0 ' + img.naturalWidth + ' ' + img.naturalHeight);
       
-      // 1. Vẽ các vùng Polygon bình thường
       zones.forEach(zone => {
         const poly = document.createElementNS(SVG_NS, 'polygon');
         poly.setAttribute('points', zone.points);
@@ -429,7 +424,6 @@
         svg.appendChild(poly);
       });
 
-      // 2. Vẽ 2 Icon Ghim Pin đè lên vị trí căn K11 và B01
       customMarkers.forEach(marker => {
         const poly = document.createElementNS(SVG_NS, 'polygon');
         poly.setAttribute('points', marker.polygonPoints);
@@ -438,7 +432,8 @@
 
         const g = document.createElementNS(SVG_NS, 'g');
         g.setAttribute('class', 'pin-marker');
-        g.setAttribute('transform', 'translate(' + (marker.x - 20) + ',' + (marker.y - 50) + ')');
+        // CHÂN NỐI ĐỊNH VỊ ĐĂNG KÝ ĐÚNG CHÂN MŨI MỌT (MŨI GHIM CĂN VÀO TÂM TỌA ĐỘ X,Y)
+        g.setAttribute('transform', 'translate(' + (marker.x - 20) + ',' + (marker.y - 48) + ')');
         g.addEventListener('click', (e) => {
           e.stopPropagation();
           openPopup(marker.title, marker.image);
@@ -516,7 +511,7 @@
       isMapDragging = false;
     }, { passive: true });
 
-    // ===== MODAL POPUP CHI TIẾT =====
+    // MODAL POPUP
     let scale = 1, translateX = 0, translateY = 0;
     let isDragging = false, pStartX = 0, pStartY = 0;
 
