@@ -298,18 +298,18 @@
       { title: 'Layout 2', image: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M2_us8qsf.jpg', points: '1675,1704 1808,1750 1684,2068 1561,2022' }
     ];
 
-    // CHỈNH LẠI CHUẨN XÁC TỌA ĐỘ VÀO ĐÚNG TÂM LÔ K11 VÀ LÔ B01
+    // CẶP TỌA ĐỘ K11 CHUẨN XÁC VÀ B01 DỊCH RA MÉP LỀ ĐƯỜNG N2 TRƯỚC CĂN B01
     const customMarkers = [
       {
         title: 'Căn K11 (Layout 2)',
         image: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M2_us8qsf.jpg',
-        x: 1560, y: 1180, // Nhảy lên trên & đẩy sang phải nhẹ để nằm gọn trong lòng ô K11-84.2m2
+        x: 1560, y: 1180, // Giữ nguyên tọa độ chuẩn đét của K11
         polygonPoints: '1443,1150 1515,1176 1485,1258 1413,1232'
       },
       {
         title: 'Căn B01 (Layout 2)',
         image: 'https://res.cloudinary.com/oy7u6ywg/image/upload/v1783678532/M2_us8qsf.jpg',
-        x: 335, y: 1475, // Dịch sang phải & lên trên để rọi chính xác vào lòng ô B01-76.5m2
+        x: 710, y: 1710, // Dịch chính xác sang mép lề đường N2, ngay trước đầu căn B01-76.5m2
         polygonPoints: '748,1605 820,1633 792,1712 720,1684'
       }
     ];
@@ -432,7 +432,7 @@
 
         const g = document.createElementNS(SVG_NS, 'g');
         g.setAttribute('class', 'pin-marker');
-        // MŨI GHIM ĐỊNH VỊ CẮN THẲNG VÀO TỌA ĐỘ TÂM LÔ ĐẤT
+        // MŨI GHIM ĐỊNH VỊ CHỈ THẲNG VÀO TỌA ĐỘ TÂM (X, Y)
         g.setAttribute('transform', 'translate(' + (marker.x - 20) + ',' + (marker.y - 48) + ')');
         g.addEventListener('click', (e) => {
           e.stopPropagation();
