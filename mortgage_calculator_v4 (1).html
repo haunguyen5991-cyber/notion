@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Công Cụ Tính Khoản Vay - Nhà Phố</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons@latest/tabler-icons.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -273,6 +274,15 @@
             font-size: 13px;
         }
 
+        .chart-wrap {
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 16px 12px;
+            margin-top: 16px;
+            height: 280px;
+        }
+
         table {
             width: 100%;
             border-collapse: collapse;
@@ -506,6 +516,10 @@
                     </div>
                 </div>
 
+                <div class="chart-wrap" style="height: 220px;">
+                    <canvas id="basicChart"></canvas>
+                </div>
+
                 <div class="info-box">
                     <strong>Lưu ý</strong>
                     Kết quả là tính toán tham khảo. Số tiền thực tế có thể khác do chính sách của từng ngân hàng.
@@ -540,6 +554,11 @@
                 </div>
 
                 <button class="btn" onclick="generateAmortization()">Tạo Lịch</button>
+
+                <div class="chart-wrap">
+                    <canvas id="amortChart"></canvas>
+                </div>
+
                 <div id="amortizationTable" style="margin-top: 16px;"></div>
             </div>
 
@@ -589,6 +608,10 @@
 
                 <button class="btn" onclick="calculateROI()">Tính Lợi Nhuận</button>
                 <div id="roiResult" style="margin-top: 16px;"></div>
+
+                <div class="chart-wrap">
+                    <canvas id="roiChart"></canvas>
+                </div>
             </div>
         </div>
     </div>
@@ -621,6 +644,40 @@
             document.getElementById('monthlyPayment').textContent = formatNumber(monthlyPayment / 1000000);
             document.getElementById('totalInterest').textContent = formatNumber(totalInterest / 1000000000);
             document.getElementById('totalPayment').textContent = formatNumber(totalPaid / 1000000000);
+
+            renderBasicChart(principalInVND, totalInterest);
+        }
+
+        let basicChartInstance = null;
+
+        function renderBasicChart(principal, totalInterest) {
+            const ctx = document.getElementById('basicChart').getContext('2d');
+            if (basicChartInstance) basicChartInstance.destroy();
+
+            basicChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Gốc vay', 'Tổng lãi'],
+                    datasets: [{
+                        data: [principal / 1000000000, totalInterest / 1000000000],
+                        backgroundColor: ['#FF9500', '#ffd699'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '62%',
+                    plugins: {
+                        legend: { position: 'bottom', labels: { font: { size: 11 } } },
+                        tooltip: {
+                            callbacks: {
+                                label: ctx => `${ctx.label}: ${ctx.parsed.toLocaleString('vi-VN', {maximumFractionDigits: 2})} tỷ`
+                            }
+                        }
+                    }
+                }
+            });
         }
 
         document.getElementById('loanAmount').addEventListener('input', calculate);
@@ -646,6 +703,7 @@
 
             let balance = principal;
             const schedule = [];
+            const fullSchedule = [];
 
             if (method === 'equal') {
                 // Trả đều hàng tháng: tổng thanh toán mỗi tháng bằng nhau (gốc tăng dần, lãi giảm dần)
@@ -657,15 +715,15 @@
                     const principal_paid = monthlyPayment - interest;
                     balance -= principal_paid;
 
-                    if (i <= 6 || i > months - 6) {
-                        schedule.push({
-                            month: i,
-                            payment: monthlyPayment,
-                            principal: principal_paid,
-                            interest: interest,
-                            balance: Math.max(0, balance)
-                        });
-                    }
+                    const row = {
+                        month: i,
+                        payment: monthlyPayment,
+                        principal: principal_paid,
+                        interest: interest,
+                        balance: Math.max(0, balance)
+                    };
+                    fullSchedule.push(row);
+                    if (i <= 6 || i > months - 6) schedule.push(row);
                 }
             } else {
                 // Dư nợ giảm dần: gốc trả cố định mỗi tháng, lãi tính trên dư nợ còn lại (tổng thanh toán giảm dần)
@@ -676,17 +734,19 @@
                     const payment = fixedPrincipal + interest;
                     balance -= fixedPrincipal;
 
-                    if (i <= 6 || i > months - 6) {
-                        schedule.push({
-                            month: i,
-                            payment: payment,
-                            principal: fixedPrincipal,
-                            interest: interest,
-                            balance: Math.max(0, balance)
-                        });
-                    }
+                    const row = {
+                        month: i,
+                        payment: payment,
+                        principal: fixedPrincipal,
+                        interest: interest,
+                        balance: Math.max(0, balance)
+                    };
+                    fullSchedule.push(row);
+                    if (i <= 6 || i > months - 6) schedule.push(row);
                 }
             }
+
+            renderAmortChart(fullSchedule, years);
 
             let html = `<table>
                 <tr>
@@ -712,6 +772,88 @@
 
             html += `</table>`;
             document.getElementById('amortizationTable').innerHTML = html;
+        }
+
+        let amortChartInstance = null;
+
+        function renderAmortChart(fullSchedule, years) {
+            // Gộp dữ liệu theo năm cho dễ nhìn (kể cả vay dài hạn)
+            const yearlyPrincipal = new Array(years).fill(0);
+            const yearlyInterest = new Array(years).fill(0);
+            const yearlyBalance = new Array(years).fill(0);
+
+            fullSchedule.forEach(row => {
+                const yearIdx = Math.floor((row.month - 1) / 12);
+                yearlyPrincipal[yearIdx] += row.principal;
+                yearlyInterest[yearIdx] += row.interest;
+                yearlyBalance[yearIdx] = row.balance;
+            });
+
+            const labels = yearlyPrincipal.map((_, i) => `Năm ${i + 1}`);
+
+            const ctx = document.getElementById('amortChart').getContext('2d');
+            if (amortChartInstance) amortChartInstance.destroy();
+
+            amortChartInstance = new Chart(ctx, {
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            type: 'bar',
+                            label: 'Gốc trả (tỷ)',
+                            data: yearlyPrincipal.map(v => v / 1000000000),
+                            backgroundColor: '#FF9500',
+                            stack: 'a',
+                            yAxisID: 'y'
+                        },
+                        {
+                            type: 'bar',
+                            label: 'Lãi trả (tỷ)',
+                            data: yearlyInterest.map(v => v / 1000000000),
+                            backgroundColor: '#ffd699',
+                            stack: 'a',
+                            yAxisID: 'y'
+                        },
+                        {
+                            type: 'line',
+                            label: 'Dư nợ còn lại (tỷ)',
+                            data: yearlyBalance.map(v => v / 1000000000),
+                            borderColor: '#1a1a1a',
+                            backgroundColor: '#1a1a1a',
+                            borderWidth: 2,
+                            pointRadius: 2,
+                            tension: 0.25,
+                            yAxisID: 'y1'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: {
+                        legend: { position: 'bottom', labels: { font: { size: 11 } } },
+                        tooltip: {
+                            callbacks: {
+                                label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y.toLocaleString('vi-VN', {maximumFractionDigits: 2})} tỷ`
+                            }
+                        }
+                    },
+                    scales: {
+                        x: { ticks: { font: { size: 10 } } },
+                        y: {
+                            stacked: true,
+                            position: 'left',
+                            title: { display: true, text: 'Gốc + Lãi / năm (tỷ)', font: { size: 11 } }
+                        },
+                        y1: {
+                            position: 'right',
+                            grid: { drawOnChartArea: false },
+                            title: { display: true, text: 'Dư nợ còn lại (tỷ)', font: { size: 11 } }
+                        }
+                    }
+                }
+            });
         }
 
         function calculateROI() {
@@ -769,6 +911,88 @@
             `;
 
             document.getElementById('roiResult').innerHTML = html;
+
+            renderRoiChart(propertyValue, appreciation, loanAmount, monthlyPayment, monthlyRate, yearlyRentalIncome, years);
+        }
+
+        let roiChartInstance = null;
+
+        function renderRoiChart(propertyValue, appreciation, loanAmount, monthlyPayment, monthlyRate, yearlyRentalIncome, years) {
+            const labels = [];
+            const propValues = [];
+            const loanBalances = [];
+            const cumulativeRental = [];
+
+            let balance = loanAmount;
+            for (let y = 0; y <= years; y++) {
+                labels.push(`Năm ${y}`);
+                propValues.push(propertyValue * Math.pow(1 + appreciation / 100, y) / 1000000000);
+                loanBalances.push(Math.max(0, balance) / 1000000000);
+                cumulativeRental.push((yearlyRentalIncome * y) / 1000000000);
+
+                if (y < years) {
+                    for (let m = 0; m < 12; m++) {
+                        const interest = balance * monthlyRate;
+                        balance -= (monthlyPayment - interest);
+                    }
+                }
+            }
+
+            const ctx = document.getElementById('roiChart').getContext('2d');
+            if (roiChartInstance) roiChartInstance.destroy();
+
+            roiChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Giá trị nhà (tỷ)',
+                            data: propValues,
+                            borderColor: '#FF9500',
+                            backgroundColor: 'rgba(255,149,0,0.08)',
+                            fill: true,
+                            tension: 0.25,
+                            pointRadius: 2
+                        },
+                        {
+                            label: 'Dư nợ vay (tỷ)',
+                            data: loanBalances,
+                            borderColor: '#c62828',
+                            backgroundColor: 'rgba(198,40,40,0.05)',
+                            fill: true,
+                            tension: 0.25,
+                            pointRadius: 2
+                        },
+                        {
+                            label: 'Cho thuê lũy kế (tỷ)',
+                            data: cumulativeRental,
+                            borderColor: '#2e7d32',
+                            backgroundColor: 'transparent',
+                            borderDash: [4, 3],
+                            tension: 0.25,
+                            pointRadius: 2
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: {
+                        legend: { position: 'bottom', labels: { font: { size: 11 } } },
+                        tooltip: {
+                            callbacks: {
+                                label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y.toLocaleString('vi-VN', {maximumFractionDigits: 2})} tỷ`
+                            }
+                        }
+                    },
+                    scales: {
+                        x: { ticks: { font: { size: 10 } } },
+                        y: { title: { display: true, text: 'Tỷ VND', font: { size: 11 } } }
+                    }
+                }
+            });
         }
 
         window.addEventListener('load', () => {
