@@ -6,6 +6,7 @@
     <title>Công Cụ Tính Khoản Vay - Nhà Phố</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons@latest/tabler-icons.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -356,6 +357,13 @@
             box-shadow: 0 4px 12px rgba(255, 149, 0, 0.2);
         }
 
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
         .modal {
             display: none;
             position: fixed;
@@ -554,6 +562,9 @@
                 </div>
 
                 <button class="btn" onclick="generateAmortization()">Tạo Lịch</button>
+                <button class="btn" id="downloadExcelBtn" style="background: #2e7d32; margin-left: 8px;" onclick="downloadAmortExcel()" disabled>
+                    <i class="ti ti-download"></i> Tải Excel (.xlsx)
+                </button>
 
                 <div class="chart-wrap">
                     <canvas id="amortChart"></canvas>
@@ -692,6 +703,8 @@
             event.target.classList.add('active');
         }
 
+        let currentAmortData = null;
+
         function generateAmortization() {
             const principal = parseFloat(document.getElementById('amortLoanAmount').value) * 1000000000;
             const annualRate = parseFloat(document.getElementById('amortInterestRate').value);
@@ -748,6 +761,15 @@
 
             renderAmortChart(fullSchedule, years);
 
+            currentAmortData = {
+                fullSchedule: fullSchedule,
+                principal: principal,
+                annualRate: annualRate,
+                years: years,
+                method: method
+            };
+            document.getElementById('downloadExcelBtn').disabled = false;
+
             let html = `<table>
                 <tr>
                     <th style="width: 8%;">Tháng</th>
@@ -772,6 +794,58 @@
 
             html += `</table>`;
             document.getElementById('amortizationTable').innerHTML = html;
+        }
+
+        function downloadAmortExcel() {
+            if (!currentAmortData) return;
+
+            const { fullSchedule, principal, annualRate, years, method } = currentAmortData;
+            const methodLabel = method === 'equal' ? 'Trả đều hàng tháng' : 'Dư nợ giảm dần';
+
+            // Sheet 1: Thông tin khoản vay
+            const infoRows = [
+                ['LỊCH THANH TOÁN KHOẢN VAY'],
+                [],
+                ['Số tiền vay (tỷ VND)', principal / 1000000000],
+                ['Lãi suất (%/năm)', annualRate],
+                ['Thời gian vay (năm)', years],
+                ['Phương thức', methodLabel],
+                ['Tổng số tháng', fullSchedule.length],
+                ['Tổng lãi phải trả (tỷ VND)', fullSchedule.reduce((s, r) => s + r.interest, 0) / 1000000000],
+                ['Tổng số tiền phải trả (tỷ VND)', fullSchedule.reduce((s, r) => s + r.payment, 0) / 1000000000],
+                [],
+                ['Xuất từ Công Cụ Tính Khoản Vay - Nhà Phố', new Date().toLocaleDateString('vi-VN')]
+            ];
+
+            // Sheet 2: Lịch chi tiết đầy đủ theo tháng (VND đầy đủ, không làm tròn đơn vị)
+            const detailRows = [
+                ['Tháng', 'Năm', 'Thanh Toán (VND)', 'Gốc (VND)', 'Lãi (VND)', 'Dư Nợ Còn Lại (VND)']
+            ];
+            fullSchedule.forEach(row => {
+                detailRows.push([
+                    row.month,
+                    Math.ceil(row.month / 12),
+                    Math.round(row.payment),
+                    Math.round(row.principal),
+                    Math.round(row.interest),
+                    Math.round(row.balance)
+                ]);
+            });
+
+            const wb = XLSX.utils.book_new();
+
+            const wsInfo = XLSX.utils.aoa_to_sheet(infoRows);
+            wsInfo['!cols'] = [{ wch: 32 }, { wch: 20 }];
+            XLSX.utils.book_append_sheet(wb, wsInfo, 'Thông Tin');
+
+            const wsDetail = XLSX.utils.aoa_to_sheet(detailRows);
+            wsDetail['!cols'] = [
+                { wch: 8 }, { wch: 8 }, { wch: 18 }, { wch: 18 }, { wch: 18 }, { wch: 20 }
+            ];
+            XLSX.utils.book_append_sheet(wb, wsDetail, 'Lịch Chi Tiết');
+
+            const today = new Date().toISOString().slice(0, 10);
+            XLSX.writeFile(wb, `Lich_Thanh_Toan_${methodLabel === 'Trả đều hàng tháng' ? 'TraDeu' : 'DuNoGiamDan'}_${today}.xlsx`);
         }
 
         let amortChartInstance = null;
