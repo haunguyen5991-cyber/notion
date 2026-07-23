@@ -453,16 +453,12 @@
                         <p>Nhà Phố - Dữ liệu lãi suất thực tế</p>
                     </div>
                 </div>
-                <div>
-                    <button class="settings-btn" onclick="openSettings()" title="Cấu hình">⚙️</button>
-                </div>
             </div>
 
             <!-- Tabs -->
             <div class="tabs">
                 <button class="tab-btn active" onclick="switchTab('basic')">Tính Toán Cơ Bản</button>
                 <button class="tab-btn" onclick="switchTab('amortization')">Lịch Thanh Toán</button>
-                <button class="tab-btn" onclick="switchTab('comparison')">So Sánh Ngân Hàng</button>
                 <button class="tab-btn" onclick="switchTab('roi')">Tính Lợi Nhuận</button>
             </div>
 
@@ -534,30 +530,17 @@
                         <input type="number" id="amortLoanTerm" min="1" max="50" step="1" value="15" placeholder="15"/>
                         <small style="color: #999; font-size: 11px;">Năm</small>
                     </div>
+                    <div class="form-group">
+                        <label>Phương thức</label>
+                        <select id="amortMethod">
+                            <option value="declining">Dư nợ giảm dần</option>
+                            <option value="equal">Trả đều hàng tháng</option>
+                        </select>
+                    </div>
                 </div>
 
                 <button class="btn" onclick="generateAmortization()">Tạo Lịch</button>
                 <div id="amortizationTable" style="margin-top: 16px;"></div>
-            </div>
-
-            <!-- TAB 3: So Sánh Ngân Hàng -->
-            <div id="comparison" class="tab-content">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Số tiền vay</label>
-                        <input type="number" id="compLoanAmount" min="0" step="1" value="30" placeholder="30"/>
-                        <small style="color: #999; font-size: 11px;">Tỷ VND</small>
-                    </div>
-                    <div class="form-group">
-                        <label>Thời gian vay</label>
-                        <input type="number" id="compLoanTerm" min="1" max="50" step="1" value="15" placeholder="15"/>
-                        <small style="color: #999; font-size: 11px;">Năm</small>
-                    </div>
-                    <div></div>
-                </div>
-
-                <button class="btn" onclick="generateComparison()">Cập Nhật So Sánh</button>
-                <div id="comparisonResult" style="margin-top: 16px;"></div>
             </div>
 
             <!-- TAB 4: Tính Lợi Nhuận -->
@@ -610,39 +593,7 @@
         </div>
     </div>
 
-    <!-- Settings Modal -->
-    <div id="settingsModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <span>Cấu Hình Dữ Liệu</span>
-                <button class="modal-close" onclick="closeSettings()">✕</button>
-            </div>
-
-            <div class="form-group">
-                <label>Mã Sheet</label>
-                <input type="text" id="sheetUrl" style="font-family: monospace; font-size: 12px;"/>
-            </div>
-
-            <div class="form-group">
-                <label>Tên Tab</label>
-                <input type="text" id="sheetName" placeholder="Sheet1" value="Sheet1"/>
-            </div>
-
-            <button class="btn" onclick="saveSettings()">Lưu</button>
-            <button class="btn" style="background: #f0f0f0; color: #1a1a1a; margin-left: 8px;" onclick="testConnection()">Test</button>
-
-            <div id="settingsResult"></div>
-        </div>
-    </div>
-
     <script>
-        let CONFIG = {
-            sheetId: localStorage.getItem('sheetId') || '',
-            sheetName: localStorage.getItem('sheetName') || 'Sheet1'
-        };
-
-        let bankData = [];
-
         function formatNumber(num) {
             return num.toLocaleString('vi-VN', { minimumFractionDigits: 1, maximumFractionDigits: 2 });
         }
@@ -682,63 +633,58 @@
             
             document.getElementById(tabName).classList.add('active');
             event.target.classList.add('active');
-
-            if (tabName === 'comparison') {
-                generateComparison();
-            }
-        }
-
-        async function fetchBankData() {
-            if (!CONFIG.sheetId) return [];
-            try {
-                const url = `https://docs.google.com/spreadsheets/d/${CONFIG.sheetId}/export?format=csv`;
-                const response = await fetch(url);
-                const csvText = await response.text();
-                const lines = csvText.trim().split('\n');
-                const data = [];
-                for (let i = 1; i < lines.length; i++) {
-                    const cells = lines[i].split(',').map(c => c.trim());
-                    if (cells.length >= 2) {
-                        data.push({
-                            bank: cells[0],
-                            rate: parseFloat(cells[1]) || 0,
-                            updated: cells[2] || new Date().toLocaleDateString('vi-VN')
-                        });
-                    }
-                }
-                return data;
-            } catch (error) {
-                return [];
-            }
         }
 
         function generateAmortization() {
             const principal = parseFloat(document.getElementById('amortLoanAmount').value) * 1000000000;
             const annualRate = parseFloat(document.getElementById('amortInterestRate').value);
             const years = parseInt(document.getElementById('amortLoanTerm').value);
+            const method = document.getElementById('amortMethod').value;
 
             const monthlyRate = annualRate / 100 / 12;
             const months = years * 12;
 
-            const monthlyPayment = (principal * monthlyRate * Math.pow(1 + monthlyRate, months)) / 
-                                  (Math.pow(1 + monthlyRate, months) - 1);
-
             let balance = principal;
             const schedule = [];
 
-            for (let i = 1; i <= months; i++) {
-                const interest = balance * monthlyRate;
-                const principal_paid = monthlyPayment - interest;
-                balance -= principal_paid;
+            if (method === 'equal') {
+                // Trả đều hàng tháng: tổng thanh toán mỗi tháng bằng nhau (gốc tăng dần, lãi giảm dần)
+                const monthlyPayment = (principal * monthlyRate * Math.pow(1 + monthlyRate, months)) /
+                                      (Math.pow(1 + monthlyRate, months) - 1);
 
-                if (i <= 6 || i > months - 6) {
-                    schedule.push({
-                        month: i,
-                        payment: monthlyPayment,
-                        principal: principal_paid,
-                        interest: interest,
-                        balance: Math.max(0, balance)
-                    });
+                for (let i = 1; i <= months; i++) {
+                    const interest = balance * monthlyRate;
+                    const principal_paid = monthlyPayment - interest;
+                    balance -= principal_paid;
+
+                    if (i <= 6 || i > months - 6) {
+                        schedule.push({
+                            month: i,
+                            payment: monthlyPayment,
+                            principal: principal_paid,
+                            interest: interest,
+                            balance: Math.max(0, balance)
+                        });
+                    }
+                }
+            } else {
+                // Dư nợ giảm dần: gốc trả cố định mỗi tháng, lãi tính trên dư nợ còn lại (tổng thanh toán giảm dần)
+                const fixedPrincipal = principal / months;
+
+                for (let i = 1; i <= months; i++) {
+                    const interest = balance * monthlyRate;
+                    const payment = fixedPrincipal + interest;
+                    balance -= fixedPrincipal;
+
+                    if (i <= 6 || i > months - 6) {
+                        schedule.push({
+                            month: i,
+                            payment: payment,
+                            principal: fixedPrincipal,
+                            interest: interest,
+                            balance: Math.max(0, balance)
+                        });
+                    }
                 }
             }
 
@@ -766,50 +712,6 @@
 
             html += `</table>`;
             document.getElementById('amortizationTable').innerHTML = html;
-        }
-
-        async function generateComparison() {
-            bankData = await fetchBankData();
-            
-            const principal = parseFloat(document.getElementById('compLoanAmount').value) * 1000000000;
-            const years = parseInt(document.getElementById('compLoanTerm').value);
-
-            if (bankData.length === 0) {
-                document.getElementById('comparisonResult').innerHTML = '<p style="color: #999; text-align: center;">Cập nhật dữ liệu...</p>';
-                return;
-            }
-
-            let html = '';
-            bankData.forEach(bank => {
-                const monthlyRate = bank.rate / 100 / 12;
-                const months = years * 12;
-                const monthlyPayment = (principal * monthlyRate * Math.pow(1 + monthlyRate, months)) / 
-                                      (Math.pow(1 + monthlyRate, months) - 1);
-                const totalInterest = (monthlyPayment * months) - principal;
-
-                html += `
-                    <div class="comparison-item">
-                        <div class="comparison-header">
-                            <span class="bank-name">${bank.bank}</span>
-                            <span class="interest-rate">${bank.rate}%/năm</span>
-                        </div>
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 12px; text-align: right;">
-                            <div>
-                                <div style="color: #666; font-size: 12px;">Thanh toán</div>
-                                <div style="font-weight: 600; color: #FF9500; font-size: 15px;">${formatNumber(monthlyPayment / 1000000)}</div>
-                                <div style="color: #999; font-size: 11px;">triệu/tháng</div>
-                            </div>
-                            <div>
-                                <div style="color: #666; font-size: 12px;">Tổng lãi</div>
-                                <div style="font-weight: 600; color: #FF9500; font-size: 15px;">${formatNumber(totalInterest / 1000000000)}</div>
-                                <div style="color: #999; font-size: 11px;">tỷ</div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            });
-
-            document.getElementById('comparisonResult').innerHTML = html;
         }
 
         function calculateROI() {
@@ -869,66 +771,8 @@
             document.getElementById('roiResult').innerHTML = html;
         }
 
-        function openSettings() {
-            document.getElementById('settingsModal').classList.add('active');
-            if (CONFIG.sheetId) {
-                document.getElementById('sheetUrl').value = CONFIG.sheetId;
-            }
-        }
-
-        function closeSettings() {
-            document.getElementById('settingsModal').classList.remove('active');
-        }
-
-        function saveSettings() {
-            const sheetId = document.getElementById('sheetUrl').value.trim();
-            if (!sheetId) {
-                showStatus('❌ Nhập Mã Sheet', false);
-                return;
-            }
-            CONFIG.sheetId = sheetId;
-            localStorage.setItem('sheetId', sheetId);
-            showStatus('✅ Lưu thành công', true);
-        }
-
-        async function testConnection() {
-            const sheetId = document.getElementById('sheetUrl').value.trim();
-            if (!sheetId) {
-                showStatus('❌ Nhập Mã Sheet', false);
-                return;
-            }
-
-            try {
-                const url = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv`;
-                const response = await fetch(url);
-                if (response.ok) {
-                    const csvText = await response.text();
-                    const lines = csvText.trim().split('\n');
-                    showStatus(`✅ Thành công! ${lines.length - 1} dòng`, true);
-                } else {
-                    showStatus('❌ Lỗi truy cập', false);
-                }
-            } catch (error) {
-                showStatus('❌ Lỗi kết nối', false);
-            }
-        }
-
-        function showStatus(msg, success) {
-            const el = document.getElementById('settingsResult');
-            el.innerHTML = `<div class="status-text ${success ? 'status-success' : 'status-error'}">${msg}</div>`;
-        }
-
         window.addEventListener('load', () => {
-            if (CONFIG.sheetId) {
-                fetchBankData();
-            }
             calculate();
-        });
-
-        document.getElementById('settingsModal').addEventListener('click', (e) => {
-            if (e.target === document.getElementById('settingsModal')) {
-                closeSettings();
-            }
         });
     </script>
 </body>
