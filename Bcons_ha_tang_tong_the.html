@@ -121,6 +121,21 @@
             outline: none;
         }
 
+        .video-duration-badge {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: rgba(0, 0, 0, 0.75);
+            color: #fff;
+            font-size: 0.75rem;
+            font-family: 'SFMono-Regular', Consolas, monospace;
+            padding: 2px 7px;
+            border-radius: 4px;
+            pointer-events: none;
+            z-index: 2;
+            letter-spacing: 0.3px;
+        }
+
         .video-caption {
             padding: 14px;
             font-size: 0.9rem;
@@ -273,15 +288,55 @@
     </footer>
 
     <script>
-        document.querySelectorAll('.video-wrapper video').forEach(function (video) {
-            video.addEventListener('loadedmetadata', function () {
+        function formatDuration(sec) {
+            sec = Math.round(sec);
+            var m = Math.floor(sec / 60);
+            var s = sec % 60;
+            return m + ':' + (s < 10 ? '0' : '') + s;
+        }
+
+        document.querySelectorAll('.video-wrapper').forEach(function (wrapper) {
+            var video = wrapper.querySelector('video');
+            if (!video) return;
+
+            var badge = document.createElement('div');
+            badge.className = 'video-duration-badge';
+            badge.textContent = '--:--';
+            wrapper.appendChild(badge);
+
+            function tryShowDuration() {
+                if (isFinite(video.duration) && video.duration > 0) {
+                    badge.textContent = formatDuration(video.duration);
+                    return true;
+                }
+                return false;
+            }
+
+            function syncAspectRatio() {
                 if (video.videoWidth && video.videoHeight) {
-                    var wrapper = video.closest('.video-wrapper');
-                    if (wrapper) {
-                        wrapper.style.aspectRatio = video.videoWidth + ' / ' + video.videoHeight;
-                    }
+                    wrapper.style.aspectRatio = video.videoWidth + ' / ' + video.videoHeight;
+                }
+            }
+
+            video.addEventListener('loadedmetadata', function () {
+                syncAspectRatio();
+
+                if (!tryShowDuration()) {
+                    // Cloudinary trả video theo dạng stream thiếu Content-Length khiến
+                    // duration = Infinity/NaN. "Seek hack" ép trình duyệt tính lại đúng.
+                    var onTimeUpdate = function () {
+                        video.removeEventListener('timeupdate', onTimeUpdate);
+                        video.currentTime = 0;
+                        tryShowDuration();
+                    };
+                    video.addEventListener('timeupdate', onTimeUpdate);
+                    try {
+                        video.currentTime = 1e101;
+                    } catch (e) { /* bỏ qua nếu trình duyệt không hỗ trợ */ }
                 }
             });
+
+            video.addEventListener('durationchange', tryShowDuration);
         });
     </script>
 </body>
