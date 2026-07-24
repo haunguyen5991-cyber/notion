@@ -10,6 +10,13 @@
             background-color: #f4f4f9;
             margin: 0;
             padding: 20px;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .content-wrap {
+            flex: 1;
         }
 
         h2 {
@@ -53,19 +60,42 @@
             display: block;
         }
 
-        /* --- Lightbox phóng to ảnh --- */
+        /* --- Footer --- */
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px 0;
+            color: #999;
+            font-size: 13px;
+            border-top: 1px solid #e1e1e8;
+        }
+
+        footer a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .footer-brand {
+            opacity: 0.25; /* Rất mờ theo yêu cầu */
+            transition: opacity 0.3s ease;
+        }
+
+        .footer-brand:hover {
+            opacity: 0.8; /* Sáng lên nhẹ khi rê chuột vào */
+        }
+
+        /* --- Lightbox Phóng to & Lướt --- */
         .lightbox {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.9);
+            background-color: rgba(0, 0, 0, 0.92);
             display: none;
             justify-content: center;
             align-items: center;
             z-index: 1000;
-            cursor: zoom-out;
             opacity: 0;
             transition: opacity 0.3s ease;
         }
@@ -76,12 +106,11 @@
         }
 
         .lightbox img {
-            max-width: 90%;
-            max-height: 90%;
+            max-width: 85%;
+            max-height: 85%;
             border: 4px solid #fff;
             border-radius: 4px;
-            box-shadow: 0 0 30px rgba(255,255,255,0.3);
-            cursor: default;
+            box-shadow: 0 0 30px rgba(255,255,255,0.2);
             transform: scale(0.9);
             transition: transform 0.3s ease;
         }
@@ -90,58 +119,100 @@
             transform: scale(1);
         }
 
+        /* --- Nút đóng (X) --- */
         .lightbox-close {
             position: absolute;
-            top: 15px;
-            right: 25px;
-            font-size: 40px;
+            top: 20px;
+            right: 30px;
+            font-size: 35px;
             color: #fff;
             font-weight: bold;
             cursor: pointer;
             z-index: 1050;
-            background: rgba(0,0,0,0.5);
-            width: 50px;
-            height: 50px;
+            background: rgba(0,0,0,0.3);
+            width: 45px;
+            height: 45px;
             text-align: center;
-            line-height: 50px;
+            line-height: 45px;
             border-radius: 50%;
+            opacity: 0.2;
+            transition: opacity 0.3s ease, background 0.3s ease;
         }
 
         .lightbox-close:hover {
-            color: #ffcece;
-            background: rgba(0,0,0,0.8);
+            opacity: 1;
+            background: rgba(0,0,0,0.7);
+        }
+
+        /* --- Nút lướt Trái / Phải --- */
+        .lightbox-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 40px;
+            color: #fff;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            z-index: 1050;
+            user-select: none;
+            opacity: 0.15;
+            transition: opacity 0.3s ease, background 0.3s ease;
+        }
+
+        .lightbox-nav:hover {
+            opacity: 0.9;
+            background: rgba(0, 0, 0, 0.6);
+        }
+
+        .lightbox-prev {
+            left: 20px;
+        }
+
+        .lightbox-next {
+            right: 20px;
         }
     </style>
 </head>
 <body>
 
-    <h2>Toàn cảnh Làng Đại học Quốc gia TP.HCM</h2>
-    <p>Nhấn vào bất kỳ ảnh nào để phóng to, nhấn vào dấu X hoặc ngoài màn hình để đóng.</p>
+    <div class="content-wrap">
+        <h2>Toàn cảnh Làng Đại học Quốc gia TP.HCM</h2>
+        <p>Nhấn vào ảnh để phóng to. Dùng phím mũi tên bàn phím hoặc rê chuột sang mép trái/phải để lướt ảnh.</p>
 
-    <!-- Khu vực chứa lưới ảnh -->
-    <div class="gallery">
-        <div class="gallery-item"><img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1784865778/snapvideo--Bay_l%C6%B0%E1%BB%A3n_m%E1%BB%99t_v%C3%B2ng_quanh_L%C3%A0ng_%C4%90%E1%BA%A1i_H%E1%BB%8Dc_Qu%E1%BB%91c_Gia_quochoangphoto_vnuhcm_university_landscape_fyp_-9141942_cyxkqn.jpg" alt="Làng ĐHQG 1"></div>
-        <div class="gallery-item"><img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1784865778/snapvideo--Bay_l%C6%B0%E1%BB%A3n_m%E1%BB%99t_v%C3%B2ng_quanh_L%C3%A0ng_%C4%90%E1%BA%A1i_H%E1%BB%8Dc_Qu%E1%BB%91c_Gia_quochoangphoto_vnuhcm_university_landscape_fyp_-8737535_keknce.jpg" alt="Làng ĐHQG 2"></div>
-        <div class="gallery-item"><img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1784865778/snapvideo--Bay_l%C6%B0%E1%BB%A3n_m%E1%BB%99t_v%C3%B2ng_quanh_L%C3%A0ng_%C4%90%E1%BA%A1i_H%E1%BB%8Dc_Qu%E1%BB%91c_Gia_quochoangphoto_vnuhcm_university_landscape_fyp_-9339107_yb5dig.jpg" alt="Làng ĐHQG 3"></div>
-        <div class="gallery-item"><img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1784865778/snapvideo--Bay_l%C6%B0%E1%BB%A3n_m%E1%BB%99t_v%C3%B2ng_quanh_L%C3%A0ng_%C4%90%E1%BA%A1i_H%E1%BB%8Dc_Qu%E1%BB%91c_Gia_quochoangphoto_vnuhcm_university_landscape_fyp_-8057211_fvl6qj.jpg" alt="Làng ĐHQG 4"></div>
-        <div class="gallery-item"><img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1784865777/snapvideo--Bay_l%C6%B0%E1%BB%A3n_m%E1%BB%99t_v%C3%B2ng_quanh_L%C3%A0ng_%C4%90%E1%BA%A1i_H%E1%BB%8Dc_Qu%E1%BB%91c_Gia_quochoangphoto_vnuhcm_university_landscape_fyp_-4142716_lnuk1v.jpg" alt="Làng ĐHQG 5"></div>
-        <div class="gallery-item"><img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1784865777/snapvideo--Bay_l%C6%B0%E1%BB%A3n_m%E1%BB%99t_v%C3%B2ng_quanh_L%C3%A0ng_%C4%90%E1%BA%A1i_H%E1%BB%8Dc_Qu%E1%BB%91c_Gia_quochoangphoto_vnuhcm_university_landscape_fyp_-6829372_f21zid.jpg" alt="Làng ĐHQG 6"></div>
-        <div class="gallery-item"><img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1784865777/snapvideo--Bay_l%C6%B0%E1%BB%A3n_m%E1%BB%99t_v%C3%B2ng_quanh_L%C3%A0ng_%C4%90%E1%BA%A1i_H%E1%BB%8Dc_Qu%E1%BB%91c_Gia_quochoangphoto_vnuhcm_university_landscape_fyp_-6387305_yknpm3.jpg" alt="Làng ĐHQG 7"></div>
-        <div class="gallery-item"><img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1784865777/snapvideo--Bay_l%C6%B0%E1%BB%A3n_m%E1%BB%99t_v%C3%B2ng_quanh_L%C3%A0ng_%C4%90%E1%BA%A1i_H%E1%BB%8Dc_Qu%E1%BB%91c_Gia_quochoangphoto_vnuhcm_university_landscape_fyp_-6454120_xyz48l.jpg" alt="Làng ĐHQG 8"></div>
-        <div class="gallery-item"><img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1784865777/snapvideo--Bay_l%C6%B0%E1%BB%A3n_m%E1%BB%99t_v%C3%B2ng_quanh_L%C3%A0ng_%C4%90%E1%BA%A1i_H%E1%BB%8Dc_Qu%E1%BB%91c_Gia_quochoangphoto_vnuhcm_university_landscape_fyp_-7453969_fc7bgs.jpg" alt="Làng ĐHQG 9"></div>
-        <div class="gallery-item"><img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1784865777/snapvideo--Bay_l%C6%B0%E1%BB%A3n_m%E1%BB%99t_v%C3%B2ng_quanh_L%C3%A0ng_%C4%90%E1%BA%A1i_H%E1%BB%8Dc_Qu%E1%BB%91c_Gia_quochoangphoto_vnuhcm_university_landscape_fyp_-7940519_gdzqph.jpg" alt="Làng ĐHQG 10"></div>
-        <div class="gallery-item"><img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1784865776/snapvideo--Bay_l%C6%B0%E1%BB%A3n_m%E1%BB%99t_v%C3%B2ng_quanh_L%C3%A0ng_%C4%90%E1%BA%A1i_H%E1%BB%8Dc_Qu%E1%BB%91c_Gia_quochoangphoto_vnuhcm_university_landscape_fyp_-5491693_te4d21.jpg" alt="Làng ĐHQG 11"></div>
-        <div class="gallery-item"><img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1784865776/snapvideo--Bay_l%C6%B0%E1%BB%A3n_m%E1%BB%99t_v%C3%B2ng_quanh_L%C3%A0ng_%C4%90%E1%BA%A1i_H%E1%BB%8Dc_Qu%E1%BB%91c_Gia_quochoangphoto_vnuhcm_university_landscape_fyp_-3443359_dizjte.jpg" alt="Làng ĐHQG 12"></div>
-        <div class="gallery-item"><img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1784865776/snapvideo--Bay_l%C6%B0%E1%BB%A3n_m%E1%BB%99t_v%C3%B2ng_quanh_L%C3%A0ng_%C4%90%E1%BA%A1i_H%E1%BB%8Dc_Qu%E1%BB%91c_Gia_quochoangphoto_vnuhcm_university_landscape_fyp_-3805324_pxbspl.jpg" alt="Làng ĐHQG 13"></div>
-        <div class="gallery-item"><img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1784865776/snapvideo--Bay_l%C6%B0%E1%BB%A3n_m%E1%BB%99t_v%C3%B2ng_quanh_L%C3%A0ng_%C4%90%E1%BA%A1i_H%E1%BB%8Dc_Qu%E1%BB%91c_Gia_quochoangphoto_vnuhcm_university_landscape_fyp_-1983071_ltbhzr.jpg" alt="Làng ĐHQG 14"></div>
-        <div class="gallery-item"><img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1784865776/snapvideo--Bay_l%C6%B0%E1%BB%A3n_m%E1%BB%99t_v%C3%B2ng_quanh_L%C3%A0ng_%C4%90%E1%BA%A1i_H%E1%BB%8Dc_Qu%E1%BB%91c_Gia_quochoangphoto_vnuhcm_university_landscape_fyp_-1126773_ok2fbs.jpg" alt="Làng ĐHQG 15"></div>
-        <div class="gallery-item"><img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1784865776/snapvideo--Bay_l%C6%B0%E1%BB%A3n_m%E1%BB%99t_v%C3%B2ng_quanh_L%C3%A0ng_%C4%90%E1%BA%A1i_H%E1%BB%8Dc_Qu%E1%BB%91c_Gia_quochoangphoto_vnuhcm_university_landscape_fyp_-4886101_awwwzt.jpg" alt="Làng ĐHQG 16"></div>
+        <!-- Khu vực chứa lưới ảnh -->
+        <div class="gallery">
+            <div class="gallery-item"><img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1784865778/snapvideo--Bay_l%C6%B0%E1%BB%A3n_m%E1%BB%99t_v%C3%B2ng_quanh_L%C3%A0ng_%C4%90%E1%BA%A1i_H%E1%BB%8Dc_Qu%E1%BB%91c_Gia_quochoangphoto_vnuhcm_university_landscape_fyp_-9141942_cyxkqn.jpg" alt="Làng ĐHQG 1"></div>
+            <div class="gallery-item"><img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1784865778/snapvideo--Bay_l%C6%B0%E1%BB%A3n_m%E1%BB%99t_v%C3%B2ng_quanh_L%C3%A0ng_%C4%90%E1%BA%A1i_H%E1%BB%8Dc_Qu%E1%BB%91c_Gia_quochoangphoto_vnuhcm_university_landscape_fyp_-8737535_keknce.jpg" alt="Làng ĐHQG 2"></div>
+            <div class="gallery-item"><img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1784865778/snapvideo--Bay_l%C6%B0%E1%BB%A3n_m%E1%BB%99t_v%C3%B2ng_quanh_L%C3%A0ng_%C4%90%E1%BA%A1i_H%E1%BB%8Dc_Qu%E1%BB%91c_Gia_quochoangphoto_vnuhcm_university_landscape_fyp_-9339107_yb5dig.jpg" alt="Làng ĐHQG 3"></div>
+            <div class="gallery-item"><img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1784865778/snapvideo--Bay_l%C6%B0%E1%BB%A3n_m%E1%BB%99t_v%C3%B2ng_quanh_L%C3%A0ng_%C4%90%E1%BA%A1i_H%E1%BB%8Dc_Qu%E1%BB%91c_Gia_quochoangphoto_vnuhcm_university_landscape_fyp_-8057211_fvl6qj.jpg" alt="Làng ĐHQG 4"></div>
+            <div class="gallery-item"><img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1784865777/snapvideo--Bay_l%C6%B0%E1%BB%A3n_m%E1%BB%99t_v%C3%B2ng_quanh_L%C3%A0ng_%C4%90%E1%BA%A1i_H%E1%BB%8Dc_Qu%E1%BB%91c_Gia_quochoangphoto_vnuhcm_university_landscape_fyp_-4142716_lnuk1v.jpg" alt="Làng ĐHQG 5"></div>
+            <div class="gallery-item"><img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1784865777/snapvideo--Bay_l%C6%B0%E1%BB%A3n_m%E1%BB%99t_v%C3%B2ng_quanh_L%C3%A0ng_%C4%90%E1%BA%A1i_H%E1%BB%8Dc_Qu%E1%BB%91c_Gia_quochoangphoto_vnuhcm_university_landscape_fyp_-6829372_f21zid.jpg" alt="Làng ĐHQG 6"></div>
+            <div class="gallery-item"><img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1784865777/snapvideo--Bay_l%C6%B0%E1%BB%A3n_m%E1%BB%99t_v%C3%B2ng_quanh_L%C3%A0ng_%C4%90%E1%BA%A1i_H%E1%BB%8Dc_Qu%E1%BB%91c_Gia_quochoangphoto_vnuhcm_university_landscape_fyp_-6387305_yknpm3.jpg" alt="Làng ĐHQG 7"></div>
+            <div class="gallery-item"><img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1784865777/snapvideo--Bay_l%C6%B0%E1%BB%A3n_m%E1%BB%99t_v%C3%B2ng_quanh_L%C3%A0ng_%C4%90%E1%BA%A1i_H%E1%BB%8Dc_Qu%E1%BB%91c_Gia_quochoangphoto_vnuhcm_university_landscape_fyp_-6454120_xyz48l.jpg" alt="Làng ĐHQG 8"></div>
+            <div class="gallery-item"><img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1784865777/snapvideo--Bay_l%C6%B0%E1%BB%A3n_m%E1%BB%99t_v%C3%B2ng_quanh_L%C3%A0ng_%C4%90%E1%BA%A1i_H%E1%BB%8Dc_Qu%E1%BB%91c_Gia_quochoangphoto_vnuhcm_university_landscape_fyp_-7453969_fc7bgs.jpg" alt="Làng ĐHQG 9"></div>
+            <div class="gallery-item"><img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1784865777/snapvideo--Bay_l%C6%B0%E1%BB%A3n_m%E1%BB%99t_v%C3%B2ng_quanh_L%C3%A0ng_%C4%90%E1%BA%A1i_H%E1%BB%8Dc_Qu%E1%BB%91c_Gia_quochoangphoto_vnuhcm_university_landscape_fyp_-7940519_gdzqph.jpg" alt="Làng ĐHQG 10"></div>
+            <div class="gallery-item"><img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1784865776/snapvideo--Bay_l%C6%B0%E1%BB%A3n_m%E1%BB%99t_v%C3%B2ng_quanh_L%C3%A0ng_%C4%90%E1%BA%A1i_H%E1%BB%8Dc_Qu%E1%BB%91c_Gia_quochoangphoto_vnuhcm_university_landscape_fyp_-5491693_te4d21.jpg" alt="Làng ĐHQG 11"></div>
+            <div class="gallery-item"><img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1784865776/snapvideo--Bay_l%C6%B0%E1%BB%A3n_m%E1%BB%99t_v%C3%B2ng_quanh_L%C3%A0ng_%C4%90%E1%BA%A1i_H%E1%BB%8Dc_Qu%E1%BB%91c_Gia_quochoangphoto_vnuhcm_university_landscape_fyp_-3443359_dizjte.jpg" alt="Làng ĐHQG 12"></div>
+            <div class="gallery-item"><img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1784865776/snapvideo--Bay_l%C6%B0%E1%BB%A3n_m%E1%BB%99t_v%C3%B2ng_quanh_L%C3%A0ng_%C4%90%E1%BA%A1i_H%E1%BB%8Dc_Qu%E1%BB%91c_Gia_quochoangphoto_vnuhcm_university_landscape_fyp_-3805324_pxbspl.jpg" alt="Làng ĐHQG 13"></div>
+            <div class="gallery-item"><img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1784865776/snapvideo--Bay_l%C6%B0%E1%BB%A3n_m%E1%BB%99t_v%C3%B2ng_quanh_L%C3%A0ng_%C4%90%E1%BA%A1i_H%E1%BB%8Dc_Qu%E1%BB%91c_Gia_quochoangphoto_vnuhcm_university_landscape_fyp_-1983071_ltbhzr.jpg" alt="Làng ĐHQG 14"></div>
+            <div class="gallery-item"><img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1784865776/snapvideo--Bay_l%C6%B0%E1%BB%A3n_m%E1%BB%99t_v%C3%B2ng_quanh_L%C3%A0ng_%C4%90%E1%BA%A1i_H%E1%BB%8Dc_Qu%E1%BB%91c_Gia_quochoangphoto_vnuhcm_university_landscape_fyp_-1126773_ok2fbs.jpg" alt="Làng ĐHQG 15"></div>
+            <div class="gallery-item"><img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1784865776/snapvideo--Bay_l%C6%B0%E1%BB%A3n_m%E1%BB%99t_v%C3%B2ng_quanh_L%C3%A0ng_%C4%90%E1%BA%A1i_H%E1%BB%8Dc_Qu%E1%BB%91c_Gia_quochoangphoto_vnuhcm_university_landscape_fyp_-4886101_awwwzt.jpg" alt="Làng ĐHQG 16"></div>
+        </div>
     </div>
 
-    <!-- Khung Lightbox Phóng to -->
+    <!-- Footer -->
+    <footer>
+        <a href="https://dulieunhapho.com" target="_blank" class="footer-brand">dulieunhapho.com &bull; @ Thiên Hạo</a>
+    </footer>
+
+    <!-- Khung Lightbox Phóng to & Lướt -->
     <div class="lightbox" id="lightbox">
         <span class="lightbox-close" id="lightbox-close">&times;</span>
+        <div class="lightbox-nav lightbox-prev" id="lightbox-prev">&#10094;</div>
         <img id="lightbox-img" src="" alt="Phóng to">
+        <div class="lightbox-nav lightbox-next" id="lightbox-next">&#10095;</div>
     </div>
 
     <!-- JavaScript Xử Lý Sự Kiện -->
@@ -150,34 +221,61 @@
         const lightbox = document.getElementById('lightbox');
         const lightboxImg = document.getElementById('lightbox-img');
         const lightboxClose = document.getElementById('lightbox-close');
+        const btnPrev = document.getElementById('lightbox-prev');
+        const btnNext = document.getElementById('lightbox-next');
 
-        // Bấm vào ảnh nào thì mở ảnh đó lên
-        galleryImages.forEach(img => {
+        let currentIndex = 0;
+        const imagesSrcArray = Array.from(galleryImages).map(img => img.src);
+
+        galleryImages.forEach((img, index) => {
             img.addEventListener('click', () => {
-                lightboxImg.src = img.src;
+                currentIndex = index;
+                updateLightboxImage();
                 lightbox.classList.add('open');
             });
         });
 
-        // Hàm đóng lightbox
+        function updateLightboxImage() {
+            lightboxImg.src = imagesSrcArray[currentIndex];
+        }
+
+        function showPrev(e) {
+            e.stopPropagation();
+            currentIndex = (currentIndex - 1 + imagesSrcArray.length) % imagesSrcArray.length;
+            updateLightboxImage();
+        }
+
+        function showNext(e) {
+            e.stopPropagation();
+            currentIndex = (currentIndex + 1) % imagesSrcArray.length;
+            updateLightboxImage();
+        }
+
+        btnPrev.addEventListener('click', showPrev);
+        btnNext.addEventListener('click', showNext);
+
         function closeLightbox() {
             lightbox.classList.remove('open');
         }
 
-        // Bấm vào nút X để đóng
         lightboxClose.addEventListener('click', closeLightbox);
 
-        // Bấm vào khoảng đen bên ngoài ảnh để đóng
         lightbox.addEventListener('click', (e) => {
             if (e.target === lightbox) {
                 closeLightbox();
             }
         });
 
-        // Nhấn phím ESC trên bàn phím cũng để đóng
         document.addEventListener('keydown', (e) => {
+            if (!lightbox.classList.contains('open')) return;
             if (e.key === 'Escape') {
                 closeLightbox();
+            } else if (e.key === 'ArrowLeft') {
+                currentIndex = (currentIndex - 1 + imagesSrcArray.length) % imagesSrcArray.length;
+                updateLightboxImage();
+            } else if (e.key === 'ArrowRight') {
+                currentIndex = (currentIndex + 1) % imagesSrcArray.length;
+                updateLightboxImage();
             }
         });
     </script>
