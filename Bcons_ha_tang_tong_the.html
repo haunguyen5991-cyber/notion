@@ -171,7 +171,7 @@
 
     <div class="container">
         <header>
-            <h1>HẠ TẦNG GIAO THÔNG TRỌNG ĐIỂM</h1>
+            <h1>HẠ TÂNG GIAO THÔNG TRỌNG ĐIỂM</h1>
             <p>Cập nhật toàn cảnh các dự án hạ tầng huyết mạch khu vực Đông TP.HCM</p>
         </header>
 
@@ -304,9 +304,14 @@
             badge.textContent = '--:--';
             wrapper.appendChild(badge);
 
+            var resolved = false;
+            var seekTried = false;
+
             function tryShowDuration() {
+                if (resolved) return true;
                 if (isFinite(video.duration) && video.duration > 0) {
                     badge.textContent = formatDuration(video.duration);
+                    resolved = true;
                     return true;
                 }
                 return false;
@@ -318,25 +323,48 @@
                 }
             }
 
-            video.addEventListener('loadedmetadata', function () {
-                syncAspectRatio();
+            function attemptSeekFix() {
+                // Cloudinary trả video theo dạng stream thiếu Content-Length khiến
+                // duration = Infinity/NaN. "Seek hack" ép trình duyệt tính lại đúng.
+                // Chỉ thực hiện khi video đang tạm dừng để không làm gián đoạn người xem.
+                if (seekTried || resolved || !video.paused) return;
+                seekTried = true;
+                try {
+                    video.currentTime = 1e101;
+                } catch (e) { /* bỏ qua nếu trình duyệt không hỗ trợ */ }
+            }
 
-                if (!tryShowDuration()) {
-                    // Cloudinary trả video theo dạng stream thiếu Content-Length khiến
-                    // duration = Infinity/NaN. "Seek hack" ép trình duyệt tính lại đúng.
-                    var onTimeUpdate = function () {
-                        video.removeEventListener('timeupdate', onTimeUpdate);
-                        video.currentTime = 0;
-                        tryShowDuration();
-                    };
-                    video.addEventListener('timeupdate', onTimeUpdate);
-                    try {
-                        video.currentTime = 1e101;
-                    } catch (e) { /* bỏ qua nếu trình duyệt không hỗ trợ */ }
-                }
+            ['loadedmetadata', 'durationchange', 'canplay', 'loadeddata'].forEach(function (evt) {
+                video.addEventListener(evt, function () {
+                    syncAspectRatio();
+                    if (!tryShowDuration()) {
+                        attemptSeekFix();
+                    }
+                });
             });
 
-            video.addEventListener('durationchange', tryShowDuration);
+            video.addEventListener('seeked', function () {
+                if (seekTried && !resolved && video.paused) {
+                    video.currentTime = 0;
+                }
+                tryShowDuration();
+            });
+
+            video.addEventListener('timeupdate', function () {
+                if (!resolved) tryShowDuration();
+            });
+
+            // Dự phòng: một số trình duyệt/CDN không bắn đủ sự kiện cần thiết,
+            // nên chủ động kiểm tra định kỳ trong ~10 giây đầu sau khi trang tải.
+            var pollCount = 0;
+            var pollTimer = setInterval(function () {
+                pollCount++;
+                if (tryShowDuration() || pollCount > 25) {
+                    clearInterval(pollTimer);
+                } else if (pollCount === 3) {
+                    attemptSeekFix();
+                }
+            }, 400);
         });
     </script>
 </body>
