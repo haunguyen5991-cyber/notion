@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bộ Sưu Tập Làng Đại Học Quốc Gia TP.HCM</title>
+    <title>Thư Viện Ảnh Làng Đại Học Quốc Gia TP.HCM (Lightbox)</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -11,10 +11,14 @@
             margin: 0;
             padding: 20px;
         }
+
         h2 {
             text-align: center;
             color: #333;
+            margin-bottom: 30px;
         }
+
+        /* --- Gallery Grid Styling --- */
         .gallery {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -22,46 +26,146 @@
             max-width: 1200px;
             margin: 0 auto;
         }
+
         .gallery-item {
             background: #fff;
             border-radius: 8px;
             overflow: hidden;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            cursor: pointer; /* Thay đổi con trỏ chuột để báo hiệu có thể nhấn */
             transition: transform 0.3s ease;
         }
+
         .gallery-item:hover {
             transform: translateY(-5px);
         }
+
         .gallery-item img {
             width: 100%;
             height: 200px;
             object-fit: cover;
             display: block;
         }
+
+        /* --- Lightbox Styling --- */
+        .lightbox {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.85); /* Nền tối mờ */
+            display: none; /* Ẩn theo mặc định */
+            justify-content: center;
+            align-items: center;
+            z-index: 1000; /* Đảm bảo nằm trên cùng */
+            cursor: zoom-out; /* Con trỏ báo hiệu có thể đóng */
+        }
+
+        .lightbox.active {
+            display: flex; /* Hiển thị khi có class active */
+        }
+
+        .lightbox img {
+            max-width: 90%;
+            max-height: 90%;
+            border: 4px solid #fff;
+            border-radius: 4px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            cursor: default; /* Ngăn con trỏ zoom-out khi di chuột vào ảnh */
+        }
+
+        .lightbox-close {
+            position: absolute;
+            top: 15px;
+            right: 25px;
+            font-size: 40px;
+            color: #fff;
+            font-weight: bold;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .lightbox-close:hover {
+            color: #ccc;
+        }
     </style>
 </head>
 <body>
 
-    <h2>Toàn cảnh Làng Đại học Quốc gia TP.HCM</h2>
+    <h2>Toàn cảnh Làng Đại học Quốc gia TP.HCM (Nhấn để phóng to)</h2>
 
+    <!-- Khu vực chứa lưới ảnh -->
     <div class="gallery">
-        <div class="gallery-item"><img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1784865778/snapvideo--Bay_l%C6%B0%E1%BB%A3n_m%E1%BB%99t_v%C3%B2ng_quanh_L%C3%A0ng_%C4%90%E1%BA%A1i_H%E1%BB%8Dc_Qu%E1%BB%91c_Gia_quochoangphoto_vnuhcm_university_landscape_fyp_-9141942_cyxkqn.jpg" alt="Làng ĐHQG TP.HCM"></div>
-        <div class="gallery-item"><img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1784865778/snapvideo--Bay_l%C6%B0%E1%BB%A3n_m%E1%BB%99t_v%C3%B2ng_quanh_L%C3%A0ng_%C4%90%E1%BA%A1i_H%E1%BB%8Dc_Qu%E1%BB%91c_Gia_quochoangphoto_vnuhcm_university_landscape_fyp_-8737535_keknce.jpg" alt="Làng ĐHQG TP.HCM"></div>
-        <div class="gallery-item"><img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1784865778/snapvideo--Bay_l%C6%B0%E1%BB%A3n_m%E1%BB%99t_v%C3%B2ng_quanh_L%C3%A0ng_%C4%90%E1%BA%A1i_H%E1%BB%8Dc_Qu%E1%BB%91c_Gia_quochoangphoto_vnuhcm_university_landscape_fyp_-9339107_yb5dig.jpg" alt="Làng ĐHQG TP.HCM"></div>
-        <div class="gallery-item"><img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1784865778/snapvideo--Bay_l%C6%B0%E1%BB%A3n_m%E1%BB%99t_v%C3%B2ng_quanh_L%C3%A0ng_%C4%90%E1%BA%A1i_H%E1%BB%8Dc_Qu%E1%BB%91c_Gia_quochoangphoto_vnuhcm_university_landscape_fyp_-8057211_fvl6qj.jpg" alt="Làng ĐHQG TP.HCM"></div>
-        <div class="gallery-item"><img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1784865777/snapvideo--Bay_l%C6%B0%E1%BB%A3n_m%E1%BB%99t_v%C3%B2ng_quanh_L%C3%A0ng_%C4%90%E1%BA%A1i_H%E1%BB%8Dc_Qu%E1%BB%91c_Gia_quochoangphoto_vnuhcm_university_landscape_fyp_-4142716_lnuk1v.jpg" alt="Làng ĐHQG TP.HCM"></div>
-        <div class="gallery-item"><img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1784865777/snapvideo--Bay_l%C6%B0%E1%BB%A3n_m%E1%BB%99t_v%C3%B2ng_quanh_L%C3%A0ng_%C4%90%E1%BA%A1i_H%E1%BB%8Dc_Qu%E1%BB%91c_Gia_quochoangphoto_vnuhcm_university_landscape_fyp_-6829372_f21zid.jpg" alt="Làng ĐHQG TP.HCM"></div>
-        <div class="gallery-item"><img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1784865777/snapvideo--Bay_l%C6%B0%E1%BB%A3n_m%E1%BB%99t_v%C3%B2ng_quanh_L%C3%A0ng_%C4%90%E1%BA%A1i_H%E1%BB%8Dc_Qu%E1%BB%91c_Gia_quochoangphoto_vnuhcm_university_landscape_fyp_-6387305_yknpm3.jpg" alt="Làng ĐHQG TP.HCM"></div>
-        <div class="gallery-item"><img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1784865777/snapvideo--Bay_l%C6%B0%E1%BB%A3n_m%E1%BB%99t_v%C3%B2ng_quanh_L%C3%A0ng_%C4%90%E1%BA%A1i_H%E1%BB%8Dc_Qu%E1%BB%91c_Gia_quochoangphoto_vnuhcm_university_landscape_fyp_-6454120_xyz48l.jpg" alt="Làng ĐHQG TP.HCM"></div>
-        <div class="gallery-item"><img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1784865777/snapvideo--Bay_l%C6%B0%E1%BB%A3n_m%E1%BB%99t_v%C3%B2ng_quanh_L%C3%A0ng_%C4%90%E1%BA%A1i_H%E1%BB%8Dc_Qu%E1%BB%91c_Gia_quochoangphoto_vnuhcm_university_landscape_fyp_-7453969_fc7bgs.jpg" alt="Làng ĐHQG TP.HCM"></div>
-        <div class="gallery-item"><img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1784865777/snapvideo--Bay_l%C6%B0%E1%BB%A3n_m%E1%BB%99t_v%C3%B2ng_quanh_L%C3%A0ng_%C4%90%E1%BA%A1i_H%E1%BB%8Dc_Qu%E1%BB%91c_Gia_quochoangphoto_vnuhcm_university_landscape_fyp_-7940519_gdzqph.jpg" alt="Làng ĐHQG TP.HCM"></div>
-        <div class="gallery-item"><img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1784865776/snapvideo--Bay_l%C6%B0%E1%BB%A3n_m%E1%BB%99t_v%C3%B2ng_quanh_L%C3%A0ng_%C4%90%E1%BA%A1i_H%E1%BB%8Dc_Qu%E1%BB%91c_Gia_quochoangphoto_vnuhcm_university_landscape_fyp_-5491693_te4d21.jpg" alt="Làng ĐHQG TP.HCM"></div>
-        <div class="gallery-item"><img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1784865776/snapvideo--Bay_l%C6%B0%E1%BB%A3n_m%E1%BB%99t_v%C3%B2ng_quanh_L%C3%A0ng_%C4%90%E1%BA%A1i_H%E1%BB%8Dc_Qu%E1%BB%91c_Gia_quochoangphoto_vnuhcm_university_landscape_fyp_-3443359_dizjte.jpg" alt="Làng ĐHQG TP.HCM"></div>
-        <div class="gallery-item"><img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1784865776/snapvideo--Bay_l%C6%B0%E1%BB%A3n_m%E1%BB%99t_v%C3%B2ng_quanh_L%C3%A0ng_%C4%90%E1%BA%A1i_H%E1%BB%8Dc_Qu%E1%BB%91c_Gia_quochoangphoto_vnuhcm_university_landscape_fyp_-3805324_pxbspl.jpg" alt="Làng ĐHQG TP.HCM"></div>
-        <div class="gallery-item"><img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1784865776/snapvideo--Bay_l%C6%B0%E1%BB%A3n_m%E1%BB%99t_v%C3%B2ng_quanh_L%C3%A0ng_%C4%90%E1%BA%A1i_H%E1%BB%8Dc_Qu%E1%BB%91c_Gia_quochoangphoto_vnuhcm_university_landscape_fyp_-1983071_ltbhzr.jpg" alt="Làng ĐHQG TP.HCM"></div>
-        <div class="gallery-item"><img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1784865776/snapvideo--Bay_l%C6%B0%E1%BB%A3n_m%E1%BB%99t_v%C3%B2ng_quanh_L%C3%A0ng_%C4%90%E1%BA%A1i_H%E1%BB%8Dc_Qu%E1%BB%91c_Gia_quochoangphoto_vnuhcm_university_landscape_fyp_-1126773_ok2fbs.jpg" alt="Làng ĐHQG TP.HCM"></div>
-        <div class="gallery-item"><img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1784865776/snapvideo--Bay_l%C6%B0%E1%BB%A3n_m%E1%BB%99t_v%C3%B2ng_quanh_L%C3%A0ng_%C4%90%E1%BA%A1i_H%E1%BB%8Dc_Qu%E1%BB%91c_Gia_quochoangphoto_vnuhcm_university_landscape_fyp_-4886101_awwwzt.jpg" alt="Làng ĐHQG TP.HCM"></div>
+        <!-- Lặp lại cấu trúc này cho tất cả 16 hình ảnh -->
+        <div class="gallery-item">
+            <img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1784865778/snapvideo--Bay_l%C6%B0%E1%BB%A3n_m%E1%BB%99t_v%C3%B2ng_quanh_L%C3%A0ng_%C4%90%E1%BA%A1i_H%E1%BB%8Dc_Qu%E1%BB%91c_Gia_quochoangphoto_vnuhcm_university_landscape_fyp_-9141942_cyxkqn.jpg" alt="Làng ĐHQG TP.HCM 1">
+        </div>
+        <div class="gallery-item">
+            <img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1784865778/snapvideo--Bay_l%C6%B0%E1%BB%A3n_m%E1%BB%99t_v%C3%B2ng_quanh_L%C3%A0ng_%C4%90%E1%BA%A1i_H%E1%BB%8Dc_Qu%E1%BB%91c_Gia_quochoangphoto_vnuhcm_university_landscape_fyp_-8737535_keknce.jpg" alt="Làng ĐHQG TP.HCM 2">
+        </div>
+        <div class="gallery-item">
+            <img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1784865778/snapvideo--Bay_l%C6%B0%E1%BB%A3n_m%E1%BB%99t_v%C3%B2ng_quanh_L%C3%A0ng_%C4%90%E1%BA%A1i_H%E1%BB%8Dc_Qu%E1%BB%91c_Gia_quochoangphoto_vnuhcm_university_landscape_fyp_-9339107_yb5dig.jpg" alt="Làng ĐHQG TP.HCM 3">
+        </div>
+        <div class="gallery-item">
+            <img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1784865778/snapvideo--Bay_l%C6%B0%E1%BB%A3n_m%E1%BB%99t_v%C3%B2ng_quanh_L%C3%A0ng_%C4%90%E1%BA%A1i_H%E1%BB%8Dc_Qu%E1%BB%91c_Gia_quochoangphoto_vnuhcm_university_landscape_fyp_-8057211_fvl6qj.jpg" alt="Làng ĐHQG TP.HCM 4">
+        </div>
+        <div class="gallery-item">
+            <img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1784865777/snapvideo--Bay_l%C6%B0%E1%BB%A3n_m%E1%BB%99t_v%C3%B2ng_quanh_L%C3%A0ng_%C4%90%E1%BA%A1i_H%E1%BB%8Dc_Qu%E1%BB%91c_Gia_quochoangphoto_vnuhcm_university_landscape_fyp_-4142716_lnuk1v.jpg" alt="Làng ĐHQG TP.HCM 5">
+        </div>
+        <div class="gallery-item">
+            <img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1784865777/snapvideo--Bay_l%C6%B0%E1%BB%A3n_m%E1%BB%99t_v%C3%B2ng_quanh_L%C3%A0ng_%C4%90%E1%BA%A1i_H%E1%BB%8Dc_Qu%E1%BB%91c_Gia_quochoangphoto_vnuhcm_university_landscape_fyp_-6829372_f21zid.jpg" alt="Làng ĐHQG TP.HCM 6">
+        </div>
+        <div class="gallery-item">
+            <img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1784865777/snapvideo--Bay_l%C6%B0%E1%BB%A3n_m%E1%BB%99t_v%C3%B2ng_quanh_L%C3%A0ng_%C4%90%E1%BA%A1i_H%E1%BB%8Dc_Qu%E1%BB%91c_Gia_quochoangphoto_vnuhcm_university_landscape_fyp_-6387305_yknpm3.jpg" alt="Làng ĐHQG TP.HCM 7">
+        </div>
+        <div class="gallery-item">
+            <img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1784865777/snapvideo--Bay_l%C6%B0%E1%BB%A3n_m%E1%BB%99t_v%C3%B2ng_quanh_L%C3%A0ng_%C4%90%E1%BA%A1i_H%E1%BB%8Dc_Qu%E1%BB%91c_Gia_quochoangphoto_vnuhcm_university_landscape_fyp_-6454120_xyz48l.jpg" alt="Làng ĐHQG TP.HCM 8">
+        </div>
+        <div class="gallery-item">
+            <img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1784865777/snapvideo--Bay_l%C6%B0%E1%BB%A3n_m%E1%BB%99t_v%C3%B2ng_quanh_L%C3%A0ng_%C4%90%E1%BA%A1i_H%E1%BB%8Dc_Qu%E1%BB%91c_Gia_quochoangphoto_vnuhcm_university_landscape_fyp_-7453969_fc7bgs.jpg" alt="Làng ĐHQG TP.HCM 9">
+        </div>
+        <div class="gallery-item">
+            <img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1784865777/snapvideo--Bay_l%C6%B0%E1%BB%A3n_m%E1%BB%99t_v%C3%B2ng_quanh_L%C3%A0ng_%C4%90%E1%BA%A1i_H%E1%BB%8Dc_Qu%E1%BB%91c_Gia_quochoangphoto_vnuhcm_university_landscape_fyp_-7940519_gdzqph.jpg" alt="Làng ĐHQG TP.HCM 10">
+        </div>
+        <div class="gallery-item">
+            <img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1784865776/snapvideo--Bay_l%C6%B0%E1%BB%A3n_m%E1%BB%99t_v%C3%B2ng_quanh_L%C3%A0ng_%C4%90%E1%BA%A1i_H%E1%BB%8Dc_Qu%E1%BB%91c_Gia_quochoangphoto_vnuhcm_university_landscape_fyp_-5491693_te4d21.jpg" alt="Làng ĐHQG TP.HCM 11">
+        </div>
+        <div class="gallery-item">
+            <img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1784865776/snapvideo--Bay_l%C6%B0%E1%BB%A3n_m%E1%BB%99t_v%C3%B2ng_quanh_L%C3%A0ng_%C4%90%E1%BA%A1i_H%E1%BB%8Dc_Qu%E1%BB%91c_Gia_quochoangphoto_vnuhcm_university_landscape_fyp_-3443359_dizjte.jpg" alt="Làng ĐHQG TP.HCM 12">
+        </div>
+        <div class="gallery-item">
+            <img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1784865776/snapvideo--Bay_l%C6%B0%E1%BB%A3n_m%E1%BB%99t_v%C3%B2ng_quanh_L%C3%A0ng_%C4%90%E1%BA%A1i_H%E1%BB%8Dc_Qu%E1%BB%91c_Gia_quochoangphoto_vnuhcm_university_landscape_fyp_-3805324_pxbspl.jpg" alt="Làng ĐHQG TP.HCM 13">
+        </div>
+        <div class="gallery-item">
+            <img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1784865776/snapvideo--Bay_l%C6%B0%E1%BB%A3n_m%E1%BB%99t_v%C3%B2ng_quanh_L%C3%A0ng_%C4%90%E1%BA%A1i_H%E1%BB%8Dc_Qu%E1%BB%91c_Gia_quochoangphoto_vnuhcm_university_landscape_fyp_-1983071_ltbhzr.jpg" alt="Làng ĐHQG TP.HCM 14">
+        </div>
+        <div class="gallery-item">
+            <img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1784865776/snapvideo--Bay_l%C6%B0%E1%BB%A3n_m%E1%BB%99t_v%C3%B2ng_quanh_L%C3%A0ng_%C4%90%E1%BA%A1i_H%E1%BB%8Dc_Qu%E1%BB%91c_Gia_quochoangphoto_vnuhcm_university_landscape_fyp_-1126773_ok2fbs.jpg" alt="Làng ĐHQG TP.HCM 15">
+        </div>
+        <div class="gallery-item">
+            <img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1784865776/snapvideo--Bay_l%C6%B0%E1%BB%A3n_m%E1%BB%99t_v%C3%B2ng_quanh_L%C3%A0ng_%C4%90%E1%BA%A1i_H%E1%BB%8Dc_Qu%E1%BB%91c_Gia_quochoangphoto_vnuhcm_university_landscape_fyp_-4886101_awwwzt.jpg" alt="Làng ĐHQG TP.HCM 16">
+        </div>
     </div>
 
-</body>
-</html>
+    <!-- Lightbox HTML -->
+    <div class="lightbox" id="lightbox">
+        <span class="lightbox-close" id="lightbox-close">&times;</span>
+        <img id="lightbox-img" src="" alt="Phóng to">
+    </div>
+
+    <!-- JavaScript Xử lý Lightbox -->
+    <script>
+        // Lấy các phần tử DOM cần thiết
+        const galleryItems = document.querySelectorAll('.gallery-item');
+        const lightbox = document.getElementById('lightbox');
+        const lightboxImg = document.getElementById('lightbox-img');
+        const lightboxClose = document.getElementById('lightbox-close');
+
+        // Hàm mở lightbox
+        function openLightbox(imgSrc) {
+            lightbox.classList.add('active'); // Thêm class để hiển thị
+            lightboxImg.src = imgSrc; // Gán nguồn ảnh được nhấn vào ảnh trong lightbox
+        }
+
+        //
