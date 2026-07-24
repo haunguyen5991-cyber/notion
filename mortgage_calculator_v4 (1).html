@@ -147,6 +147,10 @@
             margin-bottom: 16px;
         }
 
+        .form-row-3 {
+            grid-template-columns: 1fr 1fr 1fr;
+        }
+
         .form-group {
             display: flex;
             flex-direction: column;
@@ -431,6 +435,10 @@
                 grid-template-columns: 1fr 1fr;
             }
 
+            .form-row-3 {
+                grid-template-columns: 1fr 1fr;
+            }
+
             .grid-2 {
                 grid-template-columns: 1fr;
             }
@@ -454,6 +462,10 @@
 
         @media (max-width: 480px) {
             .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .form-row-3 {
                 grid-template-columns: 1fr;
             }
         }
@@ -547,10 +559,18 @@
                         <input type="number" id="amortInterestRate" min="0" max="20" step="0.1" value="6.5" placeholder="6.5"/>
                         <small style="color: #999; font-size: 11px;">%/năm</small>
                     </div>
+                </div>
+
+                <div class="form-row form-row-3">
                     <div class="form-group">
                         <label>Thời gian vay</label>
                         <input type="number" id="amortLoanTerm" min="1" max="50" step="1" value="15" placeholder="15"/>
                         <small style="color: #999; font-size: 11px;">Năm</small>
+                    </div>
+                    <div class="form-group">
+                        <label>Ân hạn gốc</label>
+                        <input type="number" id="amortGraceMonths" min="0" max="60" step="1" value="0" placeholder="0"/>
+                        <small style="color: #999; font-size: 11px;">Số tháng (0 = không ân hạn)</small>
                     </div>
                     <div class="form-group">
                         <label>Phương thức</label>
@@ -559,6 +579,11 @@
                             <option value="equal">Trả đều hàng tháng</option>
                         </select>
                     </div>
+                </div>
+
+                <div class="info-box" style="margin-bottom: 14px;">
+                    <strong>Giả định ân hạn gốc</strong>
+                    Trong thời gian ân hạn chỉ trả lãi trên dư nợ gốc, chưa trả gốc. Sau ân hạn, toàn bộ gốc được dồn trả trong thời gian vay còn lại (Tổng thời gian vay − số tháng ân hạn), theo cách phổ biến nhất của ngân hàng VN. Một số gói vay có thể cộng thêm ân hạn ngoài thời hạn vay — cần đối chiếu với hợp đồng thực tế.
                 </div>
 
                 <button class="btn" onclick="generateAmortization()">Tạo Lịch</button>
@@ -710,20 +735,44 @@
             const annualRate = parseFloat(document.getElementById('amortInterestRate').value);
             const years = parseInt(document.getElementById('amortLoanTerm').value);
             const method = document.getElementById('amortMethod').value;
+            let graceMonths = parseInt(document.getElementById('amortGraceMonths').value) || 0;
 
             const monthlyRate = annualRate / 100 / 12;
             const months = years * 12;
+
+            if (graceMonths >= months) {
+                graceMonths = months - 1; // luôn để lại ít nhất 1 tháng trả gốc
+                document.getElementById('amortGraceMonths').value = graceMonths;
+            }
+            const repayMonths = months - graceMonths;
 
             let balance = principal;
             const schedule = [];
             const fullSchedule = [];
 
+            // Giai đoạn ân hạn: chỉ trả lãi, chưa trả gốc, dư nợ không đổi
+            for (let i = 1; i <= graceMonths; i++) {
+                const interest = balance * monthlyRate;
+                const row = {
+                    month: i,
+                    payment: interest,
+                    principal: 0,
+                    interest: interest,
+                    balance: balance,
+                    isGrace: true
+                };
+                fullSchedule.push(row);
+                if (i <= 6 || i > months - 6) schedule.push(row);
+            }
+
+            // Giai đoạn trả gốc: gốc dồn vào số tháng còn lại (Tổng thời gian vay - ân hạn)
             if (method === 'equal') {
                 // Trả đều hàng tháng: tổng thanh toán mỗi tháng bằng nhau (gốc tăng dần, lãi giảm dần)
-                const monthlyPayment = (principal * monthlyRate * Math.pow(1 + monthlyRate, months)) /
-                                      (Math.pow(1 + monthlyRate, months) - 1);
+                const monthlyPayment = (balance * monthlyRate * Math.pow(1 + monthlyRate, repayMonths)) /
+                                      (Math.pow(1 + monthlyRate, repayMonths) - 1);
 
-                for (let i = 1; i <= months; i++) {
+                for (let j = 1; j <= repayMonths; j++) {
+                    const i = graceMonths + j;
                     const interest = balance * monthlyRate;
                     const principal_paid = monthlyPayment - interest;
                     balance -= principal_paid;
@@ -733,16 +782,18 @@
                         payment: monthlyPayment,
                         principal: principal_paid,
                         interest: interest,
-                        balance: Math.max(0, balance)
+                        balance: Math.max(0, balance),
+                        isGrace: false
                     };
                     fullSchedule.push(row);
                     if (i <= 6 || i > months - 6) schedule.push(row);
                 }
             } else {
                 // Dư nợ giảm dần: gốc trả cố định mỗi tháng, lãi tính trên dư nợ còn lại (tổng thanh toán giảm dần)
-                const fixedPrincipal = principal / months;
+                const fixedPrincipal = balance / repayMonths;
 
-                for (let i = 1; i <= months; i++) {
+                for (let j = 1; j <= repayMonths; j++) {
+                    const i = graceMonths + j;
                     const interest = balance * monthlyRate;
                     const payment = fixedPrincipal + interest;
                     balance -= fixedPrincipal;
@@ -752,7 +803,8 @@
                         payment: payment,
                         principal: fixedPrincipal,
                         interest: interest,
-                        balance: Math.max(0, balance)
+                        balance: Math.max(0, balance),
+                        isGrace: false
                     };
                     fullSchedule.push(row);
                     if (i <= 6 || i > months - 6) schedule.push(row);
@@ -766,7 +818,8 @@
                 principal: principal,
                 annualRate: annualRate,
                 years: years,
-                method: method
+                method: method,
+                graceMonths: graceMonths
             };
             document.getElementById('downloadExcelBtn').disabled = false;
 
@@ -783,8 +836,9 @@
                 if (idx === 6) {
                     html += `<tr><td colspan="5" style="text-align: center; color: #999; font-size: 11px;">... ${months - 12} tháng ...</td></tr>`;
                 }
-                html += `<tr>
-                    <td>${row.month}</td>
+                const graceStyle = row.isGrace ? ' style="background:#fff8ec; color:#b26a00;"' : '';
+                html += `<tr${graceStyle}>
+                    <td>${row.month}${row.isGrace ? ' <span style="font-size:10px;">(ân hạn)</span>' : ''}</td>
                     <td>${formatNumber(row.payment / 1000000)}</td>
                     <td>${formatNumber(row.principal / 1000000)}</td>
                     <td>${formatNumber(row.interest / 1000000)}</td>
@@ -799,7 +853,7 @@
         function downloadAmortExcel() {
             if (!currentAmortData) return;
 
-            const { fullSchedule, principal, annualRate, years, method } = currentAmortData;
+            const { fullSchedule, principal, annualRate, years, method, graceMonths } = currentAmortData;
             const methodLabel = method === 'equal' ? 'Trả đều hàng tháng' : 'Dư nợ giảm dần';
 
             // Sheet 1: Thông tin khoản vay
@@ -810,21 +864,27 @@
                 ['Lãi suất (%/năm)', annualRate],
                 ['Thời gian vay (năm)', years],
                 ['Phương thức', methodLabel],
+                ['Ân hạn gốc (tháng)', graceMonths || 0],
                 ['Tổng số tháng', fullSchedule.length],
                 ['Tổng lãi phải trả (tỷ VND)', fullSchedule.reduce((s, r) => s + r.interest, 0) / 1000000000],
                 ['Tổng số tiền phải trả (tỷ VND)', fullSchedule.reduce((s, r) => s + r.payment, 0) / 1000000000],
+                [],
+                ['Ghi chú', graceMonths > 0
+                    ? `Trong ${graceMonths} tháng đầu chỉ trả lãi (chưa trả gốc). Gốc được dồn trả trong ${fullSchedule.length - graceMonths} tháng còn lại.`
+                    : 'Không áp dụng ân hạn gốc.'],
                 [],
                 ['Xuất từ Công Cụ Tính Khoản Vay - Nhà Phố', new Date().toLocaleDateString('vi-VN')]
             ];
 
             // Sheet 2: Lịch chi tiết đầy đủ theo tháng (VND đầy đủ, không làm tròn đơn vị)
             const detailRows = [
-                ['Tháng', 'Năm', 'Thanh Toán (VND)', 'Gốc (VND)', 'Lãi (VND)', 'Dư Nợ Còn Lại (VND)']
+                ['Tháng', 'Năm', 'Giai Đoạn', 'Thanh Toán (VND)', 'Gốc (VND)', 'Lãi (VND)', 'Dư Nợ Còn Lại (VND)']
             ];
             fullSchedule.forEach(row => {
                 detailRows.push([
                     row.month,
                     Math.ceil(row.month / 12),
+                    row.isGrace ? 'Ân hạn' : 'Trả gốc',
                     Math.round(row.payment),
                     Math.round(row.principal),
                     Math.round(row.interest),
@@ -835,17 +895,18 @@
             const wb = XLSX.utils.book_new();
 
             const wsInfo = XLSX.utils.aoa_to_sheet(infoRows);
-            wsInfo['!cols'] = [{ wch: 32 }, { wch: 20 }];
+            wsInfo['!cols'] = [{ wch: 32 }, { wch: 60 }];
             XLSX.utils.book_append_sheet(wb, wsInfo, 'Thông Tin');
 
             const wsDetail = XLSX.utils.aoa_to_sheet(detailRows);
             wsDetail['!cols'] = [
-                { wch: 8 }, { wch: 8 }, { wch: 18 }, { wch: 18 }, { wch: 18 }, { wch: 20 }
+                { wch: 8 }, { wch: 8 }, { wch: 10 }, { wch: 18 }, { wch: 18 }, { wch: 18 }, { wch: 20 }
             ];
             XLSX.utils.book_append_sheet(wb, wsDetail, 'Lịch Chi Tiết');
 
             const today = new Date().toISOString().slice(0, 10);
-            XLSX.writeFile(wb, `Lich_Thanh_Toan_${methodLabel === 'Trả đều hàng tháng' ? 'TraDeu' : 'DuNoGiamDan'}_${today}.xlsx`);
+            const graceTag = graceMonths > 0 ? `_AnHan${graceMonths}Th` : '';
+            XLSX.writeFile(wb, `Lich_Thanh_Toan_${methodLabel === 'Trả đều hàng tháng' ? 'TraDeu' : 'DuNoGiamDan'}${graceTag}_${today}.xlsx`);
         }
 
         let amortChartInstance = null;
