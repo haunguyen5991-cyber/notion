@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hạ Tầng Giao Thông Trọng Điểm - TP.HCM</title>
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --card-bg: #131c2e;
+            --accent-color: #38bdf8;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: rgba(255, 255, 255, 0.08);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+            flex: 1;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #ffffff 0%, #94a3b8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        /* --- Section Styling --- */
+        .section-group {
+            margin-bottom: 45px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .section-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: var(--text-main);
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title::before {
+            content: '';
+            display: inline-block;
+            width: 8px;
+            height: 20px;
+            background-color: var(--accent-color);
+            border-radius: 4px;
+        }
+
+        /* --- Grid Video --- */
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 20px;
+        }
+
+        .video-card {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.3s ease, border-color 0.3s ease;
+        }
+
+        .video-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(56, 189, 248, 0.4);
+        }
+
+        .video-wrapper {
+            position: relative;
+            padding-top: 56.25%; /* Tỷ lệ khung hình 16:9 */
+            background: #000;
+        }
+
+        .video-wrapper video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            outline: none;
+        }
+
+        .video-caption {
+            padding: 14px;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+            flex: 1;
+            display: flex;
+            align-items: center;
+        }
+
+        /* --- Footer --- */
+        footer {
+            text-align: center;
+            margin-top: 60px;
+            padding: 20px 0;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .footer-brand {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.9rem;
+            opacity: 0.25; /* Rất mờ theo yêu cầu */
+            transition: opacity 0.3s ease;
+        }
+
+        .footer-brand:hover {
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>HẠ TÂNG GIAO THÔNG TRỌNG ĐIỂM</h1>
+            <p>Cập nhật toàn cảnh các dự án hạ tầng huyết mạch khu vực Đông TP.HCM</p>
+        </header>
+
+        <!-- 1. Nút giao Tân Vạn -->
+        <div class="section-group">
+            <div class="section-title">Nút giao Tân Vạn</div>
+            <div class="video-grid">
+                <div class="video-card">
+                    <div class="video-wrapper">
+                        <video controls preload="metadata" src="https://res.cloudinary.com/oy7u6ywg/video/upload/v1784867892/snapvideo--To%C3%A0n_c%E1%BA%A3nh_n%C3%BAt_giao_T%C3%A2n_V%E1%BA%A1n_%C4%91ang_t%C4%83ng_t%E1%BB%91c_v%E1%BB%81_%C4%91%C3%ADch_cu%E1%BB%91i_n%C3%A0y_tanvan_giaothong_Hatang_vanhdai3_caotoc-9887753_oysvyq.mp4"></video>
+                    </div>
+                    <div class="video-caption">Toàn cảnh nút giao Tân Vạn đang tăng tốc về đích cuối năm.</div>
+                </div>
+                <div class="video-card">
+                    <div class="video-wrapper">
+                        <video controls preload="metadata" src="https://res.cloudinary.com/oy7u6ywg/video/upload/v1784867891/snapvideo--Ph%C6%B0%C6%A1ng_ph%C3%A1p_thi_c%C3%B4ng_%C4%91%C3%BAc_h%E1%BA%ABng_c%C3%A2n_b%E1%BA%B1ng_cho_c%E1%BA%A7u_v%C6%B0%E1%BB%A3t_c%C3%B3_nh%E1%BB%8Bp_bi%C3%AAn_l%E1%BB%9Bn_t%E1%BA%A1i_n%C3%BAt_giao_T%C3%A2n_V%E1%BA%A1n_tanvan_vanhdai3_caotoc_hochiminhcity_Hatang_giaothong-592620_mehryd.mp4"></video>
+                    </div>
+                    <div class="video-caption">Phương pháp thi công đúc hẫng cân bằng cho cầu vượt nhịp biên lớn.</div>
+                </div>
+                <div class="video-card">
+                    <div class="video-wrapper">
+                        <video controls preload="metadata" src="https://res.cloudinary.com/oy7u6ywg/video/upload/v1784867891/snapvideo--N%C3%BAt_giao_T%C3%A2n_V%E1%BA%A1n_d%E1%BA%A1o_n%C3%A0y_%C4%91%E1%BA%A9y_m%E1%BA%A1nh_thi_c%C3%B4ng_r%E1%BA%A7m_r%E1%BB%99._-4178317_rj9chs.mp4"></video>
+                    </div>
+                    <div class="video-caption">Không khí đẩy mạnh thi công rầm rộ tại công trường nút giao.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. Vành đai 3 -->
+        <div class="section-group">
+            <div class="section-title">Đường Vành đai 3</div>
+            <div class="video-grid">
+                <div class="video-card">
+                    <div class="video-wrapper">
+                        <video controls preload="metadata" src="https://res.cloudinary.com/oy7u6ywg/video/upload/v1784867966/snapvideo--Si%C3%AAu_d%E1%BB%B1_%C3%A1n_75.000_t%E1%BB%B7_-_V%C3%A0nh_%C4%90ai_3_ch%C3%ADnh_th%E1%BB%A9c_l%E1%BB%99_di%E1%BB%87n_T%E1%BB%8Da_%C4%91%E1%BB%99_n%C3%A0o_s%E1%BA%BD_gom_tr%E1%BB%8Dn_ngu%E1%BB%93n_l%E1%BB%A3i_kh%E1%BB%95ng_l%E1%BB%93_n%C3%A0y_hatang_vanhdai3_vanhdai3tphcm_quyhoach_dautubatdongsan_-1635858_iea5em.mp4"></video>
+                    </div>
+                    <div class="video-caption">Siêu dự án 75.000 tỷ lộ diện và tiềm năng bất động sản dọc tuyến.</div>
+                </div>
+                <div class="video-card">
+                    <div class="video-wrapper">
+                        <video controls preload="metadata" src="https://res.cloudinary.com/oy7u6ywg/video/upload/v1784867964/snapvideo--V%C3%A0nh_%C4%91ai_2_gi%E1%BA%A3i_quy%E1%BA%BFt_hi%E1%BB%87n_t%E1%BA%A1i._V%C3%A0nh_%C4%91ai_3_quy%E1%BB%85t_%C4%91%E1%BB%8Bnh_t%C6%B0%C6%A1ng_lai_thanh_pho_tho_duoc-5441624_zqapnc.mp4"></video>
+                    </div>
+                    <div class="video-caption">Vai trò chiến lược quyết định tương lai giúp đô thị phát triển bền vững.</div>
+                </div>
+                <div class="video-card">
+                    <div class="video-wrapper">
+                        <video controls preload="metadata" src="https://res.cloudinary.com/oy7u6ywg/video/upload/v1784868032/snapvideo--%C4%90%C6%B0%E1%BB%9Dng_V%C3%A0nh_%C4%90ai_3_%E1%BB%9F_khu_%C4%91%C3%B4ng_TPHCM_%C4%91ang_th%E1%BA%A3m_nh%E1%BB%B1a._-3125414_i6v37u.mp4"></video>
+                    </div>
+                    <div class="video-caption">Cận cảnh công đoạn thảm nhựa mặt đường tại khu Đông TP.HCM.</div>
+                </div>
+                <div class="video-card">
+                    <div class="video-wrapper">
+                        <video controls preload="metadata" src="https://res.cloudinary.com/oy7u6ywg/video/upload/v1784868035/snapvideo--L%E1%BB%99_tr%C3%ACnh_v%C3%A0nh_%C4%91ai_3_TPHCM_vanhdai3_creatorsearchinsights_phuongnambds_quyhoach_-634120_x6v5mr.mov"></video>
+                    </div>
+                    <div class="video-caption">Lộ trình tổng thể chi tiết tuyến Vành đai 3 qua các khu vực.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. Vành đai 2 (Tháng 7/2026) -->
+        <div class="section-group">
+            <div class="section-title">Vành đai 2 (Cập nhật Tháng 7/2026)</div>
+            <div class="video-grid">
+                <div class="video-card">
+                    <div class="video-wrapper">
+                        <video controls preload="metadata" src="https://res.cloudinary.com/oy7u6ywg/video/upload/v1784868000/snapvideo--To%C3%A0n_C%E1%BA%A3nh_V%C3%A0nh_%C4%90ai_2_Th%E1%BB%A7_%C4%90%E1%BB%A9c_Chi%E1%BB%81u_D%C3%A0i_G%E1%BA%A7n_5_Km_%C4%90i_Qua_Tam_B%C3%ACnh_._Tam_Ph%C3%BA_._Linh_%C4%90%C3%B4ng._Tr%C6%B0%E1%BB%91ng_Th%E1%BB%8D_V%C3%A0_K%E1%BA%BFt_N%E1%BB%91i_T%E1%BB%91i_Xa_L%E1%BB%99_H%C3%A0_N%E1%BB%99i_-_Anh_ch%E1%BB%8B_quan_t%C3%A2m_t%E1%BB%91i_B%C4%90S_khu_v%E1%BB%B1c_n%C3%A0y_li%C3%AAn_h%E1%BB%87_em_sdt_zalo_09194_s2iegp.mp4"></video>
+                    </div>
+                    <div class="video-caption">Toàn cảnh Vành đai 2 Thủ Đức dài gần 5km kết nối Xa lộ Hà Nội.</div>
+                </div>
+                <div class="video-card">
+                    <div class="video-wrapper">
+                        <video controls preload="metadata" src="https://res.cloudinary.com/oy7u6ywg/video/upload/v1784867996/snapvideo--_C%E1%BA%ACP_NH%E1%BA%ACT_TI%E1%BA%BEN_%C4%90%E1%BB%9C_V%C3%80NH_%C4%90AI_2_%C4%90O%E1%BA%A0N_NG%C3%83_T%C6%AF_B%C3%8CNH_TH%C3%81I_KHU_C%C3%94NG_NGH%E1%BB%8C_CAO_D%E1%BB%B0_%C3%81N_%C4%90ANG_%C4%90%C6%AF%E1%BB%A2C_%C4%90%E1%BA%A8Y_NHANH_THI_%C3%94NG_H%E1%BB%A8A_H%E1%BA%B0N_T%E1%BA%A0O_C%C3%9A_H%C3%8DCH_L%E1%BB%8AN_CHO_H%E1%BA%A0_T%E1%BA%A6NG_V%C3%80_B%C3%84T_%C4%90%E1%BB%98NG_S%E1%BA%A2N_KHU_%C4%90%C3%94NG_TP.HCM._uc4xdm.mp4"></video>
+                    </div>
+                    <div class="video-caption">Tiến độ đoạn Ngã tư Bình Thái - Khu Công Nghệ Cao tạo cú hích lớn.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. Quốc lộ 13 -->
+        <div class="section-group">
+            <div class="section-title">Mở rộng Quốc lộ 13</div>
+            <div class="video-grid">
+                <div class="video-card">
+                    <div class="video-wrapper">
+                        <video controls preload="metadata" src="https://res.cloudinary.com/oy7u6ywg/video/upload/v1784868036/snapvideo--TP.HCM_ch%E1%BA%A1y_%C4%91ua_15_ng%C3%A0y_%C4%91%C3%AAm_gi%E1%BA%A3i_ph%C3%B3ng_m%E1%BB%A1t_b%E1%BA%B1ng_m%E1%BB%9F_r%E1%BB%99ng_Qu%E1%BB%91c_l%E1%BB%99_13_l%C3%AAn_60m_QuocLo13_MoRongQuocLo13-8851520_b5fw2r.mp4"></video>
+                    </div>
+                    <div class="video-caption">TP.HCM chạy đua ngày đêm giải phóng mặt bằng mở rộng lên 60m.</div>
+                </div>
+                <div class="video-card">
+                    <div class="video-wrapper">
+                        <video controls preload="metadata" src="https://res.cloudinary.com/oy7u6ywg/video/upload/v1784868034/snapvideo--Qu%E1%BB%91c_l%E1%BB%99_13_TP.HCM_m%E1%BB%9F_r%E1%BB%99ng_14_l%C3%A0n_xe_%C4%90%E1%BB%99t_ph%C3%A1_h%E1%BA%A1_t%E1%BA%A7ng_gi%E1%BA%A3i_c%E1%BB%A9u_c%E1%BB%B1a_ng%C3%B5_%C4%90%C3%B4ng_B%E1%BA%ACc_quoclo13_morongquoclo13-8334762_stes8v.mp4"></video>
+                    </div>
+                    <div class="video-caption">Quy hoạch 14 làn xe giải cứu cửa ngõ phía Đông Bắc.</div>
+                </div>
+                <div class="video-card">
+                    <div class="video-wrapper">
+                        <video controls preload="metadata" src="https://res.cloudinary.com/oy7u6ywg/video/upload/v1784868032/snapvideo--D%E1%BB%B1_%C3%A1n_m%E1%BB%9F_r%E1%BB%99ng_Qu%E1%BB%91c_l%E1%BB%99_13_TP.HCM_l%C3%A0n_xe_Di%E1%BB%87n_m%E1%BA%A1o_si%C3%AAu_%C4%91%E1%BA%A1i_l%E1%BB%99_21.000_t%E1%BB%B7_quoclo13_morongquoclo13_-9382616_x69ods.mp4"></video>
+                    </div>
+                    <div class="video-caption">Diện mạo siêu đại lộ 21.000 tỷ đồng trong tương lai gần.</div>
+                </div>
+                <div class="video-card">
+                    <div class="video-wrapper">
+                        <video controls preload="metadata" src="https://res.cloudinary.com/oy7u6ywg/video/upload/v1784868037/snapvideo--TP.HCM_%C4%91%E1%BA%A9y_%)", "nhanh_m%E1%BB%99ng_r%E1%BB%99ng_Qu%E1%BB%91c_l%E1%BB%99_13_%C4%91o%E1%BA%A1n_t%E1%BB%AB_c%E1%BA%A7u_B%C3%ACnh_Tri%E1%BB%87u_%C4%91%E1%BA%BFn_c%E1%BA%A7u_V%C4%99_B%C3%ACnh_d%C3%A0i_6_3_KM_v%E1%BB%9Bi_t%E1%BB%95ng_v%E1%BB%91n_g%E1%BA%A7n_21.000_T%E1%BB%B6._Tuy%E1%BA%B5n_%C4%91%C6%B0%E1%BB%91ng_s%E1%BA%BD_m%E1%BB%9F_r%E1%BB%99ng_l%C3%A0n_xe_%C4%91%C3%B4nn_nifxyl.mp4"></video>
+                    </div>
+                    <div class="video-caption">Đoạn từ cầu Bình Triệu đến cầu Vĩnh Bình dài 6.3km.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <a href="https://dulieunhapho.com" target="_blank" class="footer-brand">dulieunhapho.com &bull; @ Thiên Hạo</a>
+    </footer>
+
+</body>
+</html>
