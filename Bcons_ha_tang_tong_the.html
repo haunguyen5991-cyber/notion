@@ -121,21 +121,6 @@
             outline: none;
         }
 
-        .video-duration-badge {
-            position: absolute;
-            top: 8px;
-            right: 8px;
-            background: rgba(0, 0, 0, 0.75);
-            color: #fff;
-            font-size: 0.75rem;
-            font-family: 'SFMono-Regular', Consolas, monospace;
-            padding: 2px 7px;
-            border-radius: 4px;
-            pointer-events: none;
-            z-index: 2;
-            letter-spacing: 0.3px;
-        }
-
         .video-caption {
             padding: 14px;
             font-size: 0.9rem;
@@ -288,33 +273,15 @@
     </footer>
 
     <script>
-        function formatDuration(sec) {
-            sec = Math.round(sec);
-            var m = Math.floor(sec / 60);
-            var s = sec % 60;
-            return m + ':' + (s < 10 ? '0' : '') + s;
-        }
-
         document.querySelectorAll('.video-wrapper').forEach(function (wrapper) {
             var video = wrapper.querySelector('video');
             if (!video) return;
 
-            var badge = document.createElement('div');
-            badge.className = 'video-duration-badge';
-            badge.textContent = '--:--';
-            wrapper.appendChild(badge);
-
             var resolved = false;
             var seekTried = false;
 
-            function tryShowDuration() {
-                if (resolved) return true;
-                if (isFinite(video.duration) && video.duration > 0) {
-                    badge.textContent = formatDuration(video.duration);
-                    resolved = true;
-                    return true;
-                }
-                return false;
+            function isDurationKnown() {
+                return isFinite(video.duration) && video.duration > 0;
             }
 
             function syncAspectRatio() {
@@ -325,7 +292,8 @@
 
             function attemptSeekFix() {
                 // Cloudinary trả video theo dạng stream thiếu Content-Length khiến
-                // duration = Infinity/NaN. "Seek hack" ép trình duyệt tính lại đúng.
+                // duration = Infinity/NaN, khiến thanh điều khiển gốc hiện "0:00".
+                // "Seek hack" ép trình duyệt tính lại đúng duration để thanh gốc tự hiển thị.
                 // Chỉ thực hiện khi video đang tạm dừng để không làm gián đoạn người xem.
                 if (seekTried || resolved || !video.paused) return;
                 seekTried = true;
@@ -337,7 +305,9 @@
             ['loadedmetadata', 'durationchange', 'canplay', 'loadeddata'].forEach(function (evt) {
                 video.addEventListener(evt, function () {
                     syncAspectRatio();
-                    if (!tryShowDuration()) {
+                    if (isDurationKnown()) {
+                        resolved = true;
+                    } else {
                         attemptSeekFix();
                     }
                 });
@@ -347,11 +317,11 @@
                 if (seekTried && !resolved && video.paused) {
                     video.currentTime = 0;
                 }
-                tryShowDuration();
+                if (isDurationKnown()) resolved = true;
             });
 
             video.addEventListener('timeupdate', function () {
-                if (!resolved) tryShowDuration();
+                if (!resolved && isDurationKnown()) resolved = true;
             });
 
             // Dự phòng: một số trình duyệt/CDN không bắn đủ sự kiện cần thiết,
@@ -359,7 +329,8 @@
             var pollCount = 0;
             var pollTimer = setInterval(function () {
                 pollCount++;
-                if (tryShowDuration() || pollCount > 25) {
+                if (isDurationKnown()) resolved = true;
+                if (resolved || pollCount > 25) {
                     clearInterval(pollTimer);
                 } else if (pollCount === 3) {
                     attemptSeekFix();
