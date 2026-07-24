@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thư Viện Ảnh Làng Đại Học Quốc Gia TP.HCM (Lightbox)</title>
+    <title>Thư Viện Ảnh Làng Đại Học Quốc Gia TP.HCM</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -15,10 +15,16 @@
         h2 {
             text-align: center;
             color: #333;
+            margin-bottom: 10px;
+        }
+
+        p {
+            text-align: center;
+            color: #666;
             margin-bottom: 30px;
         }
 
-        /* --- Gallery Grid Styling --- */
+        /* --- Grid ảnh --- */
         .gallery {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -47,21 +53,21 @@
             display: block;
         }
 
-        /* --- Lightbox Styling --- */
+        /* --- Lightbox phóng to ảnh --- */
         .lightbox {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.9); /* Nền đen đậm hơn một chút */
-            display: none; /* Ẩn mặc định */
+            background-color: rgba(0, 0, 0, 0.9);
+            display: none;
             justify-content: center;
             align-items: center;
             z-index: 1000;
-            cursor: zoom-out; /* Con trỏ chuột báo hiệu có thể đóng */
+            cursor: zoom-out;
             opacity: 0;
-            transition: opacity 0.3s ease; /* Hiệu ứng mờ dần khi xuất hiện */
+            transition: opacity 0.3s ease;
         }
 
         .lightbox.open {
@@ -75,13 +81,13 @@
             border: 4px solid #fff;
             border-radius: 4px;
             box-shadow: 0 0 30px rgba(255,255,255,0.3);
-            cursor: default; /* Không đổi con trỏ khi di vào ảnh */
-            transform: scale(0.9); /* Hiệu ứng thu nhỏ nhẹ khi bắt đầu mở */
+            cursor: default;
+            transform: scale(0.9);
             transition: transform 0.3s ease;
         }
 
         .lightbox.open img {
-            transform: scale(1); /* Phóng to ảnh đến kích thước thật khi mở */
+            transform: scale(1);
         }
 
         .lightbox-close {
@@ -93,7 +99,7 @@
             font-weight: bold;
             cursor: pointer;
             z-index: 1050;
-            background: rgba(0,0,0,0.5); /* Thêm nền mờ cho nút đóng dễ nhìn */
+            background: rgba(0,0,0,0.5);
             width: 50px;
             height: 50px;
             text-align: center;
@@ -110,70 +116,70 @@
 <body>
 
     <h2>Toàn cảnh Làng Đại học Quốc gia TP.HCM</h2>
-    <p style="text-align: center; color: #666;">Nhấn vào bất kỳ ảnh nào để phóng to.</p>
+    <p>Nhấn vào bất kỳ ảnh nào để phóng to, nhấn vào dấu X hoặc ngoài màn hình để đóng.</p>
 
     <!-- Khu vực chứa lưới ảnh -->
     <div class="gallery">
-        <!-- Hình 1 -->
-        <div class="gallery-item">
-            <img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1784865778/snapvideo--Bay_l%C6%B0%E1%BB%A3n_m%E1%BB%99t_v%C3%B2ng_quanh_L%C3%A0ng_%C4%90%E1%BA%A1i_H%E1%BB%8Dc_Qu%E1%BB%91c_Gia_quochoangphoto_vnuhcm_university_landscape_fyp_-9141942_cyxkqn.jpg" alt="Làng Đại học 1">
-        </div>
-        <!-- Hình 2 -->
-        <div class="gallery-item">
-            <img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1784865778/snapvideo--Bay_l%C6%B0%E1%BB%A3n_m%E1%BB%99t_v%C3%B2ng_quanh_L%C3%A0ng_%C4%90%E1%BA%A1i_H%E1%BB%8Dc_Qu%E1%BB%91c_Gia_quochoangphoto_vnuhcm_university_landscape_fyp_-8737535_keknce.jpg" alt="Làng Đại học 2">
-        </div>
-        <!-- Hình 3 -->
-        <div class="gallery-item">
-            <img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1784865778/snapvideo--Bay_l%C6%B0%E1%BB%A3n_m%E1%BB%99t_v%C3%B2ng_quanh_L%C3%A0ng_%C4%90%E1%BA%A1i_H%E1%BB%8Dc_Qu%E1%BB%91c_Gia_quochoangphoto_vnuhcm_university_landscape_fyp_-9339107_yb5dig.jpg" alt="Làng Đại học 3">
-        </div>
-        <!-- Hình 4 -->
-        <div class="gallery-item">
-            <img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1784865778/snapvideo--Bay_l%C6%B0%E1%BB%A3n_m%E1%BB%99t_v%C3%B2ng_quanh_L%C3%A0ng_%C4%90%E1%BA%A1i_H%E1%BB%8Dc_Qu%E1%BB%91c_Gia_quochoangphoto_vnuhcm_university_landscape_fyp_-8057211_fvl6qj.jpg" alt="Làng Đại học 4">
-        </div>
-        <!-- Hình 5 -->
-        <div class="gallery-item">
-            <img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1784865777/snapvideo--Bay_l%C6%B0%E1%BB%A3n_m%E1%BB%99t_v%C3%B2ng_quanh_L%C3%A0ng_%C4%90%E1%BA%A1i_H%E1%BB%8Dc_Qu%E1%BB%91c_Gia_quochoangphoto_vnuhcm_university_landscape_fyp_-4142716_lnuk1v.jpg" alt="Làng Đại học 5">
-        </div>
-        <!-- Hình 6 -->
-        <div class="gallery-item">
-            <img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1784865777/snapvideo--Bay_l%C6%B0%E1%BB%A3n_m%E1%BB%99t_v%C3%B2ng_quanh_L%C3%A0ng_%C4%90%E1%BA%A1i_H%E1%BB%8Dc_Qu%E1%BB%91c_Gia_quochoangphoto_vnuhcm_university_landscape_fyp_-6829372_f21zid.jpg" alt="Làng Đại học 6">
-        </div>
-        <!-- Hình 7 -->
-        <div class="gallery-item">
-            <img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1784865777/snapvideo--Bay_l%C6%B0%E1%BB%A3n_m%E1%BB%99t_v%C3%B2ng_quanh_L%C3%A0ng_%C4%90%E1%BA%A1i_H%E1%BB%8Dc_Qu%E1%BB%91c_Gia_quochoangphoto_vnuhcm_university_landscape_fyp_-6387305_yknpm3.jpg" alt="Làng Đại học 7">
-        </div>
-        <!-- Hình 8 -->
-        <div class="gallery-item">
-            <img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1784865777/snapvideo--Bay_l%C6%B0%E1%BB%A3n_m%E1%BB%99t_v%C3%B2ng_quanh_L%C3%A0ng_%C4%90%E1%BA%A1i_H%E1%BB%8Dc_Qu%E1%BB%91c_Gia_quochoangphoto_vnuhcm_university_landscape_fyp_-6454120_xyz48l.jpg" alt="Làng Đại học 8">
-        </div>
-        <!-- Hình 9 -->
-        <div class="gallery-item">
-            <img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1784865777/snapvideo--Bay_l%C6%B0%E1%BB%A3n_m%E1%BB%99t_v%C3%B2ng_quanh_L%C3%A0ng_%C4%90%E1%BA%A1i_H%E1%BB%8Dc_Qu%E1%BB%91c_Gia_quochoangphoto_vnuhcm_university_landscape_fyp_-7453969_fc7bgs.jpg" alt="Làng Đại học 9">
-        </div>
-        <!-- Hình 10 -->
-        <div class="gallery-item">
-            <img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1784865777/snapvideo--Bay_l%C6%B0%E1%BB%A3n_m%E1%BB%99t_v%C3%B2ng_quanh_L%C3%A0ng_%C4%90%E1%BA%A1i_H%E1%BB%8Dc_Qu%E1%BB%91c_Gia_quochoangphoto_vnuhcm_university_landscape_fyp_-7940519_gdzqph.jpg" alt="Làng Đại học 10">
-        </div>
-        <!-- Hình 11 -->
-        <div class="gallery-item">
-            <img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1784865776/snapvideo--Bay_l%C6%B0%E1%BB%A3n_m%E1%BB%99t_v%C3%B2ng_quanh_L%C3%A0ng_%C4%90%E1%BA%A1i_H%E1%BB%8Dc_Qu%E1%BB%91c_Gia_quochoangphoto_vnuhcm_university_landscape_fyp_-5491693_te4d21.jpg" alt="Làng Đại học 11">
-        </div>
-        <!-- Hình 12 -->
-        <div class="gallery-item">
-            <img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1784865776/snapvideo--Bay_l%C6%B0%E1%BB%A3n_m%E1%BB%99t_v%C3%B2ng_quanh_L%C3%A0ng_%C4%90%E1%BA%A1i_H%E1%BB%8Dc_Qu%E1%BB%91c_Gia_quochoangphoto_vnuhcm_university_landscape_fyp_-3443359_dizjte.jpg" alt="Làng Đại học 12">
-        </div>
-        <!-- Hình 13 -->
-        <div class="gallery-item">
-            <img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1784865776/snapvideo--Bay_l%C6%B0%E1%BB%A3n_m%E1%BB%99t_v%C3%B2ng_quanh_L%C3%A0ng_%C4%90%E1%BA%A1i_H%E1%BB%8Dc_Qu%E1%BB%91c_Gia_quochoangphoto_vnuhcm_university_landscape_fyp_-3805324_pxbspl.jpg" alt="Làng Đại học 13">
-        </div>
-        <!-- Hình 14 -->
-        <div class="gallery-item">
-            <img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1784865776/snapvideo--Bay_l%C6%B0%E1%BB%A3n_m%E1%BB%99t_v%C3%B2ng_quanh_L%C3%A0ng_%C4%90%E1%BA%A1i_H%E1%BB%8Dc_Qu%E1%BB%91c_Gia_quochoangphoto_vnuhcm_university_landscape_fyp_-1983071_ltbhzr.jpg" alt="Làng Đại học 14">
-        </div>
-        <!-- Hình 15 -->
-        <div class="gallery-item">
-            <img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1784865776/snapvideo--Bay_l%C6%B0%E1%BB%A3n_m%E1%BB%99t_v%C3%B2ng_quanh_L%C3%A0ng_%C4%90%E1%BA%A1i_H%E1%BB%8Dc_Qu%E1%BB%91c_Gia_quochoangphoto_vnuhcm_university_landscape_fyp_-1126773_ok2fbs.jpg" alt="Làng Đại học 15">
-        </div>
-        <!-- Hình 16 -->
-        <div class="gallery-item">
-            <img src="
+        <div class="gallery-item"><img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1784865778/snapvideo--Bay_l%C6%B0%E1%BB%A3n_m%E1%BB%99t_v%C3%B2ng_quanh_L%C3%A0ng_%C4%90%E1%BA%A1i_H%E1%BB%8Dc_Qu%E1%BB%91c_Gia_quochoangphoto_vnuhcm_university_landscape_fyp_-9141942_cyxkqn.jpg" alt="Làng ĐHQG 1"></div>
+        <div class="gallery-item"><img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1784865778/snapvideo--Bay_l%C6%B0%E1%BB%A3n_m%E1%BB%99t_v%C3%B2ng_quanh_L%C3%A0ng_%C4%90%E1%BA%A1i_H%E1%BB%8Dc_Qu%E1%BB%91c_Gia_quochoangphoto_vnuhcm_university_landscape_fyp_-8737535_keknce.jpg" alt="Làng ĐHQG 2"></div>
+        <div class="gallery-item"><img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1784865778/snapvideo--Bay_l%C6%B0%E1%BB%A3n_m%E1%BB%99t_v%C3%B2ng_quanh_L%C3%A0ng_%C4%90%E1%BA%A1i_H%E1%BB%8Dc_Qu%E1%BB%91c_Gia_quochoangphoto_vnuhcm_university_landscape_fyp_-9339107_yb5dig.jpg" alt="Làng ĐHQG 3"></div>
+        <div class="gallery-item"><img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1784865778/snapvideo--Bay_l%C6%B0%E1%BB%A3n_m%E1%BB%99t_v%C3%B2ng_quanh_L%C3%A0ng_%C4%90%E1%BA%A1i_H%E1%BB%8Dc_Qu%E1%BB%91c_Gia_quochoangphoto_vnuhcm_university_landscape_fyp_-8057211_fvl6qj.jpg" alt="Làng ĐHQG 4"></div>
+        <div class="gallery-item"><img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1784865777/snapvideo--Bay_l%C6%B0%E1%BB%A3n_m%E1%BB%99t_v%C3%B2ng_quanh_L%C3%A0ng_%C4%90%E1%BA%A1i_H%E1%BB%8Dc_Qu%E1%BB%91c_Gia_quochoangphoto_vnuhcm_university_landscape_fyp_-4142716_lnuk1v.jpg" alt="Làng ĐHQG 5"></div>
+        <div class="gallery-item"><img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1784865777/snapvideo--Bay_l%C6%B0%E1%BB%A3n_m%E1%BB%99t_v%C3%B2ng_quanh_L%C3%A0ng_%C4%90%E1%BA%A1i_H%E1%BB%8Dc_Qu%E1%BB%91c_Gia_quochoangphoto_vnuhcm_university_landscape_fyp_-6829372_f21zid.jpg" alt="Làng ĐHQG 6"></div>
+        <div class="gallery-item"><img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1784865777/snapvideo--Bay_l%C6%B0%E1%BB%A3n_m%E1%BB%99t_v%C3%B2ng_quanh_L%C3%A0ng_%C4%90%E1%BA%A1i_H%E1%BB%8Dc_Qu%E1%BB%91c_Gia_quochoangphoto_vnuhcm_university_landscape_fyp_-6387305_yknpm3.jpg" alt="Làng ĐHQG 7"></div>
+        <div class="gallery-item"><img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1784865777/snapvideo--Bay_l%C6%B0%E1%BB%A3n_m%E1%BB%99t_v%C3%B2ng_quanh_L%C3%A0ng_%C4%90%E1%BA%A1i_H%E1%BB%8Dc_Qu%E1%BB%91c_Gia_quochoangphoto_vnuhcm_university_landscape_fyp_-6454120_xyz48l.jpg" alt="Làng ĐHQG 8"></div>
+        <div class="gallery-item"><img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1784865777/snapvideo--Bay_l%C6%B0%E1%BB%A3n_m%E1%BB%99t_v%C3%B2ng_quanh_L%C3%A0ng_%C4%90%E1%BA%A1i_H%E1%BB%8Dc_Qu%E1%BB%91c_Gia_quochoangphoto_vnuhcm_university_landscape_fyp_-7453969_fc7bgs.jpg" alt="Làng ĐHQG 9"></div>
+        <div class="gallery-item"><img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1784865777/snapvideo--Bay_l%C6%B0%E1%BB%A3n_m%E1%BB%99t_v%C3%B2ng_quanh_L%C3%A0ng_%C4%90%E1%BA%A1i_H%E1%BB%8Dc_Qu%E1%BB%91c_Gia_quochoangphoto_vnuhcm_university_landscape_fyp_-7940519_gdzqph.jpg" alt="Làng ĐHQG 10"></div>
+        <div class="gallery-item"><img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1784865776/snapvideo--Bay_l%C6%B0%E1%BB%A3n_m%E1%BB%99t_v%C3%B2ng_quanh_L%C3%A0ng_%C4%90%E1%BA%A1i_H%E1%BB%8Dc_Qu%E1%BB%91c_Gia_quochoangphoto_vnuhcm_university_landscape_fyp_-5491693_te4d21.jpg" alt="Làng ĐHQG 11"></div>
+        <div class="gallery-item"><img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1784865776/snapvideo--Bay_l%C6%B0%E1%BB%A3n_m%E1%BB%99t_v%C3%B2ng_quanh_L%C3%A0ng_%C4%90%E1%BA%A1i_H%E1%BB%8Dc_Qu%E1%BB%91c_Gia_quochoangphoto_vnuhcm_university_landscape_fyp_-3443359_dizjte.jpg" alt="Làng ĐHQG 12"></div>
+        <div class="gallery-item"><img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1784865776/snapvideo--Bay_l%C6%B0%E1%BB%A3n_m%E1%BB%99t_v%C3%B2ng_quanh_L%C3%A0ng_%C4%90%E1%BA%A1i_H%E1%BB%8Dc_Qu%E1%BB%91c_Gia_quochoangphoto_vnuhcm_university_landscape_fyp_-3805324_pxbspl.jpg" alt="Làng ĐHQG 13"></div>
+        <div class="gallery-item"><img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1784865776/snapvideo--Bay_l%C6%B0%E1%BB%A3n_m%E1%BB%99t_v%C3%B2ng_quanh_L%C3%A0ng_%C4%90%E1%BA%A1i_H%E1%BB%8Dc_Qu%E1%BB%91c_Gia_quochoangphoto_vnuhcm_university_landscape_fyp_-1983071_ltbhzr.jpg" alt="Làng ĐHQG 14"></div>
+        <div class="gallery-item"><img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1784865776/snapvideo--Bay_l%C6%B0%E1%BB%A3n_m%E1%BB%99t_v%C3%B2ng_quanh_L%C3%A0ng_%C4%90%E1%BA%A1i_H%E1%BB%8Dc_Qu%E1%BB%91c_Gia_quochoangphoto_vnuhcm_university_landscape_fyp_-1126773_ok2fbs.jpg" alt="Làng ĐHQG 15"></div>
+        <div class="gallery-item"><img src="https://res.cloudinary.com/oy7u6ywg/image/upload/v1784865776/snapvideo--Bay_l%C6%B0%E1%BB%A3n_m%E1%BB%99t_v%C3%B2ng_quanh_L%C3%A0ng_%C4%90%E1%BA%A1i_H%E1%BB%8Dc_Qu%E1%BB%91c_Gia_quochoangphoto_vnuhcm_university_landscape_fyp_-4886101_awwwzt.jpg" alt="Làng ĐHQG 16"></div>
+    </div>
+
+    <!-- Khung Lightbox Phóng to -->
+    <div class="lightbox" id="lightbox">
+        <span class="lightbox-close" id="lightbox-close">&times;</span>
+        <img id="lightbox-img" src="" alt="Phóng to">
+    </div>
+
+    <!-- JavaScript Xử Lý Sự Kiện -->
+    <script>
+        const galleryImages = document.querySelectorAll('.gallery-item img');
+        const lightbox = document.getElementById('lightbox');
+        const lightboxImg = document.getElementById('lightbox-img');
+        const lightboxClose = document.getElementById('lightbox-close');
+
+        // Bấm vào ảnh nào thì mở ảnh đó lên
+        galleryImages.forEach(img => {
+            img.addEventListener('click', () => {
+                lightboxImg.src = img.src;
+                lightbox.classList.add('open');
+            });
+        });
+
+        // Hàm đóng lightbox
+        function closeLightbox() {
+            lightbox.classList.remove('open');
+        }
+
+        // Bấm vào nút X để đóng
+        lightboxClose.addEventListener('click', closeLightbox);
+
+        // Bấm vào khoảng đen bên ngoài ảnh để đóng
+        lightbox.addEventListener('click', (e) => {
+            if (e.target === lightbox) {
+                closeLightbox();
+            }
+        });
+
+        // Nhấn phím ESC trên bàn phím cũng để đóng
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeLightbox();
+            }
+        });
+    </script>
+</body>
+</html>
