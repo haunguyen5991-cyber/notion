@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bộ Sưu Tập Xuân Sang Trọng</title>
+    <title>Bộ Sưu Tập Bcons</title>
     <style>
         * {
             box-sizing: border-box;
@@ -284,40 +284,6 @@
     </div>
 
     <script>
-        const imageUrls = [
-            "https://res.cloudinary.com/oy7u6ywg/image/upload/v1784999645/IMG_7292_rhe5jz.jpg",
-            "https://res.cloudinary.com/oy7u6ywg/image/upload/v1784999645/IMG_7290_iptskz.jpg",
-            "https://res.cloudinary.com/oy7u6ywg/image/upload/v1784999645/IMG_7288_tr1fu4.jpg",
-            "https://res.cloudinary.com/oy7u6ywg/image/upload/v1784999644/IMG_7284_f8gysy.jpg",
-            "https://res.cloudinary.com/oy7u6ywg/image/upload/v1784999644/IMG_7285_z2u062.jpg",
-            "https://res.cloudinary.com/oy7u6ywg/image/upload/v1784999639/IMG_7281_samx29.jpg",
-            "https://res.cloudinary.com/oy7u6ywg/image/upload/v1784999639/IMG_7280_h8fxf8.jpg",
-            "https://res.cloudinary.com/oy7u6ywg/image/upload/v1784999639/IMG_7276_nwhcq3.jpg",
-            "https://res.cloudinary.com/oy7u6ywg/image/upload/v1784999637/IMG_7271_c9t7x3.jpg",
-            "https://res.cloudinary.com/oy7u6ywg/image/upload/v1784999638/IMG_7275_ljlcek.jpg",
-            "https://res.cloudinary.com/oy7u6ywg/image/upload/v1784999633/IMG_7270_eukzw7.jpg",
-            "https://res.cloudinary.com/oy7u6ywg/image/upload/v1784999631/IMG_7267_vvttvy.jpg",
-            "https://res.cloudinary.com/oy7u6ywg/image/upload/v1784999632/IMG_7269_v5mque.jpg",
-            "https://res.cloudinary.com/oy7u6ywg/image/upload/v1784999630/IMG_7262_ldzl4e.jpg",
-            "https://res.cloudinary.com/oy7u6ywg/image/upload/v1784999626/IMG_7257_pc3yw1.jpg",
-            "https://res.cloudinary.com/oy7u6ywg/image/upload/v1784999625/IMG_7254_ial9x5.jpg",
-            "https://res.cloudinary.com/oy7u6ywg/image/upload/v1784999624/IMG_7245_zhf3xp.jpg",
-            "https://res.cloudinary.com/oy7u6ywg/image/upload/v1784999624/IMG_7240_h0ntaw.jpg",
-            "https://res.cloudinary.com/oy7u6ywg/image/upload/v1784999624/IMG_7238_yblq82.jpg",
-            "https://res.cloudinary.com/oy7u6ywg/image/upload/v1784999623/IMG_7237_h9rgbu.jpg",
-            "https://res.cloudinary.com/oy7u6ywg/image/upload/v1784999619/IMG_7230_ixnnez.jpg",
-            "https://res.cloudinary.com/oy7u6ywg/image/upload/v1784999620/IMG_7232_ohpx5z.jpg",
-            "https://res.cloudinary.com/py7u6ywg/image/upload/v1784999619/IMG_7223_maarhu.jpg", // corrected slight typo if any
-            "https://res.cloudinary.com/oy7u6ywg/image/upload/v1784999619/IMG_7223_maarhu.jpg",
-            "https://res.cloudinary.com/oy7u6ywg/image/upload/v1784999619/IMG_7222_vj8ezg.jpg",
-            "https://res.cloudinary.com/oy7u6ywg/image/upload/v1784999618/IMG_7220_qquvp9.jpg",
-            "https://res.cloudinary.com/oy7u6ywg/image/upload/v1784999596/IMG_7208_opgw3s.jpg",
-            "https://res.cloudinary.com/oy7u6ywg/image/upload/v1784999596/IMG_7216_c583wd.jpg",
-            "https://res.cloudinary.com/oy7u6ywg/image/upload/v1784999595/IMG_7197_hclsa8.jpg",
-            "https://res.cloudinary.com/oy7u6ywg/image/upload/v1784999638/IMG_7275_ljlcek.jpg" // rounded up to 30 unique/valid urls from list
-        ];
-
-        // Replace with exact full list provided by user ensuring 30 items
         const exactUrls = [
             "https://res.cloudinary.com/oy7u6ywg/image/upload/v1784999645/IMG_7292_rhe5jz.jpg",
             "https://res.cloudinary.com/oy7u6ywg/image/upload/v1784999645/IMG_7290_iptskz.jpg",
@@ -361,7 +327,6 @@
 
         let currentIndex = 0;
 
-        // Render gallery
         exactUrls.forEach((url, index) => {
             const item = document.createElement('div');
             item.className = 'gallery-item';
@@ -403,14 +368,12 @@
         lightboxPrev.addEventListener('click', showPrev);
         lightboxNext.addEventListener('click', showNext);
 
-        // Close on clicking outside image
         lightbox.addEventListener('click', (e) => {
             if (e.target === lightbox) {
                 closeLightbox();
             }
         });
 
-        // Keyboard navigation
         document.addEventListener('keydown', (e) => {
             if (!lightbox.classList.contains('active')) return;
             if (e.key === 'Escape') closeLightbox();
@@ -426,5 +389,3 @@
     </script>
 </body>
 </html>
-spring_gallery.html
-Đang hiển thị spring_gallery.html.
