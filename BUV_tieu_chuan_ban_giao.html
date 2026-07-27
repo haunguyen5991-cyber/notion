@@ -200,30 +200,12 @@
   #mainMediaWrap img.zoomable { cursor: zoom-in; }
   #mainMediaWrap img.zoomable.zoomed { cursor: grab; }
   #mainMediaWrap img.zoomable.zoomed.dragging { cursor: grabbing; }
-  
-  .zoom-hint {
-    position: absolute;
-    bottom: 4px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: rgba(0,0,0,0.45);
-    color: rgba(255,255,255,0.85);
-    font-size: 10px;
-    padding: 3px 8px;
-    border-radius: 10px;
-    pointer-events: none;
-    z-index: 10;
-    opacity: 0;
-    transition: opacity 0.3s;
-  }
-  .main-view:hover .zoom-hint { opacity: 1; }
 </style>
 </head>
 <body>
   <div class="gallery">
     <div class="main-view" id="mainView">
       <div class="counter" id="counter">1 / 10</div>
-      <div class="zoom-hint" id="zoomHint">Kéo thanh trượt hoặc cuộn để phóng to • Kéo rê để xem chi tiết</div>
       <div id="mainMediaWrap"></div>
       
       <div class="bottom-controls-container" id="controlsContainer">
@@ -285,7 +267,6 @@
 
       document.getElementById('counter').textContent = (currentIndex + 1) + ' / ' + items.length;
       document.getElementById('counter').style.zIndex = "10";
-      document.getElementById('zoomHint').style.display = (item.type === 'video') ? 'none' : 'block';
       
       updateThumbs();
       resetZoom();
