@@ -309,6 +309,9 @@
       }
     ];
 
+    // Tọa độ (theo hệ trục ảnh gốc) của khu vực quan trọng cần hiển thị đầu tiên khi mở trang
+    const FOCUS_POINT = { x: 1560, y: 1180 }; // Khu vực quanh căn K11
+
     const SVG_NS = 'http://www.w3.org/2000/svg';
     const img = document.getElementById('masterplanImg');
     const svg = document.getElementById('hotspotSvg');
@@ -323,6 +326,7 @@
     let startPanX = 0, startPanY = 0;
     let renderW = 0, renderH = 0;
     let minX = 0, maxX = 0, minY = 0, maxY = 0;
+    let hasFocused = false;
 
     function clamp(v, lo, hi) { return Math.min(hi, Math.max(lo, v)); }
 
@@ -364,6 +368,24 @@
       }
     }
 
+    // Trên bản desktop / khi nhúng (embed) và trang có thể cuộn dọc theo body,
+    // hàm này sẽ cuộn trang để khu vực FOCUS_POINT nằm giữa màn hình thay vì
+    // luôn hiển thị mép trên cùng của ảnh khi vừa tải xong.
+    function scrollToFocusArea() {
+      if (mobileQuery.matches) return; // Mobile đã tự pan căn giữa trong positionSVG()
+      const nw = img.naturalWidth;
+      const nh = img.naturalHeight;
+      if (!nw || !nh) return;
+
+      requestAnimationFrame(() => {
+        const rect = img.getBoundingClientRect();
+        const scaleFactor = rect.width / nw;
+        const focusYOnPage = rect.top + window.pageYOffset + (FOCUS_POINT.y * scaleFactor);
+        const targetScroll = focusYOnPage - (window.innerHeight / 2);
+        window.scrollTo({ top: Math.max(0, targetScroll), left: 0, behavior: 'auto' });
+      });
+    }
+
     function positionSVG() {
       const cw = container.clientWidth;
       const ch = container.clientHeight;
@@ -372,6 +394,7 @@
       if (!nw || !nh || !cw || !ch) return;
 
       if (mobileQuery.matches) {
+        // Phóng vừa đủ để lấp đầy màn hình, sau đó canh giữa theo khu vực quan trọng (FOCUS_POINT)
         const scale = Math.max(cw / nw, ch / nh);
         renderW = nw * scale;
         renderH = nh * scale;
@@ -379,7 +402,7 @@
         img.style.position = 'absolute';
         img.style.width = renderW + 'px';
         img.style.height = renderH + 'px';
-        
+
         svg.style.left = '0px';
         svg.style.top = '0px';
         svg.style.width = renderW + 'px';
@@ -387,8 +410,14 @@
 
         minX = cw - renderW;
         minY = ch - renderH;
-        panX = clamp((cw - renderW) / 2, minX, 0);
-        panY = clamp((ch - renderH) / 2, minY, 0);
+
+        if (!hasFocused) {
+          // Căn giữa màn hình vào đúng khu vực quan trọng (FOCUS_POINT) thay vì mép trên cùng của ảnh
+          const focusRenderX = FOCUS_POINT.x * scale;
+          const focusRenderY = FOCUS_POINT.y * scale;
+          panX = clamp(cw / 2 - focusRenderX, minX, 0);
+          panY = clamp(ch / 2 - focusRenderY, minY, 0);
+        }
 
         applyMapTransform();
       } else {
@@ -403,7 +432,13 @@
         svg.style.width = renderW + 'px';
         svg.style.height = renderH + 'px';
         applyMapTransform();
+
+        if (!hasFocused) {
+          scrollToFocusArea();
+        }
       }
+
+      hasFocused = true;
     }
 
     function buildSVG() {
@@ -454,6 +489,7 @@
     mobileQuery.addEventListener('change', () => {
       mapZoomScale = 1;
       zoomSlider.value = 1;
+      hasFocused = false;
       refresh();
     });
 
