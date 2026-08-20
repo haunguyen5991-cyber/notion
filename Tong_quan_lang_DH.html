@@ -57,14 +57,16 @@
     position: relative;
   }
 
-  #mainMediaWrap video {
+  #mainMediaWrap video,
+  #mainMediaWrap iframe {
     width: 100%;
     height: 100%;
     max-width: 100%;
     max-height: 100%;
     min-width: 0;
     min-height: 0;
-    object-fit: contain; /* Video giữ nguyên tỉ lệ nguyên bản */
+    object-fit: contain; /* Giữ nguyên tỉ lệ và khung media hiện tại */
+    border: 0;
   }
 
   #mainMediaWrap img {
@@ -202,27 +204,31 @@
 
   <script>
     const items = [
-      { url: 'https://res.cloudinary.com/oy7u6ywg/video/upload/v1784437569/Cung_%C4%91%C6%B0%E1%BB%9Dng_4_rsdjml.mp4', title: 'Cung đường đẹp của làng Đại Học', type: 'video' },
-      { url: 'https://res.cloudinary.com/oy7u6ywg/video/upload/v1784389835/Ho%C3%A0ng_h%C3%B4n_l%C3%A0ng_%C4%90H_zrrw5e.mp4', title: 'Hoàng hôn lãng mạn tại làng Đại Học', type: 'video' },
-      { url: 'https://res.cloudinary.com/oy7u6ywg/video/upload/v1784389491/Cung_%C4%91%C6%B0%E1%BB%9Dng_%C4%91%E1%BA%B9p_sgao17.mp4', title: 'Không gian xanh mát như Đà Lạt', type: 'video' },
-      { url: 'https://res.cloudinary.com/oy7u6ywg/video/upload/v1784389490/1784380959215_1912694273111558205_7085495023723622370_sfztkj.mp4', title: 'Giao thông tại cung đường đẹp nhất làng làng Đại Học', type: 'video' },
-      { url: 'https://res.cloudinary.com/oy7u6ywg/video/upload/v1784389485/1784380959204_1912694273111558205_7085495023723622370_shzlaj.mp4', title: 'Góc nhìn hạ tầng từ trên cao của làng Đại Học', type: 'video' }
+      { url: 'https://youtu.be/CxqEJzdwX4s', title: 'Cung đường đẹp của làng Đại Học', type: 'video' },
+      { url: 'https://youtu.be/ra4n5IUobuQ', title: 'Hoàng hôn lãng mạn tại làng Đại Học', type: 'video' },
+      { url: 'https://youtu.be/M56YrOQ9eh4', title: 'Không gian xanh mát như Đà Lạt', type: 'video' },
+      { url: 'https://youtube.com/shorts/N10dEUTTUqo', title: 'Giao thông tại cung đường đẹp nhất làng làng Đại Học', type: 'video' },
+      { url: 'https://youtube.com/shorts/TOgJXxuttEg', title: 'Góc nhìn hạ tầng từ trên cao của làng Đại Học', type: 'video' }
     ];
 
     let currentIndex = 0;
     let isInitialLoad = true;
     let captionTimeout = null;
 
+    function getYouTubeId(videoUrl) {
+      const match = videoUrl.match(/(?:youtu\.be\/|youtube(?:-nocookie)?\.com\/(?:watch\?v=|embed\/|shorts\/))([A-Za-z0-9_-]{11})/);
+      return match ? match[1] : null;
+    }
     function getVideoThumbUrl(videoUrl) {
+      const youtubeId = getYouTubeId(videoUrl);
+      if (youtubeId) return 'https://i.ytimg.com/vi/' + youtubeId + '/hqdefault.jpg';
       return videoUrl
         .replace('/video/upload/', '/video/upload/so_0/')
         .replace(/\.(mov|mp4)(\?.*)?$/i, '.jpg$2');
     }
-
     function getPlayableVideoUrl(videoUrl) {
       return videoUrl.replace(/\.mov(\?.*)?$/i, '.mp4$1');
     }
-
     function updateMain(shouldAutoplay = false) {
       const item = items[currentIndex];
       const wrap = document.getElementById('mainMediaWrap');
@@ -233,24 +239,30 @@
       }
 
       if (item.type === 'video') {
-        const videoEl = document.createElement('video');
-        videoEl.src = getPlayableVideoUrl(item.url);
-        videoEl.controls = true;
-        videoEl.playsInline = true;
-        videoEl.setAttribute('preload', 'auto');
-        videoEl.poster = getVideoThumbUrl(item.url); 
-        
-        wrap.appendChild(videoEl);
-
-        if (shouldAutoplay) {
-          videoEl.autoplay = true;
-          videoEl.play().catch(err => {
-            console.log("Autoplay blocked:", err);
-            videoEl.muted = true;
-            videoEl.play().catch(e => console.log("Muted play failed:", e));
-          });
+        const youtubeId = getYouTubeId(item.url);
+        if (youtubeId) {
+          const iframe = document.createElement('iframe');
+          iframe.src = 'https://www.youtube-nocookie.com/embed/' + youtubeId + '?autoplay=' + (shouldAutoplay ? '1' : '0') + '&mute=1&rel=0&playsinline=1';
+          iframe.title = item.title;
+          iframe.allow = 'autoplay; encrypted-media; picture-in-picture';
+          iframe.allowFullscreen = true;
+          wrap.appendChild(iframe);
+        } else {
+          const videoEl = document.createElement('video');
+          videoEl.src = getPlayableVideoUrl(item.url);
+          videoEl.controls = true;
+          videoEl.playsInline = true;
+          videoEl.setAttribute('preload', 'auto');
+          videoEl.poster = getVideoThumbUrl(item.url);
+          wrap.appendChild(videoEl);
+          if (shouldAutoplay) {
+            videoEl.autoplay = true;
+            videoEl.play().catch(() => {
+              videoEl.muted = true;
+              videoEl.play().catch(() => {});
+            });
+          }
         }
-
         // Tạo hiệu ứng chú thích chữ to rõ hùng dũng
         const captionEl = document.createElement('div');
         captionEl.className = 'video-caption';
