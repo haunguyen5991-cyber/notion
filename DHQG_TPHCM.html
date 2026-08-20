@@ -57,14 +57,16 @@
     position: relative;
   }
 
-  #mainMediaWrap video {
+  #mainMediaWrap video,
+  #mainMediaWrap iframe {
     width: 100%;
     height: 100%;
     max-width: 100%;
     max-height: 100%;
     min-width: 0;
     min-height: 0;
-    object-fit: contain; /* Video vẫn giữ tỉ lệ nguyên bản như cũ */
+    object-fit: contain; /* Giữ nguyên tỉ lệ và khung media hiện tại */
+    border: 0;
   }
 
   #mainMediaWrap img {
@@ -222,7 +224,14 @@
     let isInitialLoad = true;
     let captionTimeout = null;
 
+    function getYouTubeId(videoUrl) {
+      const match = videoUrl.match(/(?:youtu\.be\/|youtube(?:-nocookie)?\.com\/(?:watch\?v=|embed\/))([A-Za-z0-9_-]{11})/);
+      return match ? match[1] : null;
+    }
+
     function getVideoThumbUrl(videoUrl) {
+      const youtubeId = getYouTubeId(videoUrl);
+      if (youtubeId) return 'https://i.ytimg.com/vi/' + youtubeId + '/hqdefault.jpg';
       return videoUrl
         .replace('/video/upload/', '/video/upload/so_0/')
         .replace(/\.(mov|mp4)(\?.*)?$/i, '.jpg$2');
@@ -242,18 +251,23 @@
       }
 
       if (item.type === 'video') {
-        const videoEl = document.createElement('video');
-        videoEl.src = getPlayableVideoUrl(item.url);
-        videoEl.controls = true;
-        videoEl.playsInline = true;
-        videoEl.poster = getVideoThumbUrl(item.url);
-        
-        if (shouldAutoplay) {
-          videoEl.autoplay = true;
+        const youtubeId = getYouTubeId(item.url);
+        if (youtubeId) {
+          const iframe = document.createElement('iframe');
+          iframe.src = 'https://www.youtube-nocookie.com/embed/' + youtubeId + '?autoplay=' + (shouldAutoplay ? '1' : '0') + '&mute=1&rel=0&playsinline=1';
+          iframe.title = item.title;
+          iframe.allow = 'autoplay; encrypted-media; picture-in-picture';
+          iframe.allowFullscreen = true;
+          wrap.appendChild(iframe);
+        } else {
+          const videoEl = document.createElement('video');
+          videoEl.src = getPlayableVideoUrl(item.url);
+          videoEl.controls = true;
+          videoEl.playsInline = true;
+          videoEl.poster = getVideoThumbUrl(item.url);
+          if (shouldAutoplay) videoEl.autoplay = true;
+          wrap.appendChild(videoEl);
         }
-        
-        wrap.appendChild(videoEl);
-
         const captionEl = document.createElement('div');
         captionEl.className = 'video-caption';
         captionEl.textContent = item.title;
