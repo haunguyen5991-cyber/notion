@@ -2,3 +2,57 @@
 - [x] Cập nhật cả 4 URL YouTube (#01, #02, #03, #04) vào Bcons_Uni_Valley.html theo yêu cầu người dùng, không loại slot do trạng thái claim.
 - [x] Kiểm tra lại autoplay muted, khung gallery và xác nhận không có zoom.
 - [x] Commit và push bản cập nhật lên GitHub Pages.
+- [ ] Cho phép người xem bật âm thanh khi tương tác hoặc bấm Play trong YouTube embed, giữ autoplay ban đầu muted.
+- [ ] Kiểm tra tham số embed và phát hành thay đổi âm thanh lên GitHub Pages.
+- [x] Nâng cao độ phân giải và độ rõ ảnh công trình, giữ nguyên nội dung và bố cục gốc.
+- [ ] Giải nén và kiểm kê toàn bộ ảnh trong 7.zip.
+- [ ] Nâng cấp chất lượng và tăng độ sáng nhẹ cho từng ảnh, giữ nguyên nội dung và bố cục.
+- [ ] Kiểm tra và bàn giao các ảnh đã xử lý cùng bản nén tổng hợp nếu cần.
+- [ ] Thêm logo Thiên Hạo và chữ “Thiên Hạo” dạng watermark tinh tế vào các ảnh trong bộ ảnh còn lại, không che khuất công trình.
+- [x] Xử lý bổ sung ảnh Trường Đại học Khoa học Tự nhiên: nâng chất lượng, tăng sáng nhẹ và thêm logo/chữ Thiên Hạo.
+- [x] Hoàn thiện 7 ảnh còn lại trong 7.zip, để bộ tổng cộng đủ 8 ảnh cùng chất lượng và watermark Thiên Hạo.
+- [x] Bổ sung xử lý bốn ảnh còn thiếu trong bộ 8 ảnh.
+- [x] Tạo lại ZIP chứa đủ 8 ảnh đã xử lý và kiểm tra danh sách tệp trước khi gửi.
+- [x] Cập nhật watermark cao cấp: logo Thiên Hạo, chữ “Thiên Hạo” cao dày, quầng sáng nhẹ và dulieunhapho.com tinh tế trên bộ ảnh.
+- [x] Tạo ZIP đủ 9 ảnh bản nâng chất lượng không watermark.
+- [x] Tạo ZIP đủ 9 ảnh bản nâng chất lượng có watermark cao cấp Thiên Hạo và dulieunhapho.com.
+- [x] Kiểm tra mỗi ZIP có đúng 9 tệp trước khi gửi.
+- [x] Bổ sung ảnh BK campus thứ chín vào cả bộ không watermark và bộ watermark.
+- [x] Cập nhật hai ZIP thành đủ 9 ảnh và kiểm tra số lượng tệp.
+- [ ] Kiểm kê ZIP mới và xác nhận đủ ảnh nguồn.
+- [ ] Loại bỏ watermark/logo cũ khỏi bản có watermark hiện tại.
+- [ ] Tạo bản ZIP không logo và bản ZIP dùng đúng logo mới người dùng gửi.
+- [ ] Kiểm tra số lượng tệp và bàn giao hai ZIP mới.
+- [ ] Giữ nguyên watermark/logo hiện tại; chỉ bổ sung logo mới người dùng gửi vào bản có watermark.
+- [ ] Xóa watermark cũ dính trực tiếp trong ảnh.
+- [ ] Thay bằng logo mới + “Thiên Hạo” + “dulieunhapho.com”.
+- [ ] Tạo lại hai ZIP riêng: không watermark và watermark mới.
+- [x] Người dùng xác nhận quyền chỉnh sửa ảnh và duyệt xử lý watermark cũ.
+- [ ] Loại bỏ toàn bộ watermark cũ và watermark mới khỏi bộ ảnh.
+- [ ] Tạo ZIP chỉ chứa ảnh sạch không watermark và kiểm tra số lượng tệp.
+- [ ] Áp dụng watermark theo mẫu chuẩn: logo trắng góc dưới phải, “Thiên Hạo” lớn cao dày, `dulieunhapho.com` nhỏ bên dưới, quầng sáng nhẹ cho đủ 9 ảnh.
+- [ ] Kiểm tra lại nguồn ảnh và mức độ bể của bộ ZIP hiện tại.
+- [ ] Upscale phục hồi chi tiết thật sự, không chỉ kéo giãn kích thước.
+- [ ] Áp dụng lại watermark mẫu đã duyệt và đóng gói ZIP chất lượng cao.
+- [x] Người dùng duyệt chất lượng upscale test.
+- [ ] Triển khai upscale cùng watermark mẫu cho đủ 9 ảnh.
+- [ ] Kiểm kê các bản ảnh đã upscale, tăng sáng và chưa thêm watermark/logo.
+- [ ] Chỉ đóng gói đúng các bản ảnh sạch đó thành một ZIP, không chỉnh sửa hoặc xuất bản thêm.
+- [x] Dùng lại toàn bộ ảnh sạch đã upscale hiện có, bao gồm 7-2-enhanced.png.
+- [x] Nén từng ảnh xuống dưới 5 MB và tạo ZIP mới.
+- [x] Kiểm tra dung lượng từng ảnh và danh sách ZIP trước khi gửi.
+- [ ] Kiểm kê các ảnh còn lại chưa có trong ZIP sạch.
+- [ ] Chọn bản sạch không watermark, nén dưới 5 MB và bổ sung vào ZIP.
+- [ ] Kiểm tra lại toàn bộ ZIP sau khi bổ sung ảnh còn lại.
+- [ ] Chỉ xác định các ảnh còn thiếu thuộc bộ 9 ảnh đầu.
+- [ ] Loại trừ hoàn toàn các ảnh có watermark/logo khỏi kết quả mới.
+- [ ] Xử lý sạch, nén dưới 5 MB và cập nhật ZIP cho các ảnh còn thiếu.
+- [x] Giải nén và kiểm kê ảnh trong 07.zip.
+- [x] Upscale và phục hồi ảnh, giữ nguyên nội dung/bố cục, không thêm logo hoặc watermark.
+- [x] Kiểm tra và bàn giao các ảnh đã upscale.
+- [x] Kiểm kê ảnh đang dùng trong Bcons_Uni_Valley.html.
+- [x] Upscale các ảnh nguồn phù hợp, giữ nguyên nội dung và bố cục.
+- [x] Cập nhật HTML, kiểm tra gallery và phát hành bản mới.
+- [x] Chỉ upscale ảnh đầu tiên trong Bcons_Uni_Valley.html.
+- [x] Cập nhật URL ảnh đầu tiên trong HTML, giữ nguyên các media còn lại.
+- [x] Kiểm tra gallery và phát hành bản cập nhật.
