@@ -56,3 +56,5 @@
 - [x] Chỉ upscale ảnh đầu tiên trong Bcons_Uni_Valley.html.
 - [x] Cập nhật URL ảnh đầu tiên trong HTML, giữ nguyên các media còn lại.
 - [x] Kiểm tra gallery và phát hành bản cập nhật.
+- [ ] Tạo preview thay ảnh #03 bằng góc đường đã hoàn thiện và upscale.
+- [ ] Chờ người dùng duyệt preview trước khi cập nhật HTML.
