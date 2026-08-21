@@ -81,27 +81,6 @@
     will-change: transform;
   }
 
-  /* CHÚ THÍCH FONT CHỮ TO RÕ HÙNG DŨNG - KHÔNG LỖI FONT TIẾNG VIỆT */
-  .video-caption {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    color: #ffffff;
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    font-size: 38px;
-    font-weight: 900;
-    text-transform: uppercase;
-    text-align: center;
-    letter-spacing: 1px;
-    text-shadow: 0 0 10px rgba(0, 0, 0, 0.9), 0 0 25px rgba(0, 0, 0, 0.8);
-    z-index: 5;
-    pointer-events: none;
-    opacity: 1;
-    transition: opacity 0.5s ease-out;
-    width: 85%;
-  }
-
   .brand-label {
     position: absolute;
     bottom: 4px;
@@ -209,20 +188,19 @@
 
   <script>
     const items = [
-      { url: 'https://youtu.be/hpLcIvYqtHE', title: 'Toàn cảnh ĐHQG TPHCM', type: 'video' },
-      { url: 'https://youtu.be/IzkcrqA5xrs', title: 'ĐH Kinh tế Luật - ĐHQG TPHCM', type: 'video' },
-      { url: 'https://youtu.be/r6tfPuVDNwM', title: 'ĐH Khoa học tự nhiên - ĐHQG TPHCM', type: 'video' },
-      { url: 'https://youtu.be/TWhZCKT5jkI', title: 'ĐH Công nghệ thông tin - ĐHQG TPHCM', type: 'video' },
-      { url: 'https://youtu.be/I5UPLqtcKWQ', title: 'Khoa Y - ĐHQG TPHCM', type: 'video' },
-      { url: 'https://youtu.be/ZXZQdNxJkkY', title: 'ĐH Khoa học, xã hội và nhân văn - ĐHQG TPHCM', type: 'video' },
-      { url: 'https://youtu.be/6SX2UZegUXI', title: 'ĐH Quốc tế - ĐHQG TPHCM', type: 'video' },
-      { url: 'https://youtu.be/RizB-XvJQ7g', title: 'ĐH Bách Khoa - ĐHQG TPHCM', type: 'video' },
-      { url: 'https://youtu.be/3TNE2UcjrmY', title: 'Đại học quốc gia TPHCM', type: 'video' }
+      { url: 'https://youtu.be/dpxVx1brc1E', type: 'video' },
+      { url: 'https://youtu.be/I7OKZCSI1Aw', type: 'video' },
+      { url: 'https://youtu.be/QDLBAXiOvBY', type: 'video' },
+      { url: 'https://youtu.be/qP2QVstkbkc', type: 'video' },
+      { url: 'https://youtu.be/6oIfMcV3bZw', type: 'video' },
+      { url: 'https://youtu.be/B7wpOYKK5a0', type: 'video' },
+      { url: 'https://youtu.be/YMx8nsoxAOs', type: 'video' },
+      { url: 'https://youtu.be/AqEWjSApGQo', type: 'video' },
+      { url: 'https://youtu.be/eUbC8OlFy8g', type: 'video' }
     ];
 
     let currentIndex = 0;
     let isInitialLoad = true;
-    let captionTimeout = null;
 
     function getYouTubeId(videoUrl) {
       const match = videoUrl.match(/(?:youtu\.be\/|youtube(?:-nocookie)?\.com\/(?:watch\?v=|embed\/))([A-Za-z0-9_-]{11})/);
@@ -246,16 +224,13 @@
       const wrap = document.getElementById('mainMediaWrap');
       wrap.innerHTML = '';
 
-      if (captionTimeout) {
-        clearTimeout(captionTimeout);
-      }
 
       if (item.type === 'video') {
         const youtubeId = getYouTubeId(item.url);
         if (youtubeId) {
           const iframe = document.createElement('iframe');
           iframe.src = 'https://www.youtube-nocookie.com/embed/' + youtubeId + '?autoplay=' + (shouldAutoplay ? '1' : '0') + '&mute=1&rel=0&playsinline=1';
-          iframe.title = item.title;
+          iframe.title = 'YouTube video';
           iframe.allow = 'autoplay; encrypted-media; picture-in-picture';
           iframe.allowFullscreen = true;
           wrap.appendChild(iframe);
@@ -268,15 +243,7 @@
           if (shouldAutoplay) videoEl.autoplay = true;
           wrap.appendChild(videoEl);
         }
-        const captionEl = document.createElement('div');
-        captionEl.className = 'video-caption';
-        captionEl.textContent = item.title;
-        wrap.appendChild(captionEl);
 
-        captionTimeout = setTimeout(() => {
-          captionEl.style.opacity = '0';
-          setTimeout(() => captionEl.remove(), 500);
-        }, 3000);
       } else {
         wrap.innerHTML = '<img src="' + item.url + '" loading="lazy" class="zoomable">';
       }
