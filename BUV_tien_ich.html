@@ -66,7 +66,8 @@
     object-fit: cover;
     user-select: none;
     -webkit-user-drag: none;
-    touch-action: pan-y;
+    touch-action: none;
+    cursor: default;
   }
 
   .site-logo {
@@ -276,6 +277,7 @@
         const imgEl = document.createElement('img');
         imgEl.src = item.url;
         imgEl.loading = 'lazy';
+        imgEl.draggable = false;
         wrap.appendChild(imgEl);
         enableHorizontalDrag(imgEl, wrap);
       }
@@ -286,24 +288,26 @@
 
     function enableHorizontalDrag(img, wrap) {
       let startX = 0;
-      let currentX = 0;
+      let currentPosition = 50;
       let dragging = false;
 
       const applyPan = () => {
-        const limit = Math.max(90, wrap.clientWidth * 0.24);
-        currentX = Math.max(-limit, Math.min(limit, currentX));
-        img.style.transform = 'translateX(' + currentX + 'px)';
+        currentPosition = Math.max(20, Math.min(80, currentPosition));
+        img.style.objectPosition = currentPosition + '% center';
       };
 
       img.addEventListener('pointerdown', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
         dragging = true;
-        startX = event.clientX - currentX;
+        startX = event.clientX;
         img.setPointerCapture(event.pointerId);
       });
 
       img.addEventListener('pointermove', (event) => {
         if (!dragging) return;
-        currentX = event.clientX - startX;
+        event.preventDefault();
+        currentPosition = 50 + ((event.clientX - startX) / wrap.clientWidth) * 100;
         applyPan();
       });
 
