@@ -64,6 +64,9 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
+    user-select: none;
+    -webkit-user-drag: none;
+    touch-action: pan-y;
   }
 
   .site-logo {
@@ -274,10 +277,45 @@
         imgEl.src = item.url;
         imgEl.loading = 'lazy';
         wrap.appendChild(imgEl);
+        enableHorizontalDrag(imgEl, wrap);
       }
 
       document.getElementById('counter').textContent = (currentIndex + 1) + ' / ' + items.length;
       updateThumbs();
+    }
+
+    function enableHorizontalDrag(img, wrap) {
+      let startX = 0;
+      let currentX = 0;
+      let dragging = false;
+
+      const applyPan = () => {
+        const limit = Math.max(90, wrap.clientWidth * 0.24);
+        currentX = Math.max(-limit, Math.min(limit, currentX));
+        img.style.transform = 'translateX(' + currentX + 'px)';
+      };
+
+      img.addEventListener('pointerdown', (event) => {
+        dragging = true;
+        startX = event.clientX - currentX;
+        img.setPointerCapture(event.pointerId);
+      });
+
+      img.addEventListener('pointermove', (event) => {
+        if (!dragging) return;
+        currentX = event.clientX - startX;
+        applyPan();
+      });
+
+      const stopDragging = (event) => {
+        dragging = false;
+        if (event.pointerId !== undefined && img.hasPointerCapture(event.pointerId)) {
+          img.releasePointerCapture(event.pointerId);
+        }
+      };
+
+      img.addEventListener('pointerup', stopDragging);
+      img.addEventListener('pointercancel', stopDragging);
     }
 
     function updateThumbs() {
