@@ -67,7 +67,11 @@
     user-select: none;
     -webkit-user-drag: none;
     touch-action: pan-y;
+    cursor: grab;
   }
+
+  #mainMediaWrap.is-swiping,
+  #mainMediaWrap.is-swiping * { cursor: grabbing !important; }
 
   .site-logo {
     position: absolute;
@@ -294,18 +298,23 @@
         startX = event.clientX;
         startY = event.clientY;
         dragging = true;
+        view.querySelector('#mainMediaWrap')?.classList.add('is-swiping');
       });
 
       view.addEventListener('pointerup', (event) => {
         if (!dragging) return;
         dragging = false;
+        view.querySelector('#mainMediaWrap')?.classList.remove('is-swiping');
         const deltaX = event.clientX - startX;
         const deltaY = event.clientY - startY;
         if (Math.abs(deltaX) < 50 || Math.abs(deltaX) < Math.abs(deltaY)) return;
         navigateWithSwipe(deltaX < 0 ? 1 : -1);
       });
 
-      view.addEventListener('pointercancel', () => { dragging = false; });
+      view.addEventListener('pointercancel', () => {
+        dragging = false;
+        view.querySelector('#mainMediaWrap')?.classList.remove('is-swiping');
+      });
     }
 
     function navigateWithSwipe(direction) {
