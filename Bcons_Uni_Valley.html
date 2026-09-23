@@ -80,8 +80,7 @@
     object-fit: cover;
     user-select: none;
     -webkit-user-drag: none;
-    touch-action: none;
-    cursor: default;
+    touch-action: pan-y;
   }
 
   .site-logo {
@@ -227,47 +226,37 @@
         img.loading = 'lazy';
         img.draggable = false;
         wrap.appendChild(img);
-        enableHorizontalDrag(img, wrap);
       }
 
       document.getElementById('counter').textContent = (currentIndex + 1) + ' / ' + items.length;
       updateThumbs();
     }
 
-    function enableHorizontalDrag(img, wrap) {
+    function enableSwipeNavigation(view) {
       let startX = 0;
-      let currentPosition = 50;
+      let startY = 0;
       let dragging = false;
 
-      const applyPan = () => {
-        currentPosition = Math.max(20, Math.min(80, currentPosition));
-        img.style.objectPosition = currentPosition + '% center';
-      };
-
-      img.addEventListener('pointerdown', (event) => {
-        event.preventDefault();
-        event.stopPropagation();
-        dragging = true;
+      view.addEventListener('pointerdown', (event) => {
+        if (event.pointerType === 'mouse' && event.button !== 0) return;
         startX = event.clientX;
-        img.setPointerCapture(event.pointerId);
+        startY = event.clientY;
+        dragging = true;
       });
 
-      img.addEventListener('pointermove', (event) => {
+      view.addEventListener('pointerup', (event) => {
         if (!dragging) return;
-        event.preventDefault();
-        currentPosition = 50 + ((event.clientX - startX) / wrap.clientWidth) * 100;
-        applyPan();
+        dragging = false;
+        const deltaX = event.clientX - startX;
+        const deltaY = event.clientY - startY;
+        if (Math.abs(deltaX) < 50 || Math.abs(deltaX) < Math.abs(deltaY)) return;
+        currentIndex = deltaX < 0
+          ? (currentIndex + 1) % items.length
+          : (currentIndex - 1 + items.length) % items.length;
+        updateMain(true);
       });
 
-      const stopDragging = (event) => {
-        dragging = false;
-        if (event.pointerId !== undefined && img.hasPointerCapture(event.pointerId)) {
-          img.releasePointerCapture(event.pointerId);
-        }
-      };
-
-      img.addEventListener('pointerup', stopDragging);
-      img.addEventListener('pointercancel', stopDragging);
+      view.addEventListener('pointercancel', () => { dragging = false; });
     }
 
     function updateThumbs() {
@@ -329,6 +318,7 @@
       }
     });
 
+    enableSwipeNavigation(document.getElementById('mainView'));
     initThumbs();
     updateMain(true);
   </script>
