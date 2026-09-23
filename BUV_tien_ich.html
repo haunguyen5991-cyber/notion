@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Gallery Tiện Ích</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -64,8 +64,20 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transform-origin: center center;
-    will-change: transform;
+  }
+
+  .site-logo {
+    position: absolute;
+    top: 18px;
+    right: 18px;
+    width: clamp(95px, 13.75vw, 150px);
+    height: auto;
+    max-height: 150px;
+    object-fit: contain;
+    filter: drop-shadow(0 2px 5px rgba(0,0,0,0.28));
+    opacity: 0.94;
+    pointer-events: none;
+    z-index: 11;
   }
   
   #mainMediaWrap video,
@@ -98,85 +110,6 @@
     opacity: 1;
     transition: opacity 0.5s ease-out;
     width: 85%;
-  }
-
-  /* BỘ ĐIỀU KHIỂN HỢP NHẤT HÀNG NGANG PHÍA DƯỚI GÓC PHẢI (MẶC ĐỊNH DESKTOP) */
-  .bottom-controls-container {
-    position: absolute;
-    bottom: 12px;
-    right: 12px;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 8px;
-    z-index: 500;
-    background: rgba(255, 255, 255, 0.85);
-    padding: 4px 10px;
-    border-radius: 20px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
-    transition: all 0.2s ease;
-  }
-
-  .main-map-controls {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    user-select: none;
-  }
-  .main-map-controls span {
-    font-size: 11px;
-    font-family: Arial, sans-serif;
-    color: #333;
-    font-weight: bold;
-  }
-  
-  .main-map-controls input[type="range"] {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 70px;
-    height: 3px;
-    background: rgba(0,0,0,0.15);
-    outline: none;
-    border: none;
-    cursor: pointer;
-  }
-
-  .main-map-controls input[type="range"]::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 12px;
-    height: 12px;
-    background: #ff9900;
-    border-radius: 50%;
-    cursor: pointer;
-  }
-
-  .main-map-controls input[type="range"]::-moz-range-thumb {
-    width: 12px;
-    height: 12px;
-    background: #ff9900;
-    border: none;
-    border-radius: 50%;
-    cursor: pointer;
-  }
-
-  .brand-label {
-    font-size: 11px;
-    font-family: Arial, sans-serif;
-    color: rgba(0, 0, 0, 0.5);
-    border-left: 1px solid rgba(0, 0, 0, 0.15);
-    padding-left: 8px;
-    pointer-events: none;
-    user-select: none;
-  }
-
-  /* CẤU HÌNH RIÊNG CHO MOBILE: CĂN GIỮA TUYỆT ĐỐI */
-  @media (max-width: 700px) {
-    .bottom-controls-container {
-      right: 50%;
-      transform: translateX(50%);
-      bottom: 16px;
-    }
   }
 
   /* THANH CHỨA THUMBNAIL */
@@ -234,25 +167,14 @@
   .thumb.active { border-color: #000; }
   .thumb:hover { border-color: #666; }
 
-  #mainMediaWrap img.zoomable { cursor: zoom-in; }
-  #mainMediaWrap img.zoomable.zoomed { cursor: grab; }
-  #mainMediaWrap img.zoomable.zoomed.dragging { cursor: grabbing; }
 </style>
 </head>
 <body>
   <div class="gallery">
     <div class="main-view" id="mainView">
       <div class="counter" id="counter">1 / 13</div>
+      <img class="site-logo" src="./thien-hao-dragon-logo-shadow-2.png" alt="Thiên Hào Real Estate Intelligence">
       <div id="mainMediaWrap"></div>
-      
-      <div class="bottom-controls-container" id="controlsContainer">
-        <div class="main-map-controls">
-          <span>-</span>
-          <input type="range" id="mediaZoomSlider" min="1" max="5" step="0.05" value="1" title="Kéo để phóng to ảnh">
-          <span>+</span>
-        </div>
-        <div class="brand-label">dulieunhapho.com</div>
-      </div>
     </div>
     <div class="thumb-rail" id="thumbRail"></div>
   </div>
@@ -274,9 +196,6 @@
     let currentIndex = 0;
     let isInitialLoad = true;
     let captionTimeout = null;
-    const zoomSlider = document.getElementById('mediaZoomSlider');
-    const controlsContainer = document.getElementById('controlsContainer');
-
         function getYouTubeId(videoUrl) {
       try {
         const url = new URL(videoUrl);
@@ -317,8 +236,6 @@
         videoEl.playsInline = true;
         videoEl.preload = 'metadata';
         wrap.appendChild(videoEl);
-        controlsContainer.style.display = 'none';
-        
         if (shouldAutoplay) {
           videoEl.autoplay = true;
           videoEl.play().catch(() => {});
@@ -342,8 +259,6 @@
         iframe.loading = 'lazy';
         iframe.referrerPolicy = 'strict-origin-when-cross-origin';
         wrap.appendChild(iframe);
-        controlsContainer.style.display = 'none';
-
         const captionEl = document.createElement('div');
         captionEl.className = 'video-caption';
         captionEl.textContent = item.title || '';
@@ -358,14 +273,11 @@
         const imgEl = document.createElement('img');
         imgEl.src = item.url;
         imgEl.loading = 'lazy';
-        imgEl.className = 'zoomable';
         wrap.appendChild(imgEl);
-        controlsContainer.style.display = 'flex';
       }
 
       document.getElementById('counter').textContent = (currentIndex + 1) + ' / ' + items.length;
       updateThumbs();
-      resetZoom();
     }
 
     function updateThumbs() {
@@ -420,154 +332,6 @@
         updateMain(true);
       }
     });
-
-    let zScale = 1, zPanX = 0, zPanY = 0;
-    let zDragging = false, zStartX = 0, zStartY = 0, zStartPanX = 0, zStartPanY = 0;
-    const Z_MIN = 1, Z_MAX = 5;
-
-    function applyZoomTransform() {
-      const img = document.querySelector('#mainMediaWrap img.zoomable');
-      if (!img) return;
-      img.style.transform = 'translate(' + zPanX + 'px,' + zPanY + 'px) scale(' + zScale + ')';
-      img.classList.toggle('zoomed', zScale > Z_MIN);
-      zoomSlider.value = zScale;
-    }
-
-    function resetZoom() {
-      zScale = 1; zPanX = 0; zPanY = 0;
-      applyZoomTransform();
-    }
-
-    function clampZoomPan() {
-      const wrap = document.getElementById('mainMediaWrap');
-      const maxPanX = (wrap.clientWidth * (zScale - 1)) / 2;
-      const maxPanY = (wrap.clientHeight * (zScale - 1)) / 2;
-      
-      zPanX = Math.max(-maxPanX, Math.min(maxPanX, zPanX));
-      zPanY = Math.max(-maxPanY, Math.min(maxPanY, zPanY));
-    }
-
-    function zoomAtPoint(delta, clientX, clientY, refEl) {
-      const rect = refEl.getBoundingClientRect();
-      const cx = clientX - rect.left - rect.width / 2;
-      const cy = clientY - rect.top - rect.height / 2;
-
-      const prevScale = zScale;
-      zScale = Math.min(Z_MAX, Math.max(Z_MIN, zScale + delta));
-      if (zScale === prevScale) return;
-
-      const ratio = zScale / prevScale;
-      zPanX = (zPanX - cx) * ratio + cx;
-      zPanY = (zPanY - cy) * ratio + cy;
-
-      if (zScale <= Z_MIN) { zPanX = 0; zPanY = 0; }
-      clampZoomPan();
-      applyZoomTransform();
-    }
-
-    zoomSlider.addEventListener('input', function(e) {
-      const nextScale = parseFloat(e.target.value);
-      const prevScale = zScale;
-      zScale = nextScale;
-      
-      const ratio = zScale / prevScale;
-      zPanX = zPanX * ratio;
-      zPanY = zPanY * ratio;
-      
-      if (zScale <= Z_MIN) { zPanX = 0; zPanY = 0; }
-      clampZoomPan();
-      applyZoomTransform();
-    });
-
-    (function() {
-      const wrap = document.getElementById('mainMediaWrap');
-
-      wrap.addEventListener('wheel', function(e) {
-        const img = wrap.querySelector('img.zoomable');
-        if (!img) return;
-        e.preventDefault();
-        const delta = e.deltaY < 0 ? 0.25 : -0.25;
-        zoomAtPoint(delta, e.clientX, e.clientY, wrap);
-      }, { passive: false });
-
-      wrap.addEventListener('mousedown', function(e) {
-        const img = wrap.querySelector('img.zoomable');
-        if (!img || zScale <= Z_MIN) return;
-        zDragging = true;
-        img.classList.add('dragging');
-        zStartX = e.clientX; zStartY = e.clientY;
-        zStartPanX = zPanX; zStartPanY = zPanY;
-      });
-      
-      window.addEventListener('mousemove', function(e) {
-        if (!zDragging) return;
-        zPanX = zStartPanX + (e.clientX - zStartX);
-        zPanY = zStartPanY + (e.clientY - zStartY);
-        clampZoomPan();
-        applyZoomTransform();
-      });
-      
-      window.addEventListener('mouseup', function() {
-        if (!zDragging) return;
-        zDragging = false;
-        const img = wrap.querySelector('img.zoomable');
-        if (img) img.classList.remove('dragging');
-      });
-
-      wrap.addEventListener('dblclick', function(e) {
-        const img = wrap.querySelector('img.zoomable');
-        if (!img) return;
-        if (zScale > Z_MIN) {
-          resetZoom();
-        } else {
-          zoomAtPoint(1.5, e.clientX, e.clientY, wrap);
-        }
-      });
-
-      let zLastTouchDist = null;
-      wrap.addEventListener('touchstart', function(e) {
-        const img = wrap.querySelector('img.zoomable');
-        if (!img) return;
-        if (e.touches.length === 2) {
-          zLastTouchDist = Math.hypot(
-            e.touches[0].clientX - e.touches[1].clientX,
-            e.touches[0].clientY - e.touches[1].clientY
-          );
-        } else if (e.touches.length === 1 && zScale > Z_MIN) {
-          zDragging = true;
-          zStartX = e.touches[0].clientX; zStartY = e.touches[0].clientY;
-          zStartPanX = zPanX; zStartPanY = zPanY;
-        }
-      }, { passive: true });
-
-      wrap.addEventListener('touchmove', function(e) {
-        const img = wrap.querySelector('img.zoomable');
-        if (!img) return;
-        if (e.touches.length === 2 && zLastTouchDist !== null) {
-          e.preventDefault();
-          const dist = Math.hypot(
-            e.touches[0].clientX - e.touches[1].clientX,
-            e.touches[0].clientY - e.touches[1].clientY
-          );
-          const midX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
-          const midY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
-          const delta = (dist - zLastTouchDist) * 0.01;
-          zoomAtPoint(delta, midX, midY, wrap);
-          zLastTouchDist = dist;
-        } else if (e.touches.length === 1 && zDragging) {
-          e.preventDefault();
-          zPanX = zStartPanX + (e.touches[0].clientX - zStartX);
-          zPanY = zStartPanY + (e.touches[0].clientY - zStartY);
-          clampZoomPan();
-          applyZoomTransform();
-        }
-      }, { passive: false });
-
-      wrap.addEventListener('touchend', function(e) {
-        if (e.touches.length < 2) zLastTouchDist = null;
-        if (e.touches.length === 0) zDragging = false;
-      }, { passive: true });
-    })();
 
     initThumbs();
     updateMain(false);
