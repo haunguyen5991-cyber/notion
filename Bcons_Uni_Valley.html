@@ -78,6 +78,9 @@
     min-width: 0;
     min-height: 0;
     object-fit: cover;
+    user-select: none;
+    -webkit-user-drag: none;
+    touch-action: pan-y;
   }
 
   .site-logo {
@@ -218,11 +221,49 @@
       } else if (item.type === 'blocked') {
         wrap.innerHTML = '<div class="blocked-media"><strong>' + item.title + '</strong><span>Slot được giữ nguyên; video tạm ẩn do YouTube phát hiện nội dung có bản quyền.</span></div>';
       } else {
-        wrap.innerHTML = '<img src="' + item.url + '" loading="lazy">';
+        const img = document.createElement('img');
+        img.src = item.url;
+        img.loading = 'lazy';
+        wrap.appendChild(img);
+        enableHorizontalDrag(img, wrap);
       }
 
       document.getElementById('counter').textContent = (currentIndex + 1) + ' / ' + items.length;
       updateThumbs();
+    }
+
+    function enableHorizontalDrag(img, wrap) {
+      let startX = 0;
+      let currentX = 0;
+      let dragging = false;
+
+      const applyPan = () => {
+        const limit = Math.max(90, wrap.clientWidth * 0.24);
+        currentX = Math.max(-limit, Math.min(limit, currentX));
+        img.style.transform = 'translateX(' + currentX + 'px)';
+      };
+
+      img.addEventListener('pointerdown', (event) => {
+        dragging = true;
+        startX = event.clientX - currentX;
+        img.setPointerCapture(event.pointerId);
+      });
+
+      img.addEventListener('pointermove', (event) => {
+        if (!dragging) return;
+        currentX = event.clientX - startX;
+        applyPan();
+      });
+
+      const stopDragging = (event) => {
+        dragging = false;
+        if (event.pointerId !== undefined && img.hasPointerCapture(event.pointerId)) {
+          img.releasePointerCapture(event.pointerId);
+        }
+      };
+
+      img.addEventListener('pointerup', stopDragging);
+      img.addEventListener('pointercancel', stopDragging);
     }
 
     function updateThumbs() {
