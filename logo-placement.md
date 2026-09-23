@@ -4,10 +4,10 @@ Tài liệu này ghi lại cấu hình logo đang sử dụng trong trang `Bcons
 
 ## Asset
 
-- **File:** `thien-hao-dragon-logo-shadow.png`
+- **File:** `thien-hao-dragon-logo-shadow-2.png`
 - **Định dạng:** PNG RGBA, nền trong suốt
 - **Kích thước gốc:** 2176 × 1632 px
-- **Đường dẫn dùng trong HTML:** `./thien-hao-dragon-logo-shadow.png`
+- **Đường dẫn dùng trong HTML:** `./thien-hao-dragon-logo-shadow-2.png`
 
 ## Vị trí và kích thước
 
@@ -52,7 +52,7 @@ Kích thước được điều chỉnh responsive bằng CSS `clamp()`:
 ```html
 <img
   class="site-logo"
-  src="./thien-hao-dragon-logo-shadow.png"
+  src="./thien-hao-dragon-logo-shadow-2.png"
   alt="Thiên Hào Real Estate Intelligence"
 >
 ```
