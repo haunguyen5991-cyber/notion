@@ -78,19 +78,20 @@
     min-width: 0;
     min-height: 0;
     object-fit: cover;
-    transform-origin: center center;
-    will-change: transform;
   }
 
-  .brand-label {
+  .site-logo {
     position: absolute;
-    bottom: 4px;
-    right: 6px;
-    font-size: 10px;
-    color: rgba(0,0,0,0.3);
-    font-weight: 500;
+    top: 18px;
+    right: 18px;
+    width: clamp(68px, 10vw, 104px);
+    height: auto;
+    max-height: 104px;
+    object-fit: contain;
+    filter: drop-shadow(0 2px 5px rgba(0,0,0,0.28));
+    opacity: 0.94;
     pointer-events: none;
-    z-index: 10;
+    z-index: 11;
   }
 
   /* THANH CHỨA THUMBNAIL MÀU XÁM */
@@ -157,8 +158,8 @@
   <div class="gallery">
     <div class="main-view" id="mainView">
       <div class="counter" id="counter">1 / 10</div>
+      <img class="site-logo" src="./thien-hao-dragon-logo-shadow.png" alt="Thiên Hào Real Estate Intelligence">
       <div id="mainMediaWrap"></div>
-      <div class="brand-label">dulieunhapho.com</div>
     </div>
     <div class="thumb-rail" id="thumbRail"></div>
   </div>
