@@ -56,7 +56,13 @@
     background: #fff;
     position: relative;
     overflow: hidden;
+    transition: transform 320ms cubic-bezier(.22,.61,.36,1), opacity 320ms ease;
   }
+
+  #mainMediaWrap.swipe-exit-left { transform: translateX(-18%); opacity: 0; }
+  #mainMediaWrap.swipe-exit-right { transform: translateX(18%); opacity: 0; }
+  #mainMediaWrap.swipe-enter-left { transform: translateX(18%); opacity: 0; }
+  #mainMediaWrap.swipe-enter-right { transform: translateX(-18%); opacity: 0; }
 
   /* ĐẢM BẢO ẢNH FULL MAIN VIEW CẢ DESKTOP & MOBILE */
   #mainMediaWrap img {
@@ -302,13 +308,32 @@
         const deltaX = event.clientX - startX;
         const deltaY = event.clientY - startY;
         if (Math.abs(deltaX) < 50 || Math.abs(deltaX) < Math.abs(deltaY)) return;
-        currentIndex = deltaX < 0
-          ? (currentIndex + 1) % items.length
-          : (currentIndex - 1 + items.length) % items.length;
-        updateMain(true);
+        navigateWithSwipe(deltaX < 0 ? 1 : -1);
       });
 
       view.addEventListener('pointercancel', () => { dragging = false; });
+    }
+
+    function navigateWithSwipe(direction) {
+      const wrap = document.getElementById('mainMediaWrap');
+      const exitClass = direction > 0 ? 'swipe-exit-left' : 'swipe-exit-right';
+      const enterClass = direction > 0 ? 'swipe-enter-left' : 'swipe-enter-right';
+      let completed = false;
+
+      const finish = () => {
+        if (completed) return;
+        completed = true;
+        wrap.removeEventListener('transitionend', finish);
+        wrap.classList.remove(exitClass);
+        currentIndex = (currentIndex + direction + items.length) % items.length;
+        updateMain(true);
+        wrap.classList.add(enterClass);
+        requestAnimationFrame(() => requestAnimationFrame(() => wrap.classList.remove(enterClass)));
+      };
+
+      wrap.addEventListener('transitionend', finish);
+      wrap.classList.add(exitClass);
+      setTimeout(finish, 380);
     }
 
     function updateThumbs() {
