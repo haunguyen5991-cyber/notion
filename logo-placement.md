@@ -19,10 +19,10 @@ Kích thước được điều chỉnh responsive bằng CSS `clamp()`:
 |---|---:|---|
 | Khoảng cách phía trên | `18px` | Cách mép trên của `.main-view` |
 | Khoảng cách bên phải | `18px` | Cách mép phải của `.main-view` |
-| Kích thước nhỏ nhất | `86px` | Dùng trên màn hình nhỏ |
-| Kích thước theo viewport | `12.5vw` | Tự co giãn theo chiều rộng màn hình |
-| Kích thước lớn nhất | `136px` | Không để logo quá lớn trên màn hình rộng |
-| Chiều cao tối đa | `136px` | Giữ logo gọn trong vùng góc |
+| Kích thước nhỏ nhất | `95px` | Dùng trên màn hình nhỏ |
+| Kích thước theo viewport | `13.75vw` | Tự co giãn theo chiều rộng màn hình |
+| Kích thước lớn nhất | `150px` | Không để logo quá lớn trên màn hình rộng |
+| Chiều cao tối đa | `150px` | Giữ logo gọn trong vùng góc |
 | Độ trong suốt | `0.94` | Hòa vào ảnh nền nhưng vẫn dễ nhận biết |
 
 ## CSS có thể tái sử dụng
@@ -36,9 +36,9 @@ Kích thước được điều chỉnh responsive bằng CSS `clamp()`:
   position: absolute;
   top: 18px;
   right: 18px;
-  width: clamp(86px, 12.5vw, 136px);
+  width: clamp(95px, 13.75vw, 150px);
   height: auto;
-  max-height: 136px;
+  max-height: 150px;
   object-fit: contain;
   filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.28));
   opacity: 0.94;
