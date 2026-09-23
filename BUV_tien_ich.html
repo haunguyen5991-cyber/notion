@@ -73,6 +73,23 @@
   #mainMediaWrap.is-swiping,
   #mainMediaWrap.is-swiping * { cursor: grabbing !important; }
 
+  .swipe-neighbor {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 100%;
+    z-index: 1;
+    overflow: hidden;
+    background: #fff;
+  }
+
+  .swipe-neighbor img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    pointer-events: none;
+  }
+
   .site-logo {
     position: absolute;
     top: 18px;
@@ -292,34 +309,81 @@
       let startX = 0;
       let startY = 0;
       let dragging = false;
+      let neighbor = null;
+      let direction = 0;
+
+      const wrap = document.getElementById('mainMediaWrap');
+
+      const makeNeighbor = (nextDirection) => {
+        if (neighbor && direction === nextDirection) return;
+        if (neighbor) neighbor.remove();
+        direction = nextDirection;
+        const nextIndex = (currentIndex + direction + items.length) % items.length;
+        const item = items[nextIndex];
+        neighbor = document.createElement('div');
+        neighbor.className = 'swipe-neighbor';
+        neighbor.style.left = direction > 0 ? '100%' : '-100%';
+        const preview = document.createElement('img');
+        preview.src = item.type === 'youtube' ? getYouTubeThumbUrl(item.url) : item.url;
+        preview.alt = '';
+        neighbor.appendChild(preview);
+        view.insertBefore(neighbor, wrap);
+      };
+
+      const resetSwipe = () => {
+        if (neighbor) neighbor.remove();
+        neighbor = null;
+        direction = 0;
+        wrap.style.transition = '';
+        wrap.style.transform = '';
+        wrap.classList.remove('is-swiping');
+      };
 
       view.addEventListener('pointerdown', (event) => {
         if (event.pointerType === 'mouse' && event.button !== 0) return;
         startX = event.clientX;
         startY = event.clientY;
         dragging = true;
-        view.querySelector('#mainMediaWrap')?.classList.add('is-swiping');
+        wrap.classList.add('is-swiping');
+      });
+
+      view.addEventListener('pointermove', (event) => {
+        if (!dragging) return;
+        const deltaX = event.clientX - startX;
+        if (Math.abs(deltaX) < 4) return;
+        const nextDirection = deltaX < 0 ? 1 : -1;
+        makeNeighbor(nextDirection);
+        wrap.style.transition = 'none';
+        neighbor.style.transform = 'translateX(' + deltaX + 'px)';
+        wrap.style.transform = 'translateX(' + deltaX + 'px)';
       });
 
       view.addEventListener('pointerup', (event) => {
         if (!dragging) return;
         dragging = false;
-        view.querySelector('#mainMediaWrap')?.classList.remove('is-swiping');
         const deltaX = event.clientX - startX;
         const deltaY = event.clientY - startY;
-        if (Math.abs(deltaX) < 50 || Math.abs(deltaX) < Math.abs(deltaY)) return;
-        navigateWithSwipe(deltaX < 0 ? 1 : -1);
+        if (!neighbor || Math.abs(deltaX) < 50 || Math.abs(deltaX) < Math.abs(deltaY)) {
+          resetSwipe();
+          return;
+        }
+        const chosenDirection = deltaX < 0 ? 1 : -1;
+        const distance = wrap.clientWidth;
+        wrap.style.transition = 'transform 180ms ease-out';
+        neighbor.style.transition = 'transform 180ms ease-out';
+        wrap.style.transform = 'translateX(' + (chosenDirection > 0 ? -distance : distance) + 'px)';
+        neighbor.style.transform = 'translateX(' + (chosenDirection > 0 ? -distance : distance) + 'px)';
+        setTimeout(() => {
+          currentIndex = (currentIndex + chosenDirection + items.length) % items.length;
+          resetSwipe();
+          updateMain(true);
+        }, 190);
       });
 
       view.addEventListener('pointercancel', () => {
         dragging = false;
-        view.querySelector('#mainMediaWrap')?.classList.remove('is-swiping');
+        resetSwipe();
       });
-    }
-
-    function navigateWithSwipe(direction) {
-      currentIndex = (currentIndex + direction + items.length) % items.length;
-      updateMain(true);
     }
 
     function updateThumbs() {
