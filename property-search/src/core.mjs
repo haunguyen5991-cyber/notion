@@ -2,12 +2,56 @@ const SOURCE_ID = '38f6bd68-5348-8029-b8a2-000b30978089';
 const FIELDS = ['Name', 'Tên đường', 'Quận cũ', 'Phường hiện hành', 'Tình trạng'];
 const TTL = 120_000;
 const STALE_LIMIT = 180_000;
-const CACHE_KEY = "published-search-index:v1";
+const CACHE_KEY = "published-search-index:v2";
 const CSP = "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors *";
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 export function fold(value = '') {
   return String(value).normalize('NFD').replace(/\p{M}/gu, '').toLowerCase()
     .replace(/đ/g, 'd').replace(/[^\p{L}\p{N}]+/gu, ' ').trim().replace(/\s+/g, ' ');
+}
+// Normalize only address labels, never infer a ward or rewrite source data.
+export function normalizeAddress(value = '') {
+  return fold(value).replace(/\b([pq])(?=\d)/g, '$1 ')
+    .replace(/\bp\b/g, 'phuong').replace(/\bq\b/g, 'quan')
+    .replace(/\b(phuong|quan)\s+0+(\d)/g, '$1 $2');
+}
+function oneEdit(a, b) {
+  if (a === b) return true;
+  if (Math.abs(a.length - b.length) > 1) return false;
+  let i = 0; while (i < a.length && i < b.length && a[i] === b[i]) i++;
+  if (a.length === b.length) {
+    if (a.slice(i + 1) === b.slice(i + 1)) return true;
+    return i + 1 < a.length && a[i] === b[i + 1] && a[i + 1] === b[i]
+      && a.slice(i + 2) === b.slice(i + 2);
+  }
+  return a.length > b.length ? a.slice(i + 1) === b.slice(i) : a.slice(i) === b.slice(i + 1);
+}
+function scopedQuery(query) {
+  const groups = { general: [], ward: [], district: [] };
+  let scope = 'general';
+  for (const token of normalizeAddress(query).split(' ').filter(Boolean)) {
+    if (token === 'phuong') scope = 'ward';
+    else if (token === 'quan') scope = 'district';
+    else groups[scope].push(token);
+  }
+  return groups;
+}
+function groupScore(tokens, words) {
+  if (!tokens.length) return { edits: 0, shortEdits: 0, anchors: 0 };
+  const unmatched = []; let anchors = 0;
+  for (const token of tokens) {
+    const numeric = /\d/.test(token);
+    if (words.some(word => numeric ? word === token : word.startsWith(token))) {
+      if (numeric || token.length >= 3) anchors++;
+    } else unmatched.push(token);
+  }
+  let edits = 0, shortEdits = 0;
+  for (const token of unmatched) {
+    // Numbers and mixed letter-number identifiers must match exactly.
+    if (/\d/.test(token) || token.length < 2 || !words.some(word => !/\d/.test(word) && word.length >= 2 && oneEdit(token, word))) return null;
+    edits++; if (token.length < 4) shortEdits++;
+  }
+  return { edits, shortEdits, anchors };
 }
 function text(property) {
   if (!property) return '';
@@ -35,26 +79,47 @@ export function publicRecord(page) {
   const district = text(p['Quận cũ']);
   const ward = text(p['Phường hiện hành']);
   const status = text(p['Tình trạng']);
-  const d = fold(district);
-  const alias = /^quan (\d+)$/.exec(d);
-  const search = fold([title, road, district, ward, alias ? `q${alias[1]} quan${alias[1]}` : ''].join(' '));
-  return { id: page.id, title, url, district, status, search, nameKey: fold(title), roadKey: fold(road), districtKey: d };
+  const d = normalizeAddress(district);
+  const search = normalizeAddress([title, road, district, ward].join(' '));
+  return { id: page.id, title, url, district, status, search,
+    words: search.split(' '), nameKey: normalizeAddress(title), roadKey: normalizeAddress(road), districtKey: d,
+    wardKey: normalizeAddress(ward).replace(/^phuong\s+/, '') };
 }
 export function findMatches(records, query, limit = 12) {
-  const q = fold(query);
-  const tokens = q.split(' ').filter(Boolean);
-  const numericDistrict = /(?:^|\s)(?:quan\s*|q)(\d+)(?:\s|$)/.exec(q);
-  const found = records.filter(item => {
-    if (numericDistrict && item.districtKey !== `quan ${Number(numericDistrict[1])}`) return false;
-    const words = item.search.split(' ');
-    return tokens.every(t => words.some(w => w.startsWith(t)));
-  });
-  const rank = item => item.nameKey === q ? 0 : item.nameKey.startsWith(q) ? 1 : item.nameKey.includes(q) ? 2 : item.roadKey.startsWith(q) ? 3 : 4;
-  found.sort((a, b) => rank(a) - rank(b) || a.title.localeCompare(b.title, 'vi', { numeric: true }));
-  // Send only a fixed allowlist. Never serialize the original Notion response.
-  const items = found.slice(0, limit).map(({ id, title, url, district, status }) => ({ id, title, url, district, status }));
+  const q = normalizeAddress(query), groups = scopedQuery(query);
+  if (![...groups.general, ...groups.ward, ...groups.district].length) return { items: [], total: 0, hasMore: false };
+  const found = [];
+  const wardMemo = new Map(), districtMemo = new Map();
+  const zero = { edits: 0, shortEdits: 0, anchors: 0 };
+  for (const item of records) {
+    const general = groups.general.length ? groupScore(groups.general, item.words || item.search.split(' ')) : zero;
+    if (general === null) continue;
+    let ward = zero, district = zero;
+    if (groups.ward.length) {
+      const key = item.wardKey || '';
+      if (!wardMemo.has(key)) wardMemo.set(key, groupScore(groups.ward, key.split(' ')));
+      ward = wardMemo.get(key); if (ward === null) continue;
+    }
+    if (groups.district.length) {
+      const key = item.districtKey;
+      if (!districtMemo.has(key)) districtMemo.set(key, groupScore(groups.district, key.replace(/^quan\s+/, '').split(' ')));
+      district = districtMemo.get(key); if (district === null) continue;
+    }
+    const scores = [general, ward, district];
+    const edits = scores.reduce((n, x) => n + x.edits, 0);
+    const anchors = scores.reduce((n, x) => n + x.anchors, 0);
+    const shortEdits = scores.reduce((n, x) => n + x.shortEdits, 0);
+    // Bounded typo tolerance: at most two tokens, short words need context.
+    if (edits > 2 || (shortEdits && anchors < 2)) continue;
+    const rank = item.nameKey === q ? 0 : item.nameKey.startsWith(q) ? 1 : item.nameKey.includes(q) ? 2 : item.roadKey.startsWith(q) ? 3 : 4;
+    found.push({ item, score: edits * 100 + rank });
+  }
+  found.sort((a, b) => a.score - b.score || a.item.title.localeCompare(b.item.title, 'vi', { numeric: true }));
+  // Send only a fixed allowlist. Ward keys and matching internals stay server-side.
+  const items = found.slice(0, limit).map(({ item: { id, title, url, district, status } }) => ({ id, title, url, district, status }));
   return { items, total: found.length, hasMore: found.length > limit };
 }
+
 class SearchError extends Error {
   constructor(code, status = 503) { super(code); this.code = code; this.status = status; }
 }
@@ -152,7 +217,7 @@ export function createHandler(html, deps = {}) {
         const stored = await env.SEARCH_CACHE.get(CACHE_KEY, 'json');
         const valid = stored && stored.sourceId === SOURCE_ID && Number.isFinite(stored.fetchedAt)
           && stored.fetchedAt <= now() && Array.isArray(stored.rows)
-          && stored.rows.every(r => typeof r.title === 'string' && typeof r.search === 'string' && typeof r.nameKey === 'string' && typeof r.roadKey === 'string' && typeof r.districtKey === 'string' && publishedUrl(r.url));
+          && stored.rows.every(r => typeof r.title === 'string' && typeof r.search === 'string' && typeof r.nameKey === 'string' && typeof r.roadKey === 'string' && typeof r.districtKey === 'string' && typeof r.wardKey === 'string' && publishedUrl(r.url));
         if (valid && now() - stored.fetchedAt < TTL) { cached = stored; return stored; }
         // A short grace period avoids blocking while the scheduled refresh completes.
         // Never serve a cache older than three minutes.

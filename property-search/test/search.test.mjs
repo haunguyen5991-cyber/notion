@@ -95,3 +95,38 @@ test('scheduled refresh writes only the curated public index',async()=>{
  let stored;const kv={put:async(key,value,options)=>{stored={key,value,options}}};const handler=make(async()=>result([page(1),{...page(2),public_url:null}]));
  await handler.scheduled({}, {...env,SEARCH_CACHE:kv}, {waitUntil:()=>{}});const parsed=JSON.parse(stored.value);assert.equal(parsed.rows.length,1);assert(!stored.value.includes('DO NOT EXPOSE'));assert(!stored.value.includes(env.NOTION_API_TOKEN));assert.equal(stored.options.expirationTtl,600);
 });
+
+function addressPage(n, title, ward, district = 'Tân Bình', road = 'Hoàng Văn Thụ') {
+ const row = page(n, title, district);
+ row.properties['Tên đường'] = prop('rich_text', road);
+ row.properties['Phường hiện hành'] = prop('rich_text', ward);
+ return publicRecord(row);
+}
+test('missing first letter in street name is tolerated; exact ranks first',()=>{
+ const rows=[addressPage(1,'128 Hoàng Văn Thụ','Tân Sơn Hòa'),addressPage(2,'128 Oàng Văn Thụ','Tân Sơn Hòa')];
+ const found=findMatches(rows,'128 oàng văn thụ');assert.equal(found.total,2);assert.equal(found.items[0].id,rows[1].id);
+});
+test('p/p./phường aliases match current named ward with accents or not',()=>{
+ const rows=[addressPage(1,'128 Hoàng Văn Thụ','Phường Tân Sơn Hòa')];
+ for(const q of ['p tan son hoa','p. tân sơn hòa','phường tân sơn hoà','128 oàng văn thụ, p tân sơn hòa','p tan son ha'])assert.equal(findMatches(rows,q).total,1,q);
+});
+test('numeric ward aliases are exact and cannot match district or house number',()=>{
+ const rows=[addressPage(1,'128 Hoàng Văn Thụ','Phường 9'),addressPage(2,'129 Hoàng Văn Thụ','Phường 19'),addressPage(3,'9 Hoàng Văn Thụ','Tân Sơn Hòa','Quận 9')];
+ for(const q of ['p9','p.9','p 9','phường 9','phường 09']){const r=findMatches(rows,q);assert.equal(r.total,1,q);assert.equal(r.items[0].id,rows[0].id);}
+});
+test('numeric house numbers do not prefix-match or fuzzy-match',()=>{
+ const rows=[addressPage(1,'128 Hoàng Văn Thụ','Tân Sơn Hòa'),addressPage(2,'1280 Hoàng Văn Thụ','Tân Sơn Hòa'),addressPage(3,'129 Hoàng Văn Thụ','Tân Sơn Hòa')];
+ assert.equal(findMatches(rows,'128 oang van thu').total,1);assert.equal(findMatches(rows,'127 hoang van thu').total,0);
+});
+test('ward filter never inferred from title, nearby street or old ward',()=>{
+ const rows=[addressPage(1,'128 Hoàng Văn Thụ, Phường 9','Tân Sơn Hòa'),addressPage(2,'129 Hoàng Văn Thụ','')];
+ assert.equal(findMatches(rows,'p9').total,0);assert.equal(findMatches(rows,'phường tân sơn hòa').total,1);
+});
+test('combined query enforces street, current ward and district',()=>{
+ const rows=[addressPage(1,'128 Hoàng Văn Thụ','Tân Sơn Hòa'),addressPage(2,'128 Hoàng Văn Thụ','Bảy Hiền'),addressPage(3,'128 Hoàng Văn Thụ','Tân Sơn Hòa','Quận 1')];
+ const r=findMatches(rows,'128 oang van thu p tan son hoa q tan binh');assert.equal(r.total,1);assert.equal(r.items[0].id,rows[0].id);
+});
+test('transposition typo works but unrelated and overly vague words fail',()=>{
+ const rows=[addressPage(1,'128 Hoàng Văn Thụ','Tân Sơn Hòa')];
+ assert.equal(findMatches(rows,'128 haong van thu').total,1);assert.equal(findMatches(rows,'zzzzzzzz').total,0);assert.equal(findMatches(rows,'ha').total,0);assert.equal(findMatches(rows,'128 0ang van thu').total,0);
+});

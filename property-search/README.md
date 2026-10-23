@@ -54,3 +54,11 @@ Mã nằm trên nhánh `feat/tim-kiem-tai-san`, không thay `main`. Nếu đã t
 Cloudflare quản lý DNS và chứng chỉ HTTPS cho riêng subdomain tìm kiếm. Khối Embed dùng địa chỉ chính; không đổi bố cục hoặc dữ liệu nguồn.
 
 API tìm kiếm: `/api/search?q=...`. Không cần gửi token ở trình duyệt.
+
+## Quy tắc tìm gần đúng
+
+- Chuẩn hóa có/không dấu và p, p., phường; q, q., quận.
+- Phường chỉ đối chiếu Phường hiện hành trong nguồn; không suy phường cũ từ tiêu đề.
+- Tìm đủ các thành phần đã nhập, ưu tiên khớp chính xác; cho phép sai một ký tự (thiếu/thừa/đổi/đảo hai chữ liền kề) trên tối đa hai từ. Từ ngắn cần ít nhất hai thành phần khớp làm ngữ cảnh.
+- Số nhà, số phường/quận và mã có chữ-số phải khớp nguyên từ, không sửa gần đúng.
+- Chỉ mục KV v2 bổ sung khóa phường và từ tách sẵn; không đổi dữ liệu nguồn hoặc trường công khai trả về.
