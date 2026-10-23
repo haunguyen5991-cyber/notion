@@ -46,7 +46,7 @@ async function search(){
     }
     list.replaceChildren(fragment);
     if(!list.children.length){status.textContent='Không tìm thấy tài sản phù hợp.';empty.textContent='Thử nhập số nhà, tên đường hoặc quận khác.';empty.hidden=false}
-    else status.textContent=data.hasMore?`Hiển thị ${list.children.length} kết quả đầu · Gõ thêm để tìm sát hơn.`:`${list.children.length} kết quả phù hợp`;
+    else status.textContent='';
   }catch(error){if(current!==sequence)return;if(error.name==='AbortError')errorState('Kết nối đang chậm. Bạn thử tìm lại nhé.');else errorState(error.message||'Chưa thể tải kết quả. Vui lòng thử lại sau.')}
   finally{clearTimeout(timeout);if(current===sequence)list.removeAttribute('aria-busy')}
 }
