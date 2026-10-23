@@ -18,7 +18,7 @@ Tạo Worker riêng tên `dulieunhapho-search`, mở Edit code, thay mã mẫu b
 
 ## Triển khai một lần bằng Wrangler trên Cloudflare Workers
 
-Đây là **Cloudflare Worker**, không phải Notion Worker hay Worker database sync. Có thể dùng tài khoản Cloudflare đã quản lý website; không thay DNS, email, website hiện tại hoặc các file HTML khác.
+Đây là **Cloudflare Worker**, không phải Notion Worker hay Worker database sync. Có thể dùng tài khoản Cloudflare đã quản lý website; chỉ gắn Custom Domain `timkiem.dulieunhapho.com`; không thay DNS của tên miền gốc/www, email, website hiện tại hoặc các file HTML khác.
 
 1. Trong thư mục `property-search`: chạy `node build.mjs`, `npm test`; cài `npm install` nếu dùng Wrangler.
 2. Đăng nhập Cloudflare bằng Wrangler, chạy `npm run deploy` để tạo Worker riêng `dulieunhapho-search`.
@@ -47,6 +47,10 @@ Mã nằm trên nhánh `feat/tim-kiem-tai-san`, không thay `main`. Nếu đã t
 
 ## Địa chỉ triển khai
 
-https://dulieunhapho-search.haunguyen5991.workers.dev/
+Địa chỉ chính: https://timkiem.dulieunhapho.com/
+
+Địa chỉ workers.dev dự phòng vẫn hoạt động: https://dulieunhapho-search.haunguyen5991.workers.dev/
+
+Cloudflare quản lý DNS và chứng chỉ HTTPS cho riêng subdomain tìm kiếm. Khối Embed dùng địa chỉ chính; không đổi bố cục hoặc dữ liệu nguồn.
 
 API tìm kiếm: `/api/search?q=...`. Không cần gửi token ở trình duyệt.

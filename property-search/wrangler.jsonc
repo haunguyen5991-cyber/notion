@@ -17,5 +17,11 @@
     "crons": [
       "*/2 * * * *"
     ]
-  }
+  },
+  "routes": [
+    {
+      "pattern": "timkiem.dulieunhapho.com",
+      "custom_domain": true
+    }
+  ]
 }
