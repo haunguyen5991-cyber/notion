@@ -144,9 +144,9 @@ test('featured ranking respects Premier first 7 days then Signature, Priority',(
 test('featured excludes expired, future, missing Premier dates and inactive statuses',()=>{
  for(const item of [premium(1,'Premier',null),premium(2,'Signature',null,null),premium(3,'Premier','2026-11-01'),premium(4,'Priority',null,'2026-10-23'),premium(5,'Priority',null,'2026-11-01','Đã bán'),premium(6,'Premier','2026-10-20','2026-11-20','Ngưng bán'),premium(7,'Standard')])assert.equal(featuredRank(item,featuredAt),4);
 });
-test('featured max 3, actual tier ordering and fixed public allowlist',()=>{
+test('featured max 10, actual tier ordering and fixed public allowlist',()=>{
  const rows=[premium(1,'Priority'),premium(2,'Signature'),premium(3,'Premier'),premium(4,'Priority')];
- const result=findFeatured(rows,featuredAt);assert.equal(result.items.length,3);assert.equal(result.items[0].id,rows[2].id);assert.equal(result.items[1].id,rows[1].id);assert.deepEqual(Object.keys(result.items[0]),['id','title','url','district','status','price']);assert(!JSON.stringify(result).includes('packageEnd'));
+ const result=findFeatured(rows,featuredAt);assert.equal(result.items.length,4);assert.equal(result.items[0].id,rows[2].id);assert.equal(result.items[1].id,rows[1].id);assert.deepEqual(Object.keys(result.items[0]),['id','title','url','district','status','price']);assert(!JSON.stringify(result).includes('packageEnd'));
 });
 test('featured changes automatically at expiry even without refreshing index',()=>{
  const row=premium(1,'Premier','2026-10-20','2026-10-24');assert.equal(findFeatured([row],featuredAt).items.length,1);assert.equal(findFeatured([row],Date.parse('2026-10-24T00:00:00+07:00')).items.length,0);
@@ -157,4 +157,8 @@ test('featured does not fill missing slots with Standard or unpublished records'
 test('featured endpoint reads same source and allows no unauthenticated or mutation access',async()=>{
  const raw=page(1);raw.properties['Cấp hiển thị']=prop('select','Priority');raw.properties['Ngày hết hạn gói']={date:{start:'2099-01-01'}};
  const handler=make(async()=>result([raw]));const url='https://widget.example/api/featured';const data=await(await handler.fetch(new Request(url),env)).json();assert.equal(data.items.length,1);assert.equal(data.mode,'featured');assert.equal((await handler.fetch(new Request(url))).status,503);assert.equal((await handler.fetch(new Request(url,{method:'POST'}),env)).status,405);
+});
+
+test('featured is capped at ten eligible assets, with no Standard filler',()=>{
+ const rows=Array.from({length:15},(_,i)=>premium(i+1,'Priority'));assert.equal(findFeatured(rows,featuredAt).items.length,10);
 });

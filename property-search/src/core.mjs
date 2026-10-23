@@ -142,7 +142,7 @@ export function findFeatured(records, at = Date.now()) {
   const eligible = records.map(item => ({ item, rank: featuredRank(item, at) }))
     .filter(({ item, rank }) => rank < 4 && publishedUrl(item.url));
   eligible.sort((a, b) => a.rank - b.rank || a.item.title.localeCompare(b.item.title, 'vi', { numeric: true }));
-  return { items: eligible.slice(0, 3).map(({ item: { id, title, url, district, status, price } }) => ({ id, title, url, district, status, price })), mode: 'featured' };
+  return { items: eligible.slice(0, 10).map(({ item: { id, title, url, district, status, price } }) => ({ id, title, url, district, status, price })), mode: 'featured' };
 }
 class SearchError extends Error {
   constructor(code, status = 503) { super(code); this.code = code; this.status = status; }
