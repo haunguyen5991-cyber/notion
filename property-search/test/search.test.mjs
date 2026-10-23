@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
-import { createHandler, fold, publicRecord, findMatches } from '../src/core.mjs';
+import { createHandler, fold, publicRecord, findMatches, featuredRank, findFeatured } from '../src/core.mjs';
 const HTML = await readFile(new URL('../src/index.html', import.meta.url), 'utf8');
 const env = { NOTION_API_TOKEN: 'synthetic-test-credential' };
 const prop = (type, value) => type === 'select' ? { type, select: { name: value } } : { type, [type]: [{ plain_text: value }] };
@@ -45,7 +45,7 @@ test('pagination uses exact data source and selected property names', async () =
   const response = await handler.fetch(req('mau'), env); const body = await response.json();
   assert.equal(body.total, 2); assert.equal(requests.length, 2);
   assert.equal(requests[0][0].pathname, '/v1/data_sources/38f6bd68-5348-8029-b8a2-000b30978089/query');
-  assert.deepEqual(requests[0][0].searchParams.getAll('filter_properties'), ['Name', 'Tên đường', 'Quận cũ', 'Phường hiện hành', 'Tình trạng']);
+  assert.deepEqual(requests[0][0].searchParams.getAll('filter_properties'), ['Name', 'Tên đường', 'Quận cũ', 'Phường hiện hành', 'Tình trạng', 'Giá bán (đ)', 'Cấp hiển thị', 'Ngày bắt đầu gói', 'Ngày hết hạn gói']);
   assert.equal(JSON.parse(requests[1][1].body).start_cursor, 'next'); assert.equal(requests[0][1].headers['Notion-Version'], '2026-03-11'); assert.equal(response.headers.get('cache-control'), 'no-store');
 });
 test('shared index avoids duplicate API calls across concurrent searches', async () => {
@@ -129,4 +129,32 @@ test('combined query enforces street, current ward and district',()=>{
 test('transposition typo works but unrelated and overly vague words fail',()=>{
  const rows=[addressPage(1,'128 Hoàng Văn Thụ','Tân Sơn Hòa')];
  assert.equal(findMatches(rows,'128 haong van thu').total,1);assert.equal(findMatches(rows,'zzzzzzzz').total,0);assert.equal(findMatches(rows,'ha').total,0);assert.equal(findMatches(rows,'128 0ang van thu').total,0);
+});
+
+const featuredAt = Date.parse('2026-10-23T12:00:00+07:00');
+function premium(n, tier, start = '2026-10-20', end = '2026-11-20', status = 'Đang bán') {
+ const row=page(n);row.properties['Tình trạng']=prop('select',status);row.properties['Cấp hiển thị']=prop('select',tier);row.properties['Ngày bắt đầu gói']={date:{start}};row.properties['Ngày hết hạn gói']={date:{start:end}};row.properties['Giá bán (đ)']={number:57000000000};return publicRecord(row);
+}
+test('featured ranking respects Premier first 7 days then Signature, Priority',()=>{
+ assert.equal(featuredRank(premium(1,'Premier'),featuredAt),1);
+ assert.equal(featuredRank(premium(1,'Premier','2026-10-01'),featuredAt),2);
+ assert.equal(featuredRank(premium(1,'Signature',null),featuredAt),2);
+ assert.equal(featuredRank(premium(1,'Priority',null),featuredAt),3);
+});
+test('featured excludes expired, future, missing Premier dates and inactive statuses',()=>{
+ for(const item of [premium(1,'Premier',null),premium(2,'Signature',null,null),premium(3,'Premier','2026-11-01'),premium(4,'Priority',null,'2026-10-23'),premium(5,'Priority',null,'2026-11-01','Đã bán'),premium(6,'Premier','2026-10-20','2026-11-20','Ngưng bán'),premium(7,'Standard')])assert.equal(featuredRank(item,featuredAt),4);
+});
+test('featured max 3, actual tier ordering and fixed public allowlist',()=>{
+ const rows=[premium(1,'Priority'),premium(2,'Signature'),premium(3,'Premier'),premium(4,'Priority')];
+ const result=findFeatured(rows,featuredAt);assert.equal(result.items.length,3);assert.equal(result.items[0].id,rows[2].id);assert.equal(result.items[1].id,rows[1].id);assert.deepEqual(Object.keys(result.items[0]),['id','title','url','district','status','price']);assert(!JSON.stringify(result).includes('packageEnd'));
+});
+test('featured changes automatically at expiry even without refreshing index',()=>{
+ const row=premium(1,'Premier','2026-10-20','2026-10-24');assert.equal(findFeatured([row],featuredAt).items.length,1);assert.equal(findFeatured([row],Date.parse('2026-10-24T00:00:00+07:00')).items.length,0);
+});
+test('featured does not fill missing slots with Standard or unpublished records',()=>{
+ assert.equal(findFeatured([premium(1,'Priority'),premium(2,'Standard')],featuredAt).items.length,1);assert.equal(findFeatured([],featuredAt).items.length,0);
+});
+test('featured endpoint reads same source and allows no unauthenticated or mutation access',async()=>{
+ const raw=page(1);raw.properties['Cấp hiển thị']=prop('select','Priority');raw.properties['Ngày hết hạn gói']={date:{start:'2099-01-01'}};
+ const handler=make(async()=>result([raw]));const url='https://widget.example/api/featured';const data=await(await handler.fetch(new Request(url),env)).json();assert.equal(data.items.length,1);assert.equal(data.mode,'featured');assert.equal((await handler.fetch(new Request(url))).status,503);assert.equal((await handler.fetch(new Request(url,{method:'POST'}),env)).status,405);
 });

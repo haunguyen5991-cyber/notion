@@ -26,14 +26,14 @@ function reset(){sequence++;controller?.abort();clearTimeout(timer);list.replace
 function errorState(text){list.replaceChildren();empty.textContent=text;empty.hidden=false;status.textContent=''}
 function allowedUrl(value){try{const u=new URL(value),h=u.hostname;return u.protocol==='https:'&&!u.username&&!u.password&&(h==='notion.so'||h==='app.notion.com'||h==='notion.site'||h.endsWith('.notion.site')||h==='dulieunhapho.com'||h==='www.dulieunhapho.com')?u.href:null}catch{return null}}
 async function search(){
-  const q=input.value.trim();if(q.length<2)return;
+  const q=input.value.trim(),featured=!q;if(q && q.length<2)return;
   const current=++sequence;controller?.abort();controller=new AbortController();const activeController=controller;
-  status.textContent='Đang tìm…';list.setAttribute('aria-busy','true');empty.hidden=true;
+  status.textContent=featured?'Đang tải…':'Đang tìm…';list.setAttribute('aria-busy','true');empty.hidden=true;
   // Do not leave results for an old query clickable while a new query loads.
   list.replaceChildren();
   const timeout=setTimeout(()=>activeController.abort(),45000);
   try{
-    const response=await fetch('/api/search?q='+encodeURIComponent(q),{signal:activeController.signal,cache:'no-store',credentials:'omit'});
+    const response=await fetch(featured?'/api/featured':'/api/search?q='+encodeURIComponent(q),{signal:activeController.signal,cache:'no-store',credentials:'omit'});
     const data=await response.json();if(current!==sequence)return;
     if(!response.ok)throw new Error(response.status===429?'Bạn tìm quá nhanh. Vui lòng thử lại sau ít phút.':'Chưa thể tải kết quả. Vui lòng thử lại sau.');
     if(!Array.isArray(data.items))throw new Error('Chưa thể tải kết quả. Vui lòng thử lại sau.');
@@ -41,20 +41,22 @@ async function search(){
     for(const item of data.items){
       const url=allowedUrl(item.url);if(!url||typeof item.title!=='string')continue;
       const li=document.createElement('li'),a=document.createElement('a'),copy=document.createElement('span'),title=document.createElement('span'),meta=document.createElement('span'),arrow=document.createElement('span');
-      a.href=url;a.target='_blank';a.rel='noopener noreferrer';copy.className='copy';title.className='title';title.style.display='block';title.textContent=item.title;a.title=[item.title,item.district,item.status].filter(Boolean).join(' · ');meta.className='meta';meta.style.display='block';meta.textContent=[item.district,item.status].filter(Boolean).join(' · ');arrow.className='arrow';arrow.textContent='↗';arrow.setAttribute('aria-hidden','true');
+      a.href=url;a.target='_blank';a.rel='noopener noreferrer';copy.className='copy';title.className='title';title.style.display='block';title.textContent=item.title;a.title=[item.title,item.district,item.status].filter(Boolean).join(' · ');meta.className='meta';meta.style.display='block';const price=typeof item.price==='number'&&item.price>0?new Intl.NumberFormat('vi-VN',{maximumFractionDigits:2}).format(item.price/1e9)+' tỷ':'';meta.textContent=(featured?[price,item.district]:[item.district,item.status]).filter(Boolean).join(' · ');arrow.className='arrow';arrow.textContent='↗';arrow.setAttribute('aria-hidden','true');
       copy.append(title);if(meta.textContent)copy.append(meta);a.append(copy,arrow);li.append(a);fragment.append(li);
     }
-    list.replaceChildren(fragment);
-    if(!list.children.length){status.textContent='Không tìm thấy tài sản phù hợp.';empty.textContent='Thử nhập số nhà, tên đường hoặc quận khác.';empty.hidden=false}
+    list.replaceChildren(fragment);list.setAttribute('aria-label',featured?'Tài sản ưu tiên':'Kết quả tìm kiếm');list.scrollTop=0;
+    if(featured){status.textContent='';empty.hidden=true}
+    else if(!list.children.length){status.textContent='Không tìm thấy tài sản phù hợp.';empty.textContent='Thử nhập số nhà, tên đường hoặc quận khác.';empty.hidden=false}
     else status.textContent='';
   }catch(error){if(current!==sequence)return;if(error.name==='AbortError')errorState('Kết nối đang chậm. Bạn thử tìm lại nhé.');else errorState(error.message||'Chưa thể tải kết quả. Vui lòng thử lại sau.')}
   finally{clearTimeout(timeout);if(current===sequence)list.removeAttribute('aria-busy')}
 }
-input.addEventListener('input',()=>{reset();clear.hidden=!input.value;if(input.value.trim().length>=2){status.textContent='Đang tìm…';timer=setTimeout(search,250)}else if(input.value)status.textContent='Nhập ít nhất 2 ký tự.'});
-clear.addEventListener('click',()=>{input.value='';clear.hidden=true;reset();input.focus()});
+input.addEventListener('input',()=>{reset();clear.hidden=!input.value;if(input.value.trim().length>=2){status.textContent='Đang tìm…';timer=setTimeout(search,250)}else if(input.value.trim())status.textContent='Nhập ít nhất 2 ký tự.';else search()});
+clear.addEventListener('click',()=>{input.value='';clear.hidden=true;reset();input.focus();search()});
 input.addEventListener('keydown',event=>{if(event.key==='Escape'){clear.click();event.preventDefault()}if(event.key==='ArrowDown'){const first=list.querySelector('a');if(first){first.focus();event.preventDefault()}}});
 list.addEventListener('keydown',event=>{const links=[...list.querySelectorAll('a')],i=links.indexOf(document.activeElement);if(event.key==='ArrowDown'){links[Math.min(i+1,links.length-1)]?.focus();event.preventDefault()}if(event.key==='ArrowUp'){if(i<=0)input.focus();else links[i-1]?.focus();event.preventDefault()}});
 document.getElementById('searchForm').addEventListener('submit',event=>{event.preventDefault();const first=list.querySelector('a');if(first)first.click();else{clearTimeout(timer);search()}});
-setInterval(()=>{if(document.visibilityState==='visible'&&input.value.trim().length>=2&&!list.hasAttribute('aria-busy'))search()},120000);
+setInterval(()=>{if(document.visibilityState==='visible'&&(input.value.trim().length===0||input.value.trim().length>=2)&&!list.hasAttribute('aria-busy'))search()},120000);
+search();
 </script>
 </body></html>

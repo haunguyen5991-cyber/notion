@@ -6,9 +6,9 @@ Một ô tìm kiếm luôn hiện; nhập tên/địa chỉ, chọn kết quả 
 
 - Data source cố định: `38f6bd68-5348-8029-b8a2-000b30978089` — Database chung.
 - Đọc qua Notion API `2026-03-11`, có phân trang.
-- Chỉ yêu cầu `Name`, `Tên đường`, `Quận cũ`, `Phường hiện hành`, `Tình trạng`.
+- Chỉ yêu cầu `Name`, `Tên đường`, `Quận cũ`, `Phường hiện hành`, `Tình trạng`, `Giá bán (đ)`, `Cấp hiển thị`, `Ngày bắt đầu gói`, `Ngày hết hạn gói`.
 - **Chỉ trả bản ghi có `public_url` HTTPS hợp lệ.** Không dùng `url` đăng nhập làm phương án dự phòng. Nếu tài sản công khai kế thừa nhưng API không trả `public_url`, tài sản đó sẽ không xuất hiện; cần kiểm tra bằng token thật sau triển khai, không nới chặn bảo mật để lấp kết quả.
-- Trình duyệt chỉ nhận tên, quận, tình trạng và URL công khai; không nhận dữ liệu khác.
+- Kết quả tìm chỉ nhận tên, quận, tình trạng và URL công khai. Danh sách ưu tiên thêm giá bán công khai; không trả cấp/ngày gói hoặc dữ liệu liên hệ.
 - Chỉ mục tìm kiếm được làm mới tự động từ Notion bằng lịch Cloudflare mỗi 2 phút. KV là bộ nhớ đệm dẫn xuất, không phải database nguồn thứ hai; giá trị tự hết hạn sau 10 phút. Máy chủ không phục vụ bộ nhớ đệm quá 3 phút. Khi trang đang mở và có từ khóa, kết quả tự tải lại mỗi 2 phút. Không ghi snapshot vào GitHub, không cập nhật đẩy tức thì.
 - Khi chọn tài sản, mở URL hồ sơ gốc (thông tin hồ sơ do Notion phục vụ).
 
@@ -62,3 +62,7 @@ API tìm kiếm: `/api/search?q=...`. Không cần gửi token ở trình duyệ
 - Tìm đủ các thành phần đã nhập, ưu tiên khớp chính xác; cho phép sai một ký tự (thiếu/thừa/đổi/đảo hai chữ liền kề) trên tối đa hai từ. Từ ngắn cần ít nhất hai thành phần khớp làm ngữ cảnh.
 - Số nhà, số phường/quận và mã có chữ-số phải khớp nguyên từ, không sửa gần đúng.
 - Chỉ mục KV v2 bổ sung khóa phường và từ tách sẵn; không đổi dữ liệu nguồn hoặc trường công khai trả về.
+
+## Ba căn mặc định
+
+Ô trống gọi `/api/featured`, chọn tối đa 3 hồ sơ công khai đang bán, gói còn hiệu lực. Premier trong 7 ngày đầu đứng trước Signature (bao gồm Premier sau 7 ngày), rồi Priority; đồng cấp sắp tên tự nhiên. Premier thiếu ngày bắt đầu hoặc hết hạn không đủ căn cứ ưu tiên; Signature/Priority cần ngày hết hạn, nếu có ngày bắt đầu trong tương lai thì không chọn. Ngày thuần được tính lúc 00:00 theo UTC+7; hết hạn là mốc loại. Không bù Standard hoặc hồ sơ riêng tư. Cấp hiệu lực được tính lại lúc trả kết quả, không lưu cứng ba ID. Danh sách có tên, giá bán (nếu có), quận; ô luôn cố định, chỉ danh sách cuộn. Gõ từ khóa thay danh sách; xóa thì tải lại mặc định. Không thêm dòng đếm.

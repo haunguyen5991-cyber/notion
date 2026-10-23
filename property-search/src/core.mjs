@@ -1,8 +1,8 @@
 const SOURCE_ID = '38f6bd68-5348-8029-b8a2-000b30978089';
-const FIELDS = ['Name', 'Tên đường', 'Quận cũ', 'Phường hiện hành', 'Tình trạng'];
+const FIELDS = ['Name', 'Tên đường', 'Quận cũ', 'Phường hiện hành', 'Tình trạng', 'Giá bán (đ)', 'Cấp hiển thị', 'Ngày bắt đầu gói', 'Ngày hết hạn gói'];
 const TTL = 120_000;
 const STALE_LIMIT = 180_000;
-const CACHE_KEY = "published-search-index:v2";
+const CACHE_KEY = "published-search-index:v3";
 const CSP = "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors *";
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 export function fold(value = '') {
@@ -83,7 +83,9 @@ export function publicRecord(page) {
   const search = normalizeAddress([title, road, district, ward].join(' '));
   return { id: page.id, title, url, district, status, search,
     words: search.split(' '), nameKey: normalizeAddress(title), roadKey: normalizeAddress(road), districtKey: d,
-    wardKey: normalizeAddress(ward).replace(/^phuong\s+/, '') };
+    wardKey: normalizeAddress(ward).replace(/^phuong\s+/, ''),
+    price: Number.isFinite(p['Giá bán (đ)']?.number) && p['Giá bán (đ)'].number > 0 ? p['Giá bán (đ)'].number : null,
+    tier: text(p['Cấp hiển thị']), packageStart: p['Ngày bắt đầu gói']?.date?.start || null, packageEnd: p['Ngày hết hạn gói']?.date?.start || null };
 }
 export function findMatches(records, query, limit = 12) {
   const q = normalizeAddress(query), groups = scopedQuery(query);
@@ -120,6 +122,28 @@ export function findMatches(records, query, limit = 12) {
   return { items, total: found.length, hasMore: found.length > limit };
 }
 
+function packageTime(value) {
+  if (typeof value !== 'string') return NaN;
+  return Date.parse(/^\d{4}-\d{2}-\d{2}$/.test(value) ? value + 'T00:00:00+07:00' : value);
+}
+export function featuredRank(item, at = Date.now()) {
+  if (item.status !== 'Đang bán') return 4;
+  const start = packageTime(item.packageStart), end = packageTime(item.packageEnd);
+  if (!Number.isFinite(end) || at >= end || (Number.isFinite(start) && at < start)) return 4;
+  if (item.tier === 'Premier') {
+    if (!Number.isFinite(start) || end <= start) return 4;
+    return at < start + 7 * 86400000 ? 1 : 2;
+  }
+  if (item.tier === 'Signature') return 2;
+  if (item.tier === 'Priority') return 3;
+  return 4;
+}
+export function findFeatured(records, at = Date.now()) {
+  const eligible = records.map(item => ({ item, rank: featuredRank(item, at) }))
+    .filter(({ item, rank }) => rank < 4 && publishedUrl(item.url));
+  eligible.sort((a, b) => a.rank - b.rank || a.item.title.localeCompare(b.item.title, 'vi', { numeric: true }));
+  return { items: eligible.slice(0, 3).map(({ item: { id, title, url, district, status, price } }) => ({ id, title, url, district, status, price })), mode: 'featured' };
+}
 class SearchError extends Error {
   constructor(code, status = 503) { super(code); this.code = code; this.status = status; }
 }
@@ -252,15 +276,16 @@ export function createHandler(html, deps = {}) {
       if (url.pathname === '/' || url.pathname === '/index.html') {
         return new Response(html, { headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'public, max-age=300', 'Content-Security-Policy': CSP, 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'no-referrer', 'Permissions-Policy': 'camera=(), microphone=(), geolocation=()' } });
       }
-      if (url.pathname !== '/api/search') return json({ error: 'not_found' }, 404);
+      const featured = url.pathname === '/api/featured';
+      if (url.pathname !== '/api/search' && !featured) return json({ error: 'not_found' }, 404);
       if (!permitted(request)) return json({ error: 'busy', message: 'Bạn tìm quá nhanh. Vui lòng thử lại sau ít phút.' }, 429, { 'Retry-After': '60' });
       const q = (url.searchParams.get('q') || '').trim();
       if (q.length > 100) return json({ error: 'invalid_query' }, 400);
-      if (fold(q).length < 2) return json({ items: [], total: 0, hasMore: false, minLength: 2 });
+      if (!featured && fold(q).length < 2) return json({ items: [], total: 0, hasMore: false, minLength: 2 });
       if (!env.NOTION_API_TOKEN) return json({ error: 'unavailable', message: 'Chưa thể tải kết quả. Vui lòng thử lại sau.' }, 503);
       try {
         const data = await index(env, ctx);
-        return json({ ...findMatches(data.rows, q), updatedAt: new Date(data.fetchedAt).toISOString(), refreshSeconds: 120 });
+        return json({ ...(featured ? findFeatured(data.rows, now()) : findMatches(data.rows, q)), updatedAt: new Date(data.fetchedAt).toISOString(), refreshSeconds: 120 });
       } catch (error) {
         // Do not log request headers, token, query text or raw Notion response.
         console.warn('property-search:', error instanceof SearchError ? error.code : 'unexpected');
