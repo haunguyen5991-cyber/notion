@@ -66,3 +66,7 @@ API tìm kiếm: `/api/search?q=...`. Không cần gửi token ở trình duyệ
 ## Mười căn VIP mặc định
 
 Ô trống gọi `/api/featured`, chọn tối đa 10 hồ sơ công khai đang bán, gói còn hiệu lực. Premier trong 7 ngày đầu đứng trước Signature (bao gồm Premier sau 7 ngày), rồi Priority; đồng cấp sắp tên tự nhiên. Premier thiếu ngày bắt đầu hoặc hết hạn không đủ căn cứ ưu tiên; Signature/Priority cần ngày hết hạn, nếu có ngày bắt đầu trong tương lai thì không chọn. Ngày thuần được tính lúc 00:00 theo UTC+7; hết hạn là mốc loại. Không bù Standard hoặc hồ sơ riêng tư. Cấp hiệu lực được tính lại lúc trả kết quả, không lưu cứng các ID. Danh sách VIP và kết quả tìm đều chỉ hiện một dòng tên tài sản · trạng thái đúng nguồn, bỏ dòng giá/quận riêng; tên dài được rút gọn bằng dấu … và có tooltip tên đầy đủ; ô luôn cố định, chỉ danh sách cuộn. Gõ từ khóa thay danh sách; xóa thì tải lại mặc định. Không thêm dòng đếm.
+
+## Điều hướng trang chủ
+
+Hàng trên chia ô nhập và nút Trang chủ, liên kết cố định HTTPS dulieunhapho.com, mở tab mới để không bị giới hạn điều hướng của iframe. Mobile dùng biểu tượng nhà; desktop thêm chữ Trang chủ. Chừa 40px bên phải cho menu native Notion; không tuyên bố có thể che/tắt menu của trang cha. Danh sách bên dưới giữ toàn chiều ngang. Gallery hiện sắp theo Cấp hiển thị gốc, còn API ưu tiên hiệu lực gói; không tự đổi gallery hoặc ngày nguồn chỉ để ép khớp.
