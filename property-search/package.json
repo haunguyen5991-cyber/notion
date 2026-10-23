@@ -1,0 +1,14 @@
+{
+  "name": "dulieunhapho-search",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test test/*.test.mjs",
+    "dev": "wrangler dev",
+    "deploy": "node build.mjs && wrangler deploy",
+    "build": "node build.mjs"
+  },
+  "devDependencies": {
+    "wrangler": "^4.0.0"
+  }
+}

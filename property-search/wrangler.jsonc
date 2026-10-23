@@ -1,0 +1,21 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "dulieunhapho-search",
+  "main": "worker.mjs",
+  "compatibility_date": "2026-03-11",
+  "workers_dev": true,
+  "observability": {
+    "enabled": false
+  },
+  "kv_namespaces": [
+    {
+      "binding": "SEARCH_CACHE",
+      "id": "27b65027c99745be83be4e6f51cd2e89"
+    }
+  ],
+  "triggers": {
+    "crons": [
+      "*/2 * * * *"
+    ]
+  }
+}
